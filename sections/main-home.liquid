@@ -1,41 +1,51 @@
 {% liquid
-  assign hero_heading = section.settings.heading | default: shop.name
+  assign hero_lead = section.settings.heading | default: 'home.hero_lead' | t
+  assign hero_ghost = section.settings.ghost_word | default: 'home.ghost_word' | t
   assign featured = section.settings.featured_collection | default: collections.all
   assign fallback_handles = 'calligraphy,islamic,clocks,anime-comics,floral' | split: ','
 %}
 
-<section class="home-hero {% unless section.settings.image %}home-hero--art{% endunless %}">
-  {%- if section.settings.image -%}
-    <div class="home-hero__media">
-      {{
-        section.settings.image
-        | image_url: width: 2600
-        | image_tag:
-          loading: 'eager',
-          fetchpriority: 'high',
-          widths: '800, 1200, 1600, 2000, 2600',
-          sizes: '100vw',
-          alt: section.settings.image.alt | default: hero_heading
-      }}
-    </div>
-  {%- else -%}
-    <div class="home-hero__art" aria-hidden="true">
-      {% render 'engraving', seed: 12 %}
-    </div>
-  {%- endif -%}
+<section class="home-hero">
+  <div class="container home-hero__grid">
+    <div class="home-hero__copy">
+      <p class="home-hero__kicker">{{ section.settings.kicker | default: 'home.kicker' | t }}</p>
 
-  <div class="container home-hero__inner">
-    <p class="home-hero__kicker">{{ section.settings.kicker | default: 'home.kicker' | t }}</p>
-    <h1 class="home-hero__title">{{ hero_heading }}</h1>
-    <p class="home-hero__tagline">{{ section.settings.tagline | default: 'home.tagline' | t }}</p>
-    <p class="home-hero__body">{{ section.settings.body | default: 'home.hero_body' | t }}</p>
-    <a
-      class="link-rule home-hero__cta"
-      href="{{ section.settings.button_link | default: routes.all_products_collection_url }}"
-    >
-      {{ section.settings.button_label | default: 'home.hero_cta' | t }}
-      <span aria-hidden="true">&rarr;</span>
-    </a>
+      <h1 class="home-hero__title">
+        <span class="home-hero__lead">{{ hero_lead }}</span>
+        <span class="home-hero__ghost">{{ hero_ghost }}</span>
+      </h1>
+
+      <p class="home-hero__body">{{ section.settings.body | default: 'home.hero_body' | t }}</p>
+
+      <div class="home-hero__actions">
+        <a
+          class="button button--primary home-hero__cta"
+          href="{{ section.settings.button_link | default: routes.all_products_collection_url }}"
+        >
+          {{ section.settings.button_label | default: 'home.hero_cta' | t }}
+        </a>
+        {%- if section.settings.hero_note != blank -%}
+          <p class="home-hero__note">{{ section.settings.hero_note }}</p>
+        {%- endif -%}
+      </div>
+    </div>
+
+    <div class="home-hero__figure">
+      {%- if section.settings.image -%}
+        {{
+          section.settings.image
+          | image_url: width: 1600
+          | image_tag:
+            loading: 'eager',
+            fetchpriority: 'high',
+            widths: '600, 900, 1200, 1600',
+            sizes: '(min-width: 900px) 46vw, 88vw',
+            alt: section.settings.image.alt | default: hero_lead
+        }}
+      {%- else -%}
+        <div class="home-hero__disc" aria-hidden="true">{% render 'engraving', seed: 12 %}</div>
+      {%- endif -%}
+    </div>
   </div>
 </section>
 
@@ -169,55 +179,117 @@
 </section>
 
 {% stylesheet %}
-  /* ---- Hero ---- */
+  /* ---- Hero: split copy / figure, oversized ghost word ---- */
   .home-hero {
-    position: relative;
-    display: grid;
-    align-items: end;
-    min-height: clamp(560px, 88svh, 920px);
-    padding-block: var(--sp-8);
-    background: var(--charcoal-deep);
-    color: var(--on-dark);
+    background:
+      radial-gradient(
+        68% 88% at 86% 32%,
+        color-mix(in srgb, var(--copper) 13%, transparent),
+        transparent 62%
+      ),
+      var(--surface);
+    border-bottom: 1px solid var(--line);
     overflow: hidden;
-    isolation: isolate;
   }
-  .home-hero__media,
-  .home-hero__media img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  .home-hero__grid {
+    display: grid;
+    grid-template-columns: 1.02fr 0.98fr;
+    align-items: center;
+    gap: clamp(24px, 5vw, 72px);
+    min-height: clamp(520px, 76svh, 760px);
+    padding-block: clamp(40px, 7vw, 92px);
   }
-  .home-hero__media::after {
+  .home-hero__copy {
+    display: grid;
+    justify-items: start;
+    gap: var(--sp-4);
+    max-width: 34rem;
+  }
+  .home-hero__kicker {
+    color: var(--copper);
+    font-size: var(--fs-eyebrow);
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .home-hero__title {
+    margin: 0;
+    display: grid;
+    line-height: 0.9;
+  }
+  .home-hero__lead {
+    font-size: clamp(1.55rem, 1rem + 2.4vw, 2.8rem);
+    font-weight: 460;
+    letter-spacing: -0.01em;
+  }
+  .home-hero__ghost {
+    font-size: clamp(3.4rem, 1rem + 12vw, 8.5rem);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+    color: transparent;
+    -webkit-text-stroke: 1.5px color-mix(in srgb, var(--ink) 28%, transparent);
+  }
+  @supports not ((-webkit-text-stroke: 1px black)) {
+    .home-hero__ghost {
+      color: color-mix(in srgb, var(--ink) 12%, transparent);
+    }
+  }
+  .home-hero__body {
+    max-width: 32rem;
+    margin-top: var(--sp-2);
+    color: var(--muted);
+  }
+  .home-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-4);
+    margin-top: var(--sp-3);
+  }
+  .home-hero__cta {
+    padding-inline: var(--sp-7);
+  }
+  .home-hero__note {
+    max-width: 24ch;
+    color: var(--muted);
+    font-size: 0.72rem;
+    line-height: 1.5;
+  }
+  .home-hero__figure {
+    position: relative;
+    align-self: stretch;
+    display: grid;
+    place-items: center;
+    min-height: 300px;
+  }
+  .home-hero__figure::before {
     content: '';
     position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      90deg,
-      rgb(18 15 12 / 0.82) 0%,
-      rgb(18 15 12 / 0.5) 45%,
-      rgb(18 15 12 / 0.15) 100%
+    inset: 6% 0;
+    background: radial-gradient(
+      closest-side,
+      color-mix(in srgb, var(--copper) 15%, transparent),
+      transparent
     );
   }
-  .home-hero__art {
-    position: absolute;
-    right: -8vw;
-    top: 50%;
-    translate: 0 -50%;
-    width: min(96vh, 820px);
-    color: var(--copper-light);
-    opacity: 0.16;
+  .home-hero__figure img {
+    position: relative;
+    width: 100%;
+    max-height: 560px;
+    object-fit: contain;
   }
-  .home-hero--art::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(80% 60% at 20% 90%, rgb(0 0 0 / 0.45), transparent 70%);
+  .home-hero__disc {
+    position: relative;
+    width: min(100%, 440px);
+    color: var(--copper);
+  }
+  .home-hero__disc .engraving {
+    width: 100%;
   }
   @media (prefers-reduced-motion: no-preference) {
-    .home-hero__art {
-      animation: home-hero-spin 90s linear infinite;
+    .home-hero__disc {
+      animation: home-hero-spin 120s linear infinite;
     }
   }
   @keyframes home-hero-spin {
@@ -225,43 +297,26 @@
       rotate: 360deg;
     }
   }
-  .home-hero__inner {
-    position: relative;
-    z-index: 1;
-    display: grid;
-    justify-items: start;
-    gap: var(--sp-4);
-    max-width: 40rem;
+
+  @media (max-width: 900px) {
+    .home-hero__grid {
+      grid-template-columns: 1fr;
+      min-height: 0;
+      gap: var(--sp-6);
+      padding-block: var(--sp-7);
+    }
+    .home-hero__figure {
+      order: -1;
+      min-height: 220px;
+    }
+    .home-hero__disc {
+      width: min(74%, 300px);
+    }
   }
-  .home-hero__kicker {
-    color: var(--copper-light);
-    font-size: var(--fs-eyebrow);
-    font-weight: 600;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-  }
-  .home-hero__title {
-    margin: 0;
-    font-size: var(--fs-display);
-    font-weight: 420;
-    line-height: 0.92;
-    letter-spacing: -0.02em;
-  }
-  .home-hero__tagline {
-    margin: 0;
-    font-family: var(--serif);
-    font-size: clamp(1.3rem, 1rem + 1.5vw, 2rem);
-    font-style: italic;
-    color: color-mix(in srgb, var(--on-dark) 85%, transparent);
-  }
-  .home-hero__body {
-    max-width: 34rem;
-    margin: var(--sp-2) 0 var(--sp-3);
-    color: color-mix(in srgb, var(--on-dark) 72%, transparent);
-    font-size: var(--fs-sm);
-  }
-  .home-hero__cta {
-    border-color: color-mix(in srgb, var(--on-dark) 55%, transparent);
+  @media (max-width: 560px) {
+    .home-hero__ghost {
+      font-size: clamp(2.9rem, 17vw, 4.6rem);
+    }
   }
 
   /* ---- Statement ---- */
@@ -468,16 +523,22 @@
     { "type": "header", "content": "t:sections.home.hero" },
     { "type": "image_picker", "id": "image", "label": "t:labels.hero_image" },
     { "type": "text", "id": "kicker", "label": "t:labels.text", "default": "CNC-cut metalwork / Pakistan" },
-    { "type": "text", "id": "heading", "label": "t:labels.heading", "default": "MetaliQ" },
-    { "type": "text", "id": "tagline", "label": "t:general.secondary", "default": "Art, Cut in Metal." },
+    { "type": "text", "id": "heading", "label": "t:labels.heading", "default": "Art, cut in" },
+    { "type": "text", "id": "ghost_word", "label": "t:labels.text", "default": "Metal" },
     {
       "type": "textarea",
       "id": "body",
       "label": "t:labels.text",
       "default": "Architectural wall pieces, drawn with precision and finished by hand."
     },
-    { "type": "text", "id": "button_label", "label": "t:labels.button_label", "default": "View the collection" },
+    { "type": "text", "id": "button_label", "label": "t:labels.button_label", "default": "Shop the collection" },
     { "type": "url", "id": "button_link", "label": "t:labels.button_link" },
+    {
+      "type": "text",
+      "id": "hero_note",
+      "label": "t:labels.text",
+      "default": "Made to order in our workshop. Shipped worldwide."
+    },
 
     { "type": "header", "content": "t:sections.home.intro" },
     {
