@@ -1,30 +1,38 @@
-<section class="container page-section">
+<section class="container section collection-section">
   {% render 'breadcrumbs' %}
 
-  <header class="page-header collections-header">
+  <header class="collection-hero">
     <p class="eyebrow">{{ 'collections.eyebrow' | t }}</p>
     <h1>{{ 'collections.title' | t }}</h1>
   </header>
 
   {%- paginate collections by section.settings.per_page -%}
-    <div class="collection-card-grid">
+    <div class="collections-grid">
       {%- for collection in collections -%}
-        <a class="collection-card" href="{{ collection.url }}">
-          <div class="collection-card__media">
+        <a class="collections-grid__item" href="{{ collection.url }}">
+          <span class="media collections-grid__media">
             {%- if collection.featured_image -%}
               {{
                 collection.featured_image
                 | image_url: width: 1200
-                | image_tag: loading: 'lazy', widths: '400, 600, 900, 1200', sizes: '(min-width: 990px) 33vw, 100vw', alt: collection.featured_image.alt | default: collection.title
+                | image_tag:
+                  loading: 'lazy',
+                  widths: '400, 600, 900, 1200',
+                  sizes: '(min-width: 990px) 33vw, 100vw',
+                  alt: collection.featured_image.alt | default: collection.title
               }}
             {%- else -%}
-              <span class="collection-card__placeholder" aria-hidden="true">{{ collection.title | slice: 0 }}</span>
+              <span class="media-fallback">
+                {% render 'engraving', seed: collection.id, label: collection.title %}
+              </span>
             {%- endif -%}
-          </div>
-          <div class="collection-card__content">
-            <h2>{{ collection.title }}</h2>
-            <span>{{ 'collection.count' | t: count: collection.products_count }}</span>
-          </div>
+          </span>
+          <span class="collections-grid__caption">
+            <span class="collections-grid__title">{{ collection.title }}</span>
+            <span class="collections-grid__count">
+              {{- 'collection.count' | t: count: collection.products_count -}}
+            </span>
+          </span>
         </a>
       {%- else -%}
         <div class="empty-state">
@@ -40,75 +48,50 @@
 </section>
 
 {% stylesheet %}
-  .collections-header {
-    padding-block: 30px 40px;
-  }
-
-  .collection-card-grid {
+  .collections-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
+    gap: var(--sp-7) var(--sp-5);
   }
-
-  .collection-card {
-    min-width: 0;
+  .collections-grid__media {
+    display: block;
+    aspect-ratio: 3 / 4;
   }
-
-  .collection-card__media {
-    aspect-ratio: 4 / 5;
-    overflow: hidden;
-    background: color-mix(in srgb, var(--line) 55%, var(--background));
-  }
-
-  .collection-card__media img {
+  .collections-grid__media img,
+  .collections-grid__media .media-fallback {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.6s var(--ease);
+    transition: transform 0.7s var(--ease);
   }
-
-  .collection-card:hover img {
-    transform: scale(1.03);
+  .collections-grid__item:hover .collections-grid__media img,
+  .collections-grid__item:hover .collections-grid__media .media-fallback {
+    transform: scale(1.04);
   }
-
-  .collection-card__placeholder {
-    width: 100%;
-    height: 100%;
-    display: grid;
-    place-items: center;
-    color: color-mix(in srgb, var(--ink) 22%, transparent);
-    font-family: var(--serif);
-    font-size: 5rem;
-  }
-
-  .collection-card__content {
+  .collections-grid__caption {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    gap: 12px;
-    padding: 13px 0;
+    gap: var(--sp-3);
+    padding-top: var(--sp-3);
   }
-
-  .collection-card__content h2 {
-    margin: 0;
-    font-size: 1.45rem;
+  .collections-grid__title {
+    font-family: var(--serif);
+    font-size: var(--fs-h4);
   }
-
-  .collection-card__content span {
+  .collections-grid__count {
     color: var(--muted);
-    font-size: 0.7rem;
+    font-size: 0.72rem;
   }
-
   @media (max-width: 900px) {
-    .collection-card-grid {
+    .collections-grid {
       grid-template-columns: repeat(2, 1fr);
     }
   }
-
   @media (max-width: 540px) {
-    .collection-card-grid {
+    .collections-grid {
       grid-template-columns: 1fr;
-      gap: 28px;
+      gap: var(--sp-6);
     }
   }
 {% endstylesheet %}
@@ -121,9 +104,9 @@
       "type": "range",
       "id": "per_page",
       "label": "t:labels.products_per_page",
-      "min": 8,
-      "max": 32,
-      "step": 4,
+      "min": 6,
+      "max": 24,
+      "step": 3,
       "default": 12
     }
   ],

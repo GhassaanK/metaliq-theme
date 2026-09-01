@@ -1,12 +1,12 @@
 {% comment %}
-  A custom-size piece is two line items: the piece itself, and the surcharge
-  units that make its price correct. This template folds the surcharge back into
-  the piece it belongs to so the customer sees one line at one honest price.
+  A custom-size piece is two line items: the piece, and the surcharge units that
+  make its price correct. This template folds the surcharge back into the piece
+  it belongs to, so the customer sees one line at one honest price.
   `cart.total_price` already counts both, so the summary needs no adjustment.
 {% endcomment %}
 
-<section class="container page-section cart-page">
-  <header class="page-header">
+<section class="container section cart-section">
+  <header class="cart-head">
     <p class="eyebrow">{{ 'cart.eyebrow' | t }}</p>
     <h1>{{ 'cart.title' | t }}</h1>
   </header>
@@ -20,278 +20,243 @@
       </a>
     </div>
   {%- else -%}
-    <form action="{{ routes.cart_url }}" method="post">
-      <div class="cart-layout">
-        <div class="cart-lines">
-          {%- for item in cart.items -%}
-            {% liquid
-              assign surcharge_for = item.properties['_surcharge_for']
-              assign group = item.properties['_size_group']
+    <form action="{{ routes.cart_url }}" method="post" class="cart-layout">
+      <div class="cart-lines">
+        {%- for item in cart.items -%}
+          {% liquid
+            assign surcharge_for = item.properties['_surcharge_for']
+            assign group = item.properties['_size_group']
 
-              # Find the piece a surcharge line belongs to; if it has none left
-              # in the cart it is shown on its own rather than silently charged.
-              assign has_parent = false
-              if surcharge_for != blank
-                for other in cart.items
-                  if other.properties['_size_group'] == surcharge_for
-                    assign has_parent = true
-                    break
-                  endif
-                endfor
-              endif
+            assign has_parent = false
+            if surcharge_for != blank
+              for other in cart.items
+                if other.properties['_size_group'] == surcharge_for
+                  assign has_parent = true
+                  break
+                endif
+              endfor
+            endif
 
-              assign extra_price = 0
-              assign remove_keys = item.key
-              if group != blank
-                for other in cart.items
-                  if other.properties['_surcharge_for'] == group
-                    assign extra_price = extra_price | plus: other.final_line_price
-                    assign remove_keys = remove_keys | append: ',' | append: other.key
-                  endif
-                endfor
-              endif
+            assign extra_price = 0
+            assign remove_keys = item.key
+            if group != blank
+              for other in cart.items
+                if other.properties['_surcharge_for'] == group
+                  assign extra_price = extra_price | plus: other.final_line_price
+                  assign remove_keys = remove_keys | append: ',' | append: other.key
+                endif
+              endfor
+            endif
 
-              assign line_total = item.final_line_price | plus: extra_price
-              assign is_grouped = false
-              if extra_price > 0
-                assign is_grouped = true
-              endif
-            %}
+            assign line_total = item.final_line_price | plus: extra_price
+            assign is_grouped = false
+            if extra_price > 0
+              assign is_grouped = true
+            endif
+          %}
 
-            {%- if surcharge_for != blank and has_parent -%}
-              {% continue %}
-            {%- endif -%}
+          {%- if surcharge_for != blank and has_parent -%}
+            {% continue %}
+          {%- endif -%}
 
-            <article class="cart-line">
-              <a class="cart-line__image" href="{{ item.url }}">
-                {%- if item.image -%}
-                  {{
-                    item.image
-                    | image_url: width: 400
-                    | image_tag: loading: 'lazy', widths: '130, 260, 400', sizes: '130px', alt: item.image.alt | default: item.product.title
-                  }}
-                {%- endif -%}
-              </a>
+          <article class="cart-line">
+            <a class="cart-line__media media" href="{{ item.url }}">
+              {%- if item.image -%}
+                {{
+                  item.image
+                  | image_url: width: 320
+                  | image_tag:
+                    loading: 'lazy',
+                    widths: '120, 200, 320',
+                    sizes: '110px',
+                    alt: item.image.alt | default: item.product.title
+                }}
+              {%- else -%}
+                <span class="media-fallback">{% render 'engraving', seed: item.product.id %}</span>
+              {%- endif -%}
+            </a>
 
-              <div class="cart-line__content">
-                <div>
-                  {%- if item.product.type != blank -%}
-                    <p class="cart-line__collection">{{ item.product.type }}</p>
-                  {%- endif -%}
-                  <h2><a href="{{ item.url }}">{{ item.product.title }}</a></h2>
+            <div class="cart-line__info">
+              {%- if item.product.type != blank -%}
+                <p class="cart-line__kicker">{{ item.product.type }}</p>
+              {%- endif -%}
+              <h2><a href="{{ item.url }}">{{ item.product.title }}</a></h2>
 
-                  {%- unless item.product.has_only_default_variant -%}
-                    <p>{{ item.variant.title }}</p>
-                  {%- endunless -%}
+              {%- unless item.product.has_only_default_variant -%}
+                <p class="cart-line__meta">{{ item.variant.title }}</p>
+              {%- endunless -%}
 
-                  {%- for property in item.properties -%}
-                    {%- assign first_char = property.first | slice: 0 -%}
-                    {%- unless property.last == blank or first_char == '_' -%}
-                      <p class="line-property">
-                        <span>{{ property.first }}:</span>
-                        {{ property.last }}
-                      </p>
-                    {%- endunless -%}
-                  {%- endfor -%}
+              {%- for property in item.properties -%}
+                {%- assign first_char = property.first | slice: 0 -%}
+                {%- unless property.last == blank or first_char == '_' -%}
+                  <p class="cart-line__meta"><span>{{ property.first }}:</span> {{ property.last }}</p>
+                {%- endunless -%}
+              {%- endfor -%}
 
-                  {%- if surcharge_for != blank -%}
-                    <p class="line-property"><span>{{ 'cart.sizing_line' | t }}</span></p>
-                  {%- endif -%}
-                </div>
+              {%- if surcharge_for != blank -%}
+                <p class="cart-line__meta"><span>{{ 'cart.sizing_line' | t }}</span></p>
+              {%- endif -%}
 
-                <div class="cart-line__controls">
-                  {%- if is_grouped -%}
-                    {%- comment -%}
-                      Quantity is locked: the piece and its surcharge units have
-                      to move together, and re-deriving that ratio in the cart
-                      invites rounding drift. Adding the piece again is exact.
-                    {%- endcomment -%}
-                    <span class="cart-line__qty">{{ 'general.quantity' | t }}: {{ item.quantity }}</span>
-                    <p class="field-note">{{ 'cart.made_to_order_qty' | t }}</p>
-                  {%- else -%}
-                    <label class="field" for="Updates-{{ item.key }}">{{ 'general.quantity' | t }}</label>
-                    <input
-                      id="Updates-{{ item.key }}"
-                      type="number"
-                      name="updates[]"
-                      value="{{ item.quantity }}"
-                      min="0"
-                    >
-                  {%- endif -%}
-
-                  <a
-                    href="{{ item.url_to_remove }}"
-                    class="cart-line__remove"
-                    data-remove-group="{{ remove_keys }}"
+              <div class="cart-line__controls">
+                {%- if is_grouped -%}
+                  <span class="cart-line__qty">{{ 'general.quantity' | t }}: {{ item.quantity }}</span>
+                {%- else -%}
+                  <label class="visually-hidden" for="Updates-{{ item.key }}">
+                    {{ 'general.quantity' | t }}
+                  </label>
+                  <input
+                    id="Updates-{{ item.key }}"
+                    type="number"
+                    name="updates[]"
+                    value="{{ item.quantity }}"
+                    min="0"
                   >
-                    {{- 'cart.remove' | t -}}
-                  </a>
-                </div>
+                {%- endif -%}
+                <a
+                  href="{{ item.url_to_remove }}"
+                  class="cart-line__remove link"
+                  data-remove-group="{{ remove_keys }}"
+                >
+                  {{- 'cart.remove' | t -}}
+                </a>
               </div>
 
-              <strong class="cart-line__price">{{ line_total | money }}</strong>
-            </article>
-          {%- endfor -%}
+              {%- if is_grouped -%}
+                <p class="field-note">{{ 'cart.made_to_order_qty' | t }}</p>
+              {%- endif -%}
+            </div>
 
-          <button class="button button--secondary" type="submit" name="update">{{ 'cart.update' | t }}</button>
-        </div>
+            <strong class="cart-line__price price">{{ line_total | money }}</strong>
+          </article>
+        {%- endfor -%}
 
-        <aside class="cart-summary">
-          <h2>{{ 'cart.summary' | t }}</h2>
-          <div>
-            <span>{{ 'cart.subtotal' | t }}</span>
-            <strong>{{ cart.total_price | money }}</strong>
-          </div>
-          <p>{{ 'cart.tax_note' | t }}</p>
-          <button class="button button--primary" type="submit" name="checkout">{{ 'cart.checkout' | t }}</button>
-          <a class="text-link" href="{{ routes.all_products_collection_url }}">{{ 'cart.continue' | t }}</a>
-        </aside>
+        <button class="button button--ghost" type="submit" name="update">{{ 'cart.update' | t }}</button>
       </div>
+
+      <aside class="cart-summary">
+        <h2>{{ 'cart.summary' | t }}</h2>
+        <div class="cart-summary__row">
+          <span>{{ 'cart.subtotal' | t }}</span>
+          <strong>{{ cart.total_price | money }}</strong>
+        </div>
+        <p class="field-note">{{ 'cart.tax_note' | t }}</p>
+        <button class="button button--primary button--block" type="submit" name="checkout">
+          {{- 'cart.checkout' | t -}}
+        </button>
+        <a class="link cart-summary__continue" href="{{ routes.all_products_collection_url }}">
+          {{- 'cart.continue' | t -}}
+        </a>
+      </aside>
     </form>
   {%- endif -%}
 </section>
 
 {% stylesheet %}
-  .cart-page .page-header {
-    margin-bottom: 26px;
+  .cart-section {
+    padding-top: var(--sp-6);
   }
-
+  .cart-head {
+    margin-bottom: var(--sp-7);
+  }
   .cart-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1.6fr) minmax(300px, 0.65fr);
+    grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.6fr);
     align-items: start;
-    gap: 38px;
+    gap: clamp(24px, 5vw, 56px);
   }
-
   .cart-line {
     display: grid;
-    grid-template-columns: 130px 1fr auto;
-    gap: 18px;
-    padding: 16px 0;
+    grid-template-columns: 110px 1fr auto;
+    gap: var(--sp-5);
+    padding: var(--sp-5) 0;
     border-top: 1px solid var(--line);
   }
-
-  .cart-line__image {
+  .cart-line__media {
+    display: block;
     aspect-ratio: 1;
-    background: color-mix(in srgb, var(--line) 45%, var(--background));
   }
-
-  .cart-line__image img {
+  .cart-line__media img {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
-
-  .cart-line__content {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
+  .cart-line__media .engraving {
+    width: 66%;
   }
-
-  .cart-line__content h2 {
-    margin: 0;
-    font-size: 1.2rem;
-  }
-
-  .cart-line__content p {
+  .cart-line__info h2 {
     margin: 2px 0;
-    color: var(--muted);
-    font-size: 0.72rem;
+    font-size: var(--fs-h4);
   }
-
-  .cart-line__collection {
-    letter-spacing: 0.08em;
+  .cart-line__kicker {
+    color: var(--muted);
+    font-size: 0.64rem;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
   }
-
-  .line-property span {
+  .cart-line__meta {
+    color: var(--muted);
+    font-size: var(--fs-sm);
+  }
+  .cart-line__meta span {
     color: var(--ink);
   }
-
   .cart-line__controls {
-    min-width: 96px;
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+    margin-top: var(--sp-3);
   }
-
   .cart-line__controls input {
     width: 72px;
-    padding: 6px;
+    padding: 8px;
   }
-
   .cart-line__qty {
-    display: block;
-    font-size: 0.72rem;
-    font-weight: 600;
+    font-size: var(--fs-sm);
+    font-weight: 500;
   }
-
-  .cart-line__remove {
-    display: block;
-    margin-top: 6px;
-    color: var(--copper);
-    font-size: 0.7rem;
-    text-decoration: underline;
-  }
-
   .cart-line__price {
-    font-size: 0.9rem;
+    font-size: var(--fs-sm);
+    font-variant-numeric: tabular-nums;
   }
-
   .cart-summary {
     position: sticky;
-    top: calc(var(--header-height) + 28px);
-    padding: 28px;
+    top: calc(var(--header-height) + var(--sp-5));
+    padding: var(--sp-6);
     background: var(--surface);
+    border: 1px solid var(--line);
   }
-
   .cart-summary h2 {
-    font-size: 1.5rem;
+    font-size: var(--fs-h3);
   }
-
-  .cart-summary > div {
+  .cart-summary__row {
     display: flex;
     justify-content: space-between;
-    padding: 15px 0;
+    margin-top: var(--sp-4);
+    padding: var(--sp-4) 0;
     border-block: 1px solid var(--line);
+    font-variant-numeric: tabular-nums;
   }
-
-  .cart-summary p {
-    color: var(--muted);
-    font-size: 0.72rem;
-  }
-
   .cart-summary .button {
-    width: 100%;
-    margin-bottom: 13px;
+    margin-top: var(--sp-4);
   }
-
-  .cart-summary .text-link {
+  .cart-summary__continue {
     display: block;
+    margin-top: var(--sp-4);
     text-align: center;
-    font-size: 0.75rem;
+    font-size: var(--fs-sm);
   }
-
-  @media (max-width: 800px) {
+  @media (max-width: 860px) {
     .cart-layout {
       grid-template-columns: 1fr;
     }
-
     .cart-summary {
       position: static;
     }
   }
-
-  @media (max-width: 540px) {
+  @media (max-width: 520px) {
     .cart-line {
-      grid-template-columns: 86px 1fr;
+      grid-template-columns: 84px 1fr;
     }
-
-    .cart-line__content {
-      display: block;
-    }
-
-    .cart-line__controls {
-      margin-top: 10px;
-    }
-
     .cart-line__price {
       grid-column: 2;
     }

@@ -1,182 +1,206 @@
 {% doc %}
-  Styles shared by every customer account screen.
-
-  Kept in a snippet so each account section can render it: stylesheet tags may
-  be included many times but their CSS is only emitted once, which keeps the
-  login, register, activate, reset and address pages consistent without any
-  one of them depending on another being on the page.
+  Styles shared by every customer account screen. Kept in a snippet so each
+  account section can render it — stylesheet tags may be included many times but
+  their CSS is emitted once, which keeps login, register, activate, reset,
+  addresses and order consistent without any one depending on another.
 
   @example
   {% render 'account-styles' %}
 {% enddoc %}
 
 {% stylesheet %}
+  .account-page,
   .auth-page {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
-    gap: 24px;
-    max-width: 900px;
-    margin-inline: auto;
-    padding-block: 50px 100px;
-  }
-
-  .auth-page--single {
-    max-width: 520px;
-    grid-template-columns: 1fr;
-  }
-
-  .auth-card {
-    padding: 30px;
-    background: var(--surface);
-  }
-
-  .auth-card h1 {
-    margin-bottom: 22px;
-    font-size: clamp(2rem, 5vw, 3rem);
-  }
-
-  .auth-card h2 {
-    margin-bottom: 6px;
-    font-size: 1.3rem;
-  }
-
-  .auth-card form {
-    display: grid;
-    gap: 16px;
-    margin-top: 16px;
-  }
-
-  .auth-card .text-link {
-    justify-self: start;
-    font-size: 0.78rem;
-  }
-
-  .auth-alt {
-    margin: 20px 0 0;
-    padding-top: 18px;
-    border-top: 1px solid var(--line);
-    font-size: 0.8rem;
+    padding-block: var(--sp-7) var(--section);
   }
 
   .account-header {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
     justify-content: space-between;
-    gap: 20px;
-    max-width: none;
-    padding-block: 20px 30px;
+    gap: var(--sp-4);
+    margin-bottom: var(--sp-7);
+  }
+  .account-header h1 {
+    font-size: var(--fs-h1);
   }
 
   .account-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1.6fr) minmax(240px, 0.6fr);
+    grid-template-columns: minmax(0, 1.7fr) minmax(240px, 0.55fr);
     align-items: start;
-    gap: 46px;
+    gap: clamp(28px, 5vw, 64px);
   }
-
   .account-layout h2 {
-    margin-bottom: 14px;
-    font-size: 1.4rem;
+    margin-bottom: var(--sp-4);
+    font-size: var(--fs-h3);
   }
 
   .table-scroll {
     overflow-x: auto;
   }
-
   .account-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.8rem;
+    font-size: var(--fs-sm);
     text-align: left;
   }
-
   .account-table th,
   .account-table td {
-    padding: 12px 14px 12px 0;
+    padding: var(--sp-3) var(--sp-4) var(--sp-3) 0;
     border-bottom: 1px solid var(--line);
     white-space: nowrap;
   }
-
   .account-table th {
     color: var(--muted);
-    font-size: 0.62rem;
+    font-size: 0.64rem;
     font-weight: 600;
-    letter-spacing: 0.11em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
   }
-
   .account-empty {
     color: var(--muted);
   }
 
   .account-aside {
-    padding: 24px;
+    padding: var(--sp-5);
     background: var(--surface);
-    font-size: 0.85rem;
+    border: 1px solid var(--line);
+    font-size: var(--fs-sm);
   }
-
-  .account-aside .text-link {
+  .account-aside .link {
     display: inline-block;
-    margin-top: 14px;
-    font-size: 0.78rem;
+    margin-top: var(--sp-4);
   }
 
+  /* Auth cards — login, register, activate, reset */
+  .auth-page {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: var(--sp-5);
+    max-width: 920px;
+    margin-inline: auto;
+  }
+  .auth-page--single {
+    max-width: 460px;
+    grid-template-columns: 1fr;
+  }
+  .auth-card {
+    padding: clamp(24px, 4vw, 36px);
+    background: var(--surface);
+    border: 1px solid var(--line);
+  }
+  .auth-card h1 {
+    margin-bottom: var(--sp-5);
+    font-size: var(--fs-h2);
+  }
+  .auth-card h2 {
+    font-size: var(--fs-h3);
+  }
+  .auth-card form {
+    display: grid;
+    gap: var(--sp-4);
+    margin-top: var(--sp-4);
+  }
+  .auth-card .link {
+    justify-self: start;
+    font-size: var(--fs-sm);
+  }
+  .auth-alt {
+    margin-top: var(--sp-5);
+    padding-top: var(--sp-4);
+    border-top: 1px solid var(--line);
+    font-size: var(--fs-sm);
+  }
+
+  /* Addresses */
   .address-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 18px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
+    gap: var(--sp-4);
   }
-
   .address-card {
-    padding: 22px;
+    padding: var(--sp-5);
     background: var(--surface);
-    font-size: 0.85rem;
+    border: 1px solid var(--line);
+    font-size: var(--fs-sm);
   }
-
   .address-card h2 {
-    margin-bottom: 8px;
-    font-size: 1.05rem;
+    margin-bottom: var(--sp-2);
+    font-size: var(--fs-h4);
   }
-
   .address-card__actions {
     display: flex;
-    gap: 14px;
-    margin-top: 14px;
-    font-size: 0.75rem;
+    gap: var(--sp-4);
+    margin-top: var(--sp-4);
+    font-size: var(--fs-sm);
   }
-
+  .address-card__actions button {
+    padding: 0;
+  }
+  .address-edit {
+    margin-top: var(--sp-3);
+  }
+  .address-edit summary {
+    cursor: pointer;
+    font-size: var(--fs-sm);
+  }
+  .address-edit .address-form {
+    margin-top: var(--sp-4);
+    padding: 0;
+    background: none;
+    border: 0;
+  }
   .address-form {
     display: grid;
-    gap: 16px;
+    gap: var(--sp-4);
     max-width: 620px;
-    margin-top: 24px;
-    padding: 28px;
+    margin-top: var(--sp-5);
+    padding: clamp(20px, 4vw, 32px);
     background: var(--surface);
+    border: 1px solid var(--line);
   }
-
   .address-form .checkbox {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 0.8rem;
+    gap: var(--sp-2);
+    font-size: var(--fs-sm);
+    font-weight: 400;
   }
-
   .address-form .checkbox input {
     width: auto;
   }
+  .address-form-title {
+    margin: var(--sp-8) 0 0;
+    padding-top: var(--sp-5);
+    border-top: 1px solid var(--line);
+    font-size: var(--fs-h3);
+  }
 
-  @media (max-width: 800px) {
+  /* Order detail */
+  .order-property {
+    display: block;
+    color: var(--muted);
+    font-size: 0.7rem;
+    white-space: normal;
+  }
+  .order-addresses {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--sp-4);
+    margin-top: var(--sp-7);
+  }
+  .order-addresses h2 {
+    margin-bottom: var(--sp-3);
+    font-size: var(--fs-h4);
+  }
+
+  @media (max-width: 860px) {
+    .account-layout,
     .auth-page {
       grid-template-columns: 1fr;
-    }
-
-    .account-layout {
-      grid-template-columns: 1fr;
-      gap: 30px;
     }
   }
 {% endstylesheet %}

@@ -1,8 +1,10 @@
-<section class="container page-section narrow-page">
+<section class="container container--narrow section">
   {% render 'breadcrumbs' %}
 
   <header class="page-header">
-    <p class="eyebrow">{{ section.settings.eyebrow | default: shop.name }}</p>
+    {%- if section.settings.eyebrow != blank -%}
+      <p class="eyebrow">{{ section.settings.eyebrow }}</p>
+    {%- endif -%}
     <h1>{{ page.title }}</h1>
   </header>
 

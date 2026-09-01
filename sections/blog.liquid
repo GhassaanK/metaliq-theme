@@ -1,33 +1,41 @@
-<section class="container page-section">
+<section class="container section blog-section">
   {% render 'breadcrumbs' %}
 
-  <header class="page-header blog-header">
+  <header class="blog-hero">
     <p class="eyebrow">{{ 'blog.eyebrow' | t }}</p>
     <h1>{{ blog.title }}</h1>
   </header>
 
   {%- paginate blog.articles by section.settings.posts_per_page -%}
-    <div class="article-grid">
+    <div class="blog-grid">
       {%- for article in blog.articles -%}
-        <article class="article-card">
-          <a class="article-card__media" href="{{ article.url }}" tabindex="-1" aria-hidden="true">
+        <article class="blog-card">
+          <a class="blog-card__media media" href="{{ article.url }}" aria-label="{{ article.title | escape }}">
             {%- if article.image -%}
               {{
                 article.image
                 | image_url: width: 1200
-                | image_tag: loading: 'lazy', widths: '400, 600, 900, 1200', sizes: '(min-width: 990px) 33vw, 100vw', alt: article.image.alt | default: article.title
+                | image_tag:
+                  loading: 'lazy',
+                  widths: '400, 600, 900, 1200',
+                  sizes: '(min-width: 990px) 33vw, 100vw',
+                  alt: article.image.alt | default: article.title
               }}
+            {%- else -%}
+              <span class="media-fallback">{% render 'engraving', seed: forloop.index %}</span>
             {%- endif -%}
           </a>
-          <div class="article-card__body">
+          <div class="blog-card__body">
             <p class="article-meta">
               <time datetime="{{ article.published_at | date: '%Y-%m-%d' }}">
                 {{- article.published_at | date: format: 'date' -}}
               </time>
             </p>
             <h2><a href="{{ article.url }}">{{ article.title }}</a></h2>
-            <p class="article-card__excerpt">{{ article.excerpt_or_content | strip_html | truncatewords: 26 }}</p>
-            <span class="text-link">{{ 'general.read_more' | t }}</span>
+            <p class="blog-card__excerpt">
+              {{- article.excerpt_or_content | strip_html | truncatewords: 24 -}}
+            </p>
+            <span class="link">{{ 'general.read_more' | t }}</span>
           </div>
         </article>
       {%- else -%}
@@ -44,58 +52,52 @@
 </section>
 
 {% stylesheet %}
-  .blog-header {
-    padding-block: 30px 40px;
+  .blog-section {
+    padding-top: var(--sp-6);
   }
-
-  .article-grid {
+  .blog-hero {
+    padding-block: var(--sp-6) var(--sp-7);
+  }
+  .blog-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 40px 18px;
+    gap: var(--sp-8) var(--sp-5);
   }
-
-  .article-card {
-    min-width: 0;
-  }
-
-  .article-card__media {
+  .blog-card__media {
     display: block;
     aspect-ratio: 3 / 2;
-    overflow: hidden;
-    background: color-mix(in srgb, var(--line) 55%, var(--background));
   }
-
-  .article-card__media img {
+  .blog-card__media img,
+  .blog-card__media .media-fallback {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.6s var(--ease);
   }
-
-  .article-card__body {
-    padding-top: 14px;
+  .blog-card:hover .blog-card__media img {
+    transform: scale(1.03);
   }
-
-  .article-card h2 {
-    margin: 0 0 8px;
-    font-size: 1.5rem;
+  .blog-card__body {
+    padding-top: var(--sp-4);
   }
-
-  .article-card__excerpt {
-    margin-bottom: 10px;
+  .blog-card h2 {
+    margin: 0 0 var(--sp-3);
+    font-size: var(--fs-h3);
+  }
+  .blog-card__excerpt {
+    margin-bottom: var(--sp-3);
     color: var(--muted);
-    font-size: 0.82rem;
+    font-size: var(--fs-sm);
   }
-
   @media (max-width: 900px) {
-    .article-grid {
+    .blog-grid {
       grid-template-columns: repeat(2, 1fr);
     }
   }
-
   @media (max-width: 540px) {
-    .article-grid {
+    .blog-grid {
       grid-template-columns: 1fr;
-      gap: 32px;
+      gap: var(--sp-7);
     }
   }
 {% endstylesheet %}

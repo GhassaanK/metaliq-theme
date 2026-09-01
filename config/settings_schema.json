@@ -16,35 +16,35 @@
         "label": "t:labels.page_width",
         "options": [
           {
-            "value": "1280px",
+            "value": "1200px",
             "label": "t:options.page_width.narrow"
           },
           {
-            "value": "1440px",
+            "value": "1320px",
             "label": "t:options.page_width.wide"
           }
         ],
-        "default": "1440px"
+        "default": "1320px"
       },
       {
         "type": "range",
         "id": "min_page_margin",
-        "min": 12,
-        "max": 60,
+        "min": 16,
+        "max": 64,
         "step": 2,
         "unit": "px",
         "label": "t:labels.page_margin",
-        "default": 32
+        "default": 40
       },
       {
         "type": "range",
         "id": "input_corner_radius",
         "min": 0,
-        "max": 12,
+        "max": 16,
         "step": 1,
         "unit": "px",
         "label": "t:labels.input_corner_radius",
-        "default": 6
+        "default": 4
       }
     ]
   },
@@ -54,43 +54,43 @@
       {
         "type": "color",
         "id": "background_color",
-        "default": "#F5F3EF",
+        "default": "#F4F1EA",
         "label": "t:labels.background"
       },
       {
         "type": "color",
         "id": "surface_color",
-        "default": "#FFFFFF",
+        "default": "#FFFDF9",
         "label": "t:general.section"
       },
       {
         "type": "color",
         "id": "foreground_color",
-        "default": "#1E1D1B",
+        "default": "#16130D",
         "label": "t:labels.foreground"
       },
       {
         "type": "color",
         "id": "muted_color",
-        "default": "#6C6862",
+        "default": "#6D665B",
         "label": "t:general.secondary"
       },
       {
         "type": "color",
         "id": "line_color",
-        "default": "#CBC5BC",
+        "default": "#E0D9C9",
         "label": "t:general.content"
       },
       {
         "type": "color",
         "id": "accent_color",
-        "default": "#B5652D",
+        "default": "#B0552E",
         "label": "t:general.primary"
       },
       {
         "type": "color",
         "id": "dark_color",
-        "default": "#292725",
+        "default": "#201C16",
         "label": "t:general.theme"
       }
     ]

@@ -62,8 +62,8 @@
      1. Mobile navigation
      ---------------------------------------------------------------------- */
 
-  const menuButton = document.querySelector('[data-menu-toggle]');
-  const navigation = document.querySelector('[data-navigation]');
+  const menuButton = document.querySelector('[data-nav-toggle]');
+  const navigation = document.querySelector('[data-nav]');
 
   if (menuButton && navigation) {
     const setMenu = (open) => {
@@ -87,9 +87,9 @@
       if (event.target.closest('a')) setMenu(false);
     });
 
-    // The nav returns to its horizontal desktop layout above 800px, where
+    // The nav returns to its horizontal desktop layout above 860px, where
     // `is-open` means nothing — without this the body stays scroll-locked.
-    const desktop = window.matchMedia('(min-width: 801px)');
+    const desktop = window.matchMedia('(min-width: 861px)');
     const syncToViewport = (event) => {
       if (event.matches) setMenu(false);
     };
@@ -353,4 +353,44 @@
         .catch(() => window.location.assign(link.href));
     });
   });
+
+  /* ----------------------------------------------------------------------
+     5. Header — mark as scrolled so it can grow a hairline
+     ---------------------------------------------------------------------- */
+
+  const header = document.querySelector('[data-site-header]');
+  if (header) {
+    const setScrolled = () => {
+      if (window.scrollY > 4) {
+        header.setAttribute('data-scrolled', '');
+      } else {
+        header.removeAttribute('data-scrolled');
+      }
+    };
+    setScrolled();
+    window.addEventListener('scroll', setScrolled, { passive: true });
+  }
+
+  /* ----------------------------------------------------------------------
+     6. Scroll reveal — armed via a class so content is visible without JS
+     ---------------------------------------------------------------------- */
+
+  const reveals = document.querySelectorAll('.reveal');
+  const motionOk = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (reveals.length && motionOk && 'IntersectionObserver' in window) {
+    document.documentElement.classList.add('reveal-on');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-in');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { rootMargin: '0px 0px -12% 0px' }
+    );
+    reveals.forEach((el) => observer.observe(el));
+  }
 })();

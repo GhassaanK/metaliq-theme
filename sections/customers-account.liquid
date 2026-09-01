@@ -1,10 +1,10 @@
-<section class="container page-section narrow-page account-page">
+<section class="container section container--narrow account-page">
   <header class="page-header account-header">
     <div>
       <p class="eyebrow">{{ 'customer.account.eyebrow' | t }}</p>
       <h1>{{ 'customer.account.title' | t }}</h1>
     </div>
-    <a class="text-link" href="{{ routes.account_logout_url }}">{{ 'customer.account.logout' | t }}</a>
+    <a class="link" href="{{ routes.account_logout_url }}">{{ 'customer.account.logout' | t }}</a>
   </header>
 
   <div class="account-layout">
@@ -27,7 +27,7 @@
               <tbody>
                 {%- for order in customer.orders -%}
                   <tr>
-                    <td><a class="text-link" href="{{ order.customer_url }}">{{ order.name }}</a></td>
+                    <td><a class="link" href="{{ order.customer_url }}">{{ order.name }}</a></td>
                     <td>{{ order.created_at | date: format: 'date' }}</td>
                     <td>{{ order.financial_status_label }}</td>
                     <td>{{ order.fulfillment_status_label }}</td>
@@ -50,7 +50,7 @@
     <aside class="account-aside">
       <h2>{{ 'customer.account.details' | t }}</h2>
       {{ customer.default_address | format_address }}
-      <a class="text-link" href="{{ routes.account_addresses_url }}">{{ 'customer.account.view_addresses' | t }}</a>
+      <a class="link" href="{{ routes.account_addresses_url }}">{{ 'customer.account.view_addresses' | t }}</a>
     </aside>
   </div>
 </section>

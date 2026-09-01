@@ -1,48 +1,52 @@
-<header class="site-header">
+{% liquid
+  assign brand_name = section.settings.brand_name | default: shop.name
+  assign brand_mark = section.settings.mark
+  if brand_mark == blank
+    assign brand_mark = shop.name | slice: 0
+  endif
+%}
+
+<header class="site-header" data-site-header>
   <div class="container header-inner">
     <a class="brand" href="{{ routes.root_url }}" aria-label="{{ 'general.brand_home' | t: shop_name: shop.name }}">
-      <span class="brand-mark" aria-hidden="true">{{ section.settings.mark | default: 'Q' }}</span>
-      <span>
-        <strong>{{ section.settings.brand_name | default: shop.name }}</strong>
-        <small>{{ section.settings.tagline }}</small>
-      </span>
+      <span class="brand__mark" aria-hidden="true">{{ brand_mark }}</span>
+      <span class="brand__name">{{ brand_name }}</span>
     </a>
 
     <button
-      class="icon-button menu-toggle"
+      class="icon-button nav-toggle"
       type="button"
       aria-expanded="false"
-      aria-controls="PrimaryNavigation"
-      data-menu-toggle
+      aria-controls="PrimaryNav"
+      data-nav-toggle
     >
-      <span class="menu-lines" aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
       <span class="visually-hidden">{{ 'general.menu' | t }}</span>
     </button>
 
-    <nav
-      id="PrimaryNavigation"
-      class="primary-nav"
-      aria-label="{{ 'general.primary_navigation' | t }}"
-      data-navigation
-    >
+    <nav class="header-nav" id="PrimaryNav" aria-label="{{ 'general.primary_navigation' | t }}" data-nav>
       {%- for link in section.settings.menu.links -%}
         <a href="{{ link.url }}" {% if link.current %}aria-current="page"{% endif %}>{{ link.title }}</a>
       {%- else -%}
         <a href="{{ routes.all_products_collection_url }}">{{ 'general.shop_all' | t }}</a>
+        <a href="{{ routes.all_products_collection_url }}">{{ 'collections.title' | t }}</a>
       {%- endfor -%}
     </nav>
 
     <div class="header-actions">
       <a class="icon-button" href="{{ routes.search_url }}" aria-label="{{ 'general.search' | t }}">
         <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="11" cy="11" r="7"></circle>
-          <path d="m20 20-4-4"></path>
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-4-4" />
         </svg>
       </a>
 
       {%- if shop.customer_accounts_enabled -%}
         <a class="icon-button account-link" href="{{ routes.account_url }}" aria-label="{{ 'general.account' | t }}">
-          {{- 'icon-account.svg' | inline_asset_content -}}
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" />
+          </svg>
         </a>
       {%- endif -%}
 
@@ -51,7 +55,10 @@
         href="{{ routes.cart_url }}"
         aria-label="{{ 'general.cart_label' | t: count: cart.item_count }}"
       >
-        {{- 'icon-cart.svg' | inline_asset_content -}}
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 8h12l-1 12H7L6 8Z" />
+          <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+        </svg>
         {%- if cart.item_count > 0 -%}
           <span class="cart-count">{{ cart.item_count }}</span>
         {%- endif -%}
@@ -66,8 +73,7 @@
   "settings": [
     { "type": "link_list", "id": "menu", "label": "t:labels.menu" },
     { "type": "text", "id": "brand_name", "label": "t:labels.heading" },
-    { "type": "text", "id": "mark", "label": "t:labels.text", "default": "Q" },
-    { "type": "text", "id": "tagline", "label": "t:general.secondary", "default": "Art, Cut in Metal." }
+    { "type": "text", "id": "mark", "label": "t:labels.text" }
   ],
   "enabled_on": { "groups": ["header"] }
 }

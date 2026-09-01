@@ -1,11 +1,11 @@
-<section class="container page-section">
+<section class="container section collection-section">
   {% render 'breadcrumbs' %}
 
-  <header class="collection-header">
+  <header class="collection-hero">
     <p class="eyebrow">{{ 'collection.eyebrow' | t }}</p>
     <h1>{{ collection.title }}</h1>
     {%- if collection.description != blank -%}
-      <div class="rte lede">{{ collection.description }}</div>
+      <div class="rte collection-hero__desc">{{ collection.description }}</div>
     {%- endif -%}
   </header>
 
@@ -24,18 +24,27 @@
               </option>
             {%- endfor -%}
           </select>
-          <noscript><button class="button button--secondary" type="submit">{{ 'general.sort_by' | t }}</button></noscript>
+          <noscript>
+            <button class="button button--ghost" type="submit">{{ 'general.sort_by' | t }}</button>
+          </noscript>
         </form>
       {%- endif -%}
     </div>
 
     <div class="product-grid">
       {%- for product in collection.products -%}
-        {% render 'product-card', product: product %}
+        {%- if forloop.index <= 4 -%}
+          {% render 'product-card', product: product, loading: 'eager' %}
+        {%- else -%}
+          {% render 'product-card', product: product %}
+        {%- endif -%}
       {%- else -%}
         <div class="empty-state">
           <h2>{{ 'collection.empty_title' | t }}</h2>
           <p>{{ 'collection.empty_body' | t }}</p>
+          <a class="button button--secondary" href="{{ routes.all_products_collection_url }}">
+            {{- 'cart.empty_action' | t -}}
+          </a>
         </div>
       {%- endfor -%}
     </div>
@@ -47,52 +56,42 @@
 </section>
 
 {% stylesheet %}
-  .collection-header {
-    max-width: 900px;
-    padding: 40px 0 30px;
+  .collection-hero__desc {
+    margin-top: var(--sp-4);
+    color: var(--muted);
+    font-size: var(--fs-sm);
   }
-
-  .collection-header h1 {
-    margin-bottom: 14px;
-    font-size: clamp(3rem, 9vw, 8rem);
-  }
-
   .collection-toolbar {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 20px;
-    padding-block: 10px;
+    gap: var(--sp-4);
+    margin-bottom: var(--sp-6);
+    padding-bottom: var(--sp-4);
     border-bottom: 1px solid var(--line);
-    font-size: 0.78rem;
+    font-size: var(--fs-sm);
   }
-
   .collection-toolbar p {
-    margin: 0;
     color: var(--muted);
   }
-
   .collection-toolbar form {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--sp-3);
   }
-
+  .collection-toolbar label {
+    color: var(--muted);
+  }
   .collection-toolbar select {
     width: auto;
-    padding: 7px 10px;
+    padding: 9px 40px 9px 12px;
   }
-
-  @media (max-width: 540px) {
-    .collection-header {
-      padding-top: 12px;
-    }
-
+  @media (max-width: 620px) {
     .collection-toolbar {
       align-items: flex-start;
       flex-direction: column;
-      gap: 10px;
+      gap: var(--sp-3);
     }
   }
 {% endstylesheet %}
@@ -106,7 +105,7 @@
       "id": "products_per_page",
       "label": "t:labels.products_per_page",
       "min": 8,
-      "max": 32,
+      "max": 36,
       "step": 4,
       "default": 16
     }

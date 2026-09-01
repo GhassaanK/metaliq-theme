@@ -1,4 +1,4 @@
-<section class="container page-section auth-page">
+<section class="container section auth-page">
   <div class="auth-card">
     <p class="eyebrow">{{ 'customer.account.eyebrow' | t }}</p>
     <h1>{{ 'customer.login.title' | t }}</h1>
@@ -19,12 +19,12 @@
       </label>
 
       <button class="button button--primary" type="submit">{{ 'customer.login.submit' | t }}</button>
-      <a class="text-link" href="{{ routes.account_recover_url }}">{{ 'customer.login.forgot' | t }}</a>
+      <a class="link" href="{{ routes.account_recover_url }}">{{ 'customer.login.forgot' | t }}</a>
     {% endform %}
 
     <p class="auth-alt">
       {{ 'customer.login.new_customer' | t }}
-      <a class="text-link" href="{{ routes.account_register_url }}">{{ 'customer.login.create_account' | t }}</a>
+      <a class="link" href="{{ routes.account_register_url }}">{{ 'customer.login.create_account' | t }}</a>
     </p>
   </div>
 

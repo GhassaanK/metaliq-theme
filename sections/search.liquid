@@ -1,5 +1,5 @@
-<section class="container page-section">
-  <header class="page-header search-header">
+<section class="container section search-section">
+  <header class="search-hero">
     <p class="eyebrow">{{ 'search.eyebrow' | t }}</p>
     <h1>{{ 'search.title' | t }}</h1>
 
@@ -11,6 +11,7 @@
         name="q"
         value="{{ search.terms | escape }}"
         placeholder="{{ 'search.placeholder' | t }}"
+        autocomplete="off"
       >
       <button class="button button--primary" type="submit">{{ 'search.submit' | t }}</button>
     </form>
@@ -26,36 +27,44 @@
         </a>
       </div>
     {%- else -%}
-      <p class="search-count">{{ 'search.results_for_html' | t: count: search.results_count, terms: search.terms }}</p>
+      <p class="search-count">
+        {{- 'search.results_for_html' | t: count: search.results_count, terms: search.terms -}}
+      </p>
 
       {%- paginate search.results by section.settings.results_per_page -%}
-        <div class="product-grid search-grid">
+        <div class="product-grid">
           {%- for item in search.results -%}
-            {%- case item.object_type -%}
-              {%- when 'product' -%}
-                {% render 'product-card', product: item %}
-              {%- else -%}
-                <article class="search-result">
-                  <a class="search-result__media" href="{{ item.url }}" tabindex="-1" aria-hidden="true">
-                    {%- if item.image -%}
-                      {{
-                        item.image
-                        | image_url: width: 900
-                        | image_tag: loading: 'lazy', widths: '300, 500, 700, 900', sizes: '(min-width: 990px) 25vw, 50vw', alt: item.title
-                      }}
-                    {%- else -%}
-                      <span class="search-result__placeholder" aria-hidden="true">{{ item.title | slice: 0 }}</span>
-                    {%- endif -%}
-                  </a>
-                  <div class="search-result__content">
-                    <p>{{ item.object_type }}</p>
-                    <h3><a href="{{ item.url }}">{{ item.title }}</a></h3>
-                    {%- if item.content != blank -%}
-                      <p class="search-result__excerpt">{{ item.content | strip_html | truncatewords: 22 }}</p>
-                    {%- endif -%}
+            {%- if item.object_type == 'product' -%}
+              {% render 'product-card', product: item %}
+            {%- else -%}
+              <article class="product-card">
+                <a
+                  class="product-card__media media"
+                  href="{{ item.url }}"
+                  aria-label="{{ item.title | escape }}"
+                >
+                  {%- if item.image -%}
+                    {{
+                      item.image
+                      | image_url: width: 1000
+                      | image_tag:
+                        loading: 'lazy',
+                        widths: '300, 500, 700, 1000',
+                        sizes: '(min-width: 990px) 25vw, 50vw',
+                        alt: item.title
+                    }}
+                  {%- else -%}
+                    <span class="media-fallback">{% render 'engraving', seed: forloop.index %}</span>
+                  {%- endif -%}
+                </a>
+                <div class="product-card__body">
+                  <div>
+                    <p class="product-card__kicker">{{ item.object_type }}</p>
+                    <h3 class="product-card__title"><a href="{{ item.url }}">{{ item.title }}</a></h3>
                   </div>
-                </article>
-            {%- endcase -%}
+                </div>
+              </article>
+            {%- endif -%}
           {%- endfor -%}
         </div>
 
@@ -68,77 +77,26 @@
 </section>
 
 {% stylesheet %}
-  .search-header {
-    max-width: 760px;
-    padding-block: 30px 40px;
+  .search-section {
+    padding-top: var(--sp-7);
   }
-
+  .search-hero {
+    max-width: 44rem;
+    margin-bottom: var(--sp-7);
+  }
   .search-form {
     display: grid;
     grid-template-columns: 1fr auto;
-    gap: 8px;
-    margin-top: 20px;
+    gap: var(--sp-2);
+    margin-top: var(--sp-5);
   }
-
   .search-count {
-    margin-bottom: 20px;
-    padding-bottom: 12px;
+    margin-bottom: var(--sp-6);
+    padding-bottom: var(--sp-4);
     border-bottom: 1px solid var(--line);
     color: var(--muted);
-    font-size: 0.78rem;
+    font-size: var(--fs-sm);
   }
-
-  .search-result {
-    min-width: 0;
-  }
-
-  .search-result__media {
-    display: block;
-    aspect-ratio: 4 / 5;
-    overflow: hidden;
-    background: color-mix(in srgb, var(--line) 55%, var(--background));
-  }
-
-  .search-result__media img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .search-result__placeholder {
-    width: 100%;
-    height: 100%;
-    display: grid;
-    place-items: center;
-    color: color-mix(in srgb, var(--ink) 22%, transparent);
-    font-family: var(--serif);
-    font-size: 4rem;
-  }
-
-  .search-result__content {
-    padding: 13px 0;
-  }
-
-  .search-result__content p {
-    margin: 0 0 3px;
-    color: var(--muted);
-    font-size: 0.58rem;
-    letter-spacing: 0.11em;
-    text-transform: uppercase;
-  }
-
-  .search-result__content h3 {
-    margin: 0 0 6px;
-    font-size: 1.2rem;
-  }
-
-  .search-result__excerpt {
-    color: var(--muted);
-    font-size: 0.78rem;
-    letter-spacing: 0;
-    text-transform: none;
-  }
-
   @media (max-width: 540px) {
     .search-form {
       grid-template-columns: 1fr;
@@ -155,7 +113,7 @@
       "id": "results_per_page",
       "label": "t:labels.products_per_page",
       "min": 8,
-      "max": 32,
+      "max": 36,
       "step": 4,
       "default": 16
     }

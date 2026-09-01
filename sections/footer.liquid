@@ -1,48 +1,62 @@
+{% liquid
+  assign brand_name = section.settings.brand_name | default: shop.name
+  assign brand_mark = section.settings.mark
+  if brand_mark == blank
+    assign brand_mark = shop.name | slice: 0
+  endif
+%}
+
 <footer class="site-footer">
-  <div class="container footer-grid">
-    <div class="footer-brand">
-      <a class="brand" href="{{ routes.root_url }}">
-        <span class="brand-mark" aria-hidden="true">{{ section.settings.mark | default: 'Q' }}</span>
-        <span>
-          <strong>{{ section.settings.brand_name | default: shop.name }}</strong>
-          <small>{{ section.settings.tagline }}</small>
-        </span>
-      </a>
-      <p>{{ section.settings.statement }}</p>
-    </div>
-
-    <div>
-      <h2>{{ 'general.explore' | t }}</h2>
-      <nav aria-label="{{ 'general.footer_navigation' | t }}">
-        {%- for link in section.settings.menu.links -%}
-          <a href="{{ link.url }}">{{ link.title }}</a>
-        {%- else -%}
-          <a href="{{ routes.all_products_collection_url }}">{{ 'general.shop_all' | t }}</a>
-          <a href="{{ routes.search_url }}">{{ 'general.search' | t }}</a>
-        {%- endfor -%}
-      </nav>
-    </div>
-
-    <div>
-      <h2>{{ 'general.visit' | t }}</h2>
-      {%- if section.settings.location != blank -%}
-        <p>{{ section.settings.location | escape }}</p>
-      {%- endif -%}
-      {%- if section.settings.email != blank -%}
-        <a href="mailto:{{ section.settings.email | escape }}">{{ section.settings.email | escape }}</a>
-      {%- endif -%}
-    </div>
-  </div>
-
-  <div class="container footer-bottom">
-    <span>&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}</span>
-    {%- if section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
-      <div class="payment-icons">
-        {%- for type in shop.enabled_payment_types -%}
-          {{ type | payment_type_svg_tag }}
-        {%- endfor -%}
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a class="brand" href="{{ routes.root_url }}">
+          <span class="brand__mark" aria-hidden="true">{{ brand_mark }}</span>
+          <span class="brand__name">{{ brand_name }}</span>
+        </a>
+        {%- if section.settings.statement != blank -%}
+          <p>{{ section.settings.statement }}</p>
+        {%- endif -%}
       </div>
-    {%- endif -%}
+
+      <div class="footer-col">
+        <h2>{{ 'general.explore' | t }}</h2>
+        <nav aria-label="{{ 'general.footer_navigation' | t }}">
+          {%- for link in section.settings.menu.links -%}
+            <a href="{{ link.url }}">{{ link.title }}</a>
+          {%- else -%}
+            <a href="{{ routes.all_products_collection_url }}">{{ 'general.shop_all' | t }}</a>
+            <a href="{{ routes.search_url }}">{{ 'general.search' | t }}</a>
+          {%- endfor -%}
+        </nav>
+      </div>
+
+      <div class="footer-col">
+        <h2>{{ 'general.visit' | t }}</h2>
+        <nav>
+          {%- if section.settings.location != blank -%}
+            <p>{{ section.settings.location | escape }}</p>
+          {%- endif -%}
+          {%- if section.settings.email != blank -%}
+            <a href="mailto:{{ section.settings.email | escape }}">{{ section.settings.email | escape }}</a>
+          {%- endif -%}
+          {%- if shop.customer_accounts_enabled -%}
+            <a href="{{ routes.account_url }}">{{ 'general.account' | t }}</a>
+          {%- endif -%}
+        </nav>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}</span>
+      {%- if section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
+        <div class="payment-icons">
+          {%- for type in shop.enabled_payment_types -%}
+            {{ type | payment_type_svg_tag }}
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    </div>
   </div>
 </footer>
 
@@ -52,8 +66,7 @@
   "settings": [
     { "type": "link_list", "id": "menu", "label": "t:labels.menu" },
     { "type": "text", "id": "brand_name", "label": "t:labels.heading" },
-    { "type": "text", "id": "mark", "label": "t:labels.text", "default": "Q" },
-    { "type": "text", "id": "tagline", "label": "t:general.secondary", "default": "Art, Cut in Metal." },
+    { "type": "text", "id": "mark", "label": "t:labels.text" },
     {
       "type": "textarea",
       "id": "statement",

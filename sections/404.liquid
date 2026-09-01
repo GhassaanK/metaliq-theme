@@ -3,28 +3,50 @@
   resolves. https://shopify.dev/docs/storefronts/themes/architecture/templates/404
 {% endcomment %}
 
-<section class="container page-section not-found">
-  <p class="eyebrow">{{ '404.eyebrow' | t }}</p>
-  <h1>{{ '404.title' | t }}</h1>
-  <p class="lede">{{ '404.not_found' | t }}</p>
-  <a class="button button--primary" href="{{ routes.all_products_collection_url }}">
-    {{- '404.back_to_shopping' | t -}}
-  </a>
+<section class="container section not-found">
+  <div class="not-found__art" aria-hidden="true">{% render 'engraving', seed: 4 %}</div>
+  <div class="not-found__copy">
+    <p class="eyebrow">{{ '404.eyebrow' | t }}</p>
+    <h1>{{ '404.title' | t }}</h1>
+    <p class="lede">{{ '404.not_found' | t }}</p>
+    <a class="button button--primary" href="{{ routes.all_products_collection_url }}">
+      {{- '404.back_to_shopping' | t -}}
+    </a>
+  </div>
 </section>
 
 {% stylesheet %}
   .not-found {
-    max-width: 620px;
-    padding-block: 90px 130px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: clamp(32px, 8vw, 96px);
+    min-height: 60vh;
   }
-
-  .not-found h1 {
-    margin-bottom: 16px;
-    font-size: clamp(3rem, 8vw, 6rem);
+  .not-found__art {
+    color: color-mix(in srgb, var(--copper) 55%, var(--line));
   }
-
-  .not-found .lede {
-    margin-bottom: 28px;
+  .not-found__art .engraving {
+    max-width: 340px;
+    margin-inline: auto;
+  }
+  .not-found__copy h1 {
+    margin: var(--sp-2) 0 var(--sp-4);
+    font-size: var(--fs-h1);
+  }
+  .not-found__copy .lede {
+    margin-bottom: var(--sp-6);
+  }
+  @media (max-width: 760px) {
+    .not-found {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+    .not-found__art {
+      order: -1;
+      max-width: 220px;
+      margin-inline: auto;
+    }
   }
 {% endstylesheet %}
 
