@@ -1,0 +1,5 @@
+{% doc %}
+  Renders an editorial product card.
+  @param {product} product - Product to display
+{% enddoc %}
+<article class="product-card"><a class="product-card__media" href="{{ product.url }}" aria-label="View {{ product.title | escape }}">{% if product.featured_image %}{{ product.featured_image | image_url: width: 1100 | image_tag: loading: 'lazy', widths: '420, 700, 900, 1100', sizes: '(min-width: 990px) 25vw, 50vw', alt: product.featured_image.alt | default: product.title }}{% else %}{{ 'product-1' | placeholder_svg_tag }}{% endif %}{% if product.compare_at_price > product.price %}<span class="product-card__badge">Edition price</span>{% endif %}</a><div class="product-card__body"><div><p>{{ product.type | default: 'Metal art' }}</p><h3><a href="{{ product.url }}">{{ product.title }}</a></h3></div><span class="price">{{ product.price | money }}</span></div></article>

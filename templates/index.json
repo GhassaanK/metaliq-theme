@@ -1,0 +1,17 @@
+{
+  "sections": {
+    "main": {
+      "type": "hello-world",
+      "blocks": {
+        "calligraphy": { "type": "category", "settings": { "fallback_title": "Calligraphy" } },
+        "islamic": { "type": "category", "settings": { "fallback_title": "Islamic" } },
+        "clocks": { "type": "category", "settings": { "fallback_title": "Clocks" } },
+        "anime": { "type": "category", "settings": { "fallback_title": "Anime & Comics" } },
+        "floral": { "type": "category", "settings": { "fallback_title": "Floral" } }
+      },
+      "block_order": ["calligraphy", "islamic", "clocks", "anime", "floral"],
+      "settings": { "button_label": "View the collection", "featured_heading": "Objects with presence" }
+    }
+  },
+  "order": ["main"]
+}

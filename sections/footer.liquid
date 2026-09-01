@@ -1,0 +1,11 @@
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div class="footer-brand"><a class="brand" href="{{ routes.root_url }}"><span class="brand-mark" aria-hidden="true">Q</span><span><strong>MetaliQ</strong><small>Art, Cut in Metal.</small></span></a><p>Custom CNC-cut metal art, made to hold a room.</p></div>
+    <div><h2>Explore</h2><nav aria-label="Footer navigation">{% for link in section.settings.menu.links %}<a href="{{ link.url }}">{{ link.title }}</a>{% else %}<a href="{{ routes.all_products_collection_url }}">Shop all</a><a href="{{ pages.about.url | default: routes.root_url }}">About</a><a href="{{ pages.contact.url | default: routes.root_url }}">Contact</a>{% endfor %}</nav></div>
+    <div><h2>Visit</h2><p>{{ section.settings.location | escape }}</p><a href="mailto:{{ section.settings.email | escape }}">{{ section.settings.email | escape }}</a></div>
+  </div>
+  <div class="container footer-bottom"><span>&copy; {{ 'now' | date: '%Y' }} MetaliQ</span>{% if section.settings.show_payment_icons %}<div class="payment-icons">{% for type in shop.enabled_payment_types %}{{ type | payment_type_svg_tag }}{% endfor %}</div>{% endif %}</div>
+</footer>
+{% schema %}
+{"name":"t:general.footer","settings":[{"type":"link_list","id":"menu","label":"t:labels.menu"},{"type":"text","id":"location","label":"Location","default":"Made in Pakistan"},{"type":"text","id":"email","label":"Email","default":"hello@metaliq.com"},{"type":"checkbox","id":"show_payment_icons","label":"t:labels.show_payment_icons","default":true}]}
+{% endschema %}

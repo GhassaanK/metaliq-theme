@@ -1,0 +1,2 @@
+{% doc %}Renders simple breadcrumbs for the current page.{% enddoc %}
+<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="{{ routes.root_url }}">Home</a><span aria-hidden="true">/</span>{% if collection %}<span>{{ collection.title }}</span>{% elsif product %}<span>{{ product.title }}</span>{% elsif page %}<span>{{ page.title }}</span>{% else %}<span>{{ page_title }}</span>{% endif %}</nav>
