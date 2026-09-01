@@ -2,25 +2,10 @@
   {
     "name": "theme_info",
     "theme_name": "MetaliQ",
-    "theme_version": "1.0.0",
+    "theme_version": "1.1.0",
     "theme_author": "MetaliQ",
     "theme_documentation_url": "https://help.shopify.com/manual/online-store/themes",
     "theme_support_url": "https://support.shopify.com/"
-  },
-  {
-    "name": "t:general.typography",
-    "settings": [
-      {
-        "type": "header",
-        "content": "t:general.fonts"
-      },
-      {
-        "type": "font_picker",
-        "id": "type_primary_font",
-        "default": "work_sans_n4",
-        "label": "t:general.primary"
-      }
-    ]
   },
   {
     "name": "t:general.layout",
@@ -31,25 +16,35 @@
         "label": "t:labels.page_width",
         "options": [
           {
-            "value": "90rem",
+            "value": "1280px",
             "label": "t:options.page_width.narrow"
           },
           {
-            "value": "110rem",
+            "value": "1440px",
             "label": "t:options.page_width.wide"
           }
         ],
-        "default": "90rem"
+        "default": "1440px"
       },
       {
         "type": "range",
         "id": "min_page_margin",
-        "min": 10,
-        "max": 100,
-        "step": 1,
+        "min": 12,
+        "max": 60,
+        "step": 2,
         "unit": "px",
         "label": "t:labels.page_margin",
-        "default": 20
+        "default": 32
+      },
+      {
+        "type": "range",
+        "id": "input_corner_radius",
+        "min": 0,
+        "max": 12,
+        "step": 1,
+        "unit": "px",
+        "label": "t:labels.input_corner_radius",
+        "default": 6
       }
     ]
   },
@@ -59,24 +54,90 @@
       {
         "type": "color",
         "id": "background_color",
-        "default": "#FFFFFF",
+        "default": "#F5F3EF",
         "label": "t:labels.background"
       },
       {
         "type": "color",
+        "id": "surface_color",
+        "default": "#FFFFFF",
+        "label": "t:general.section"
+      },
+      {
+        "type": "color",
         "id": "foreground_color",
-        "default": "#333333",
+        "default": "#1E1D1B",
         "label": "t:labels.foreground"
       },
       {
+        "type": "color",
+        "id": "muted_color",
+        "default": "#6C6862",
+        "label": "t:general.secondary"
+      },
+      {
+        "type": "color",
+        "id": "line_color",
+        "default": "#CBC5BC",
+        "label": "t:general.content"
+      },
+      {
+        "type": "color",
+        "id": "accent_color",
+        "default": "#B5652D",
+        "label": "t:general.primary"
+      },
+      {
+        "type": "color",
+        "id": "dark_color",
+        "default": "#292725",
+        "label": "t:general.theme"
+      }
+    ]
+  },
+  {
+    "name": "t:general.custom_sizing",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "t:info.custom_sizing"
+      },
+      {
+        "type": "checkbox",
+        "id": "custom_size_enabled",
+        "label": "t:labels.custom_size_enabled",
+        "default": true
+      },
+      {
+        "type": "product",
+        "id": "surcharge_product",
+        "label": "t:labels.surcharge_variant"
+      },
+      {
+        "type": "page",
+        "id": "quote_page",
+        "label": "t:labels.quote_page",
+        "info": "t:info.quote_page"
+      },
+      {
         "type": "range",
-        "id": "input_corner_radius",
-        "min": 0,
-        "max": 10,
+        "id": "custom_size_min",
+        "min": 0.5,
+        "max": 5,
+        "step": 0.5,
+        "unit": "ft",
+        "label": "t:labels.custom_size_min",
+        "default": 1
+      },
+      {
+        "type": "range",
+        "id": "custom_size_max",
+        "min": 5,
+        "max": 30,
         "step": 1,
-        "unit": "px",
-        "label": "t:labels.input_corner_radius",
-        "default": 4
+        "unit": "ft",
+        "label": "t:labels.custom_size_max",
+        "default": 12
       }
     ]
   }

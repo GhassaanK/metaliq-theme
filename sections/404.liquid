@@ -1,23 +1,37 @@
 {% comment %}
-  This section is used in the 404 template to render page shown when customers
-  enter an invalid store URL.
-
-  https://shopify.dev/docs/storefronts/themes/architecture/templates/404
+  Rendered by templates/404.json when a customer reaches a URL that no longer
+  resolves. https://shopify.dev/docs/storefronts/themes/architecture/templates/404
 {% endcomment %}
 
-<h1>{{ '404.title' | t }}</h1>
+<section class="container page-section not-found">
+  <p class="eyebrow">{{ '404.eyebrow' | t }}</p>
+  <h1>{{ '404.title' | t }}</h1>
+  <p class="lede">{{ '404.not_found' | t }}</p>
+  <a class="button button--primary" href="{{ routes.all_products_collection_url }}">
+    {{- '404.back_to_shopping' | t -}}
+  </a>
+</section>
 
-<p>
-  {{ '404.not_found' | t }}
-</p>
+{% stylesheet %}
+  .not-found {
+    max-width: 620px;
+    padding-block: 90px 130px;
+  }
 
-<a href="{{ routes.all_products_collection_url }}">
-  {{ '404.back_to_shopping' | t }}
-</a>
+  .not-found h1 {
+    margin-bottom: 16px;
+    font-size: clamp(3rem, 8vw, 6rem);
+  }
+
+  .not-found .lede {
+    margin-bottom: 28px;
+  }
+{% endstylesheet %}
 
 {% schema %}
 {
   "name": "t:general.404",
-  "settings": []
+  "settings": [],
+  "disabled_on": { "groups": ["header", "footer"] }
 }
 {% endschema %}

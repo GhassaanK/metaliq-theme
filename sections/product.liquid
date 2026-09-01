@@ -1,19 +1,497 @@
-{% assign current_variant = product.selected_or_first_available_variant %}
-{% assign base_width = product.metafields.custom.default_width.value | default: 2 %}
-{% assign base_height = product.metafields.custom.default_height.value | default: 2 %}
-<section class="container page-section">{% render 'breadcrumbs' %}<div class="product-layout" data-product-calculator data-base-width="{{ base_width }}" data-base-height="{{ base_height }}" data-currency="{{ cart.currency.iso_code }}" data-locale="{{ request.locale.iso_code }}">
-  <div class="product-gallery">{% for media in product.media %}<div class="product-media">{% if media.media_type == 'image' %}{{ media | image_url: width: 1600 | image_tag: loading: 'lazy', widths: '600, 900, 1200, 1600', sizes: '(min-width: 900px) 58vw, 100vw' }}{% else %}{{ media | media_tag }}{% endif %}</div>{% else %}<div class="product-media">{{ 'product-1' | placeholder_svg_tag }}</div>{% endfor %}</div>
-  <div class="product-details"><p class="eyebrow">Made to order</p><h1>{{ product.title }}</h1><div class="product-price price" data-product-price data-base-price="{{ current_variant.price }}">{{ current_variant.price | money }}</div>{% if product.description != blank %}<div class="rte product-description">{{ product.description }}</div>{% endif %}
-    {% form 'product', product, class: 'product-form' %}
-      {% unless product.has_only_default_variant %}<label for="Variant-{{ section.id }}">Finish or option</label><select id="Variant-{{ section.id }}" name="id" data-variant-select>{% for variant in product.variants %}<option value="{{ variant.id }}" data-price="{{ variant.price }}"{% if variant == current_variant %} selected{% endif %}{% unless variant.available %} disabled{% endunless %}>{{ variant.title }}{% unless variant.available %} — Sold out{% endunless %}</option>{% endfor %}</select>{% else %}<input type="hidden" name="id" value="{{ current_variant.id }}">{% endunless %}
-      <fieldset class="size-options"><legend>Size</legend><div class="segmented"><label><input type="radio" name="properties[_Size type]" value="Standard" checked data-size-mode><span>Standard</span></label><label><input type="radio" name="properties[_Size type]" value="Custom" data-size-mode><span>Custom size</span></label></div><p class="standard-size">Standard size: <strong>{{ base_width }} × {{ base_height }} ft</strong></p>
-        <div class="custom-size" data-custom-size hidden><label for="CustomHeight-{{ section.id }}">Height (ft)</label><div class="dimension-row"><input id="CustomHeight-{{ section.id }}" type="number" inputmode="decimal" min="0.5" max="20" step="0.1" value="{{ base_height }}" data-custom-height><span>Width: <strong data-calculated-width>{{ base_width }}</strong> ft</span></div><p class="field-note">Width stays proportional to the original artwork.</p></div>
-      </fieldset>
-      <input type="hidden" name="properties[Dimensions]" value="{{ base_width }} × {{ base_height }} ft" data-dimensions-property><input type="hidden" name="properties[Calculated price]" value="{{ current_variant.price | money }}" data-price-property>
-      <div class="purchase-row"><label class="quantity-label" for="Quantity-{{ section.id }}">Qty<input id="Quantity-{{ section.id }}" type="number" name="quantity" min="1" value="1"></label><button class="button button--primary add-button" type="submit"{% unless current_variant.available %} disabled{% endunless %}>{% if current_variant.available %}Add to cart{% else %}Sold out{% endif %}</button></div>
-      <p class="pricing-note" data-pricing-note hidden>Your custom dimensions are recorded with the piece and confirmed before production.</p>
-    {% endform %}
-    <div class="product-assurances"><p><strong>Precision cut</strong><span>Clean detail, engineered in steel</span></p><p><strong>Made for your wall</strong><span>Custom proportions calculated live</span></p><p><strong>Secure checkout</strong><span>Processed by Shopify</span></p></div>
+{% liquid
+  assign current_variant = product.selected_or_first_available_variant
+
+  assign base_width = product.metafields.custom.default_width.value | default: section.settings.default_width
+  assign base_height = product.metafields.custom.default_height.value | default: section.settings.default_height
+
+  assign surcharge_product = settings.surcharge_product
+  assign surcharge_variant = surcharge_product.variants.first
+  assign surcharge_unit = surcharge_variant.price
+
+  comment
+    Custom sizing only charges correctly when a surcharge product is configured
+    and priced above zero — the theme adds N units of it alongside the piece to
+    make up the difference. Without one we must never show a scaled price, so we
+    fall back to a clearly-labelled estimate plus a quote request.
+  endcomment
+  assign can_charge_custom = false
+  if settings.custom_size_enabled
+    if surcharge_variant != blank
+      if surcharge_variant.available
+        if surcharge_unit > 0
+          assign can_charge_custom = true
+        endif
+      endif
+    endif
+  endif
+
+  assign quote_url = settings.quote_page.url | default: routes.root_url
+
+  assign min_height = settings.custom_size_min
+  if min_height < base_height
+    assign min_height = base_height
+  endif
+%}
+
+<section class="container page-section">
+  {% render 'breadcrumbs' %}
+
+  <div
+    class="product-layout"
+    data-product-calculator
+    data-base-width="{{ base_width }}"
+    data-base-height="{{ base_height }}"
+    data-min-height="{{ min_height }}"
+    data-max-height="{{ settings.custom_size_max }}"
+    data-pricing-basis="{{ section.settings.pricing_basis }}"
+    data-money-format="{{ shop.money_format | strip_html | escape }}"
+    data-can-charge="{{ can_charge_custom }}"
+    data-quote-url="{{ quote_url }}"
+    {% if can_charge_custom %}
+      data-surcharge-id="{{ surcharge_variant.id }}"
+      data-surcharge-unit="{{ surcharge_unit }}"
+    {% endif %}
+  >
+    <div class="product-gallery">
+      {%- for media in product.media -%}
+        {%- if forloop.first -%}
+          {%- assign media_loading = 'eager' -%}
+        {%- else -%}
+          {%- assign media_loading = 'lazy' -%}
+        {%- endif -%}
+        <div class="product-media">
+          {%- if media.media_type == 'image' -%}
+            {{
+              media
+              | image_url: width: 1600
+              | image_tag:
+                loading: media_loading,
+                widths: '400, 600, 900, 1200, 1600',
+                sizes: '(min-width: 900px) 58vw, 100vw',
+                alt: media.alt | default: product.title
+            }}
+          {%- else -%}
+            {{ media | media_tag }}
+          {%- endif -%}
+        </div>
+      {%- else -%}
+        <div class="product-media">{{ 'product-1' | placeholder_svg_tag }}</div>
+      {%- endfor -%}
+    </div>
+
+    <div class="product-details">
+      <p class="eyebrow">{{ 'product.eyebrow' | t }}</p>
+      <h1>{{ product.title }}</h1>
+
+      <div class="product-price price" data-product-price data-base-price="{{ current_variant.price }}">
+        {{- current_variant.price | money -}}
+      </div>
+
+      {%- if product.description != blank -%}
+        <div class="rte product-description">{{ product.description }}</div>
+      {%- endif -%}
+
+      {% form 'product', product, class: 'product-form', novalidate: 'novalidate' %}
+        <input type="hidden" name="id" value="{{ current_variant.id }}" data-variant-id>
+
+        {%- unless product.has_only_default_variant -%}
+          <label class="field" for="Variant-{{ section.id }}">
+            {{ 'product.option' | t }}
+            <select id="Variant-{{ section.id }}" data-variant-select>
+              {%- for variant in product.variants -%}
+                <option
+                  value="{{ variant.id }}"
+                  data-price="{{ variant.price }}"
+                  {% if variant == current_variant %}selected{% endif %}
+                  {% unless variant.available %}disabled{% endunless %}
+                >
+                  {{ variant.title }}
+                  {%- unless variant.available %} — {{ 'product.sold_out' | t }}{% endunless -%}
+                </option>
+              {%- endfor -%}
+            </select>
+          </label>
+        {%- endunless -%}
+
+        {%- if settings.custom_size_enabled -%}
+          <fieldset class="size-options">
+            <legend>{{ 'product.size' | t }}</legend>
+
+            <div class="segmented">
+              <label>
+                <input type="radio" name="properties[_Size type]" value="Standard" checked data-size-mode>
+                <span>{{ 'product.size_standard' | t }}</span>
+              </label>
+              <label>
+                <input type="radio" name="properties[_Size type]" value="Custom" data-size-mode>
+                <span>{{ 'product.size_custom' | t }}</span>
+              </label>
+            </div>
+
+            <p class="standard-size">
+              {{- 'product.standard_size_html' | t: width: base_width, height: base_height -}}
+            </p>
+
+            <div class="custom-size" data-custom-size hidden>
+              <label class="field" for="CustomHeight-{{ section.id }}">{{ 'product.height' | t }}</label>
+              <div class="dimension-row">
+                <input
+                  id="CustomHeight-{{ section.id }}"
+                  type="number"
+                  inputmode="decimal"
+                  min="{{ min_height }}"
+                  max="{{ settings.custom_size_max }}"
+                  step="0.1"
+                  value="{{ base_height }}"
+                  data-custom-height
+                >
+                <span>
+                  {{ 'product.width_readout' | t }}:
+                  <strong data-calculated-width>{{ base_width }}</strong>
+                  {{ 'product.feet' | t }}
+                </span>
+              </div>
+              <p class="field-note">{{ 'product.proportional_note' | t }}</p>
+              <p
+                class="field-note field-note--error"
+                data-size-error
+                data-message="{{ 'product.size_range_error' | t: min: min_height, max: settings.custom_size_max }}"
+                hidden
+              ></p>
+            </div>
+          </fieldset>
+
+          <input
+            type="hidden"
+            name="properties[{{ 'product.dimensions' | t }}]"
+            value="{{ base_width }} × {{ base_height }} ft"
+            data-dimensions-property
+            disabled
+          >
+          <input type="hidden" name="properties[_size_group]" value="" data-group-property disabled>
+        {%- endif -%}
+
+        <div class="purchase-row">
+          <label class="field quantity-label" for="Quantity-{{ section.id }}">
+            {{ 'general.quantity' | t }}
+            <input id="Quantity-{{ section.id }}" type="number" name="quantity" min="1" value="1">
+          </label>
+
+          <button class="button button--primary add-button" type="submit" data-add-button data-adding="{{ 'product.adding' | t }}" {% unless current_variant.available %}disabled{% endunless %}>
+            {%- if current_variant.available -%}
+              {{ 'product.add_to_cart' | t }}
+            {%- else -%}
+              {{ 'product.sold_out' | t }}
+            {%- endif -%}
+          </button>
+
+          <a class="button button--secondary quote-button" href="{{ quote_url }}" data-quote-button hidden>
+            {{- 'product.request_size' | t -}}
+          </a>
+        </div>
+
+        <p class="estimate-line" data-estimate hidden>
+          <span>{{ 'product.estimate' | t }}</span>
+          <strong data-estimate-value></strong>
+        </p>
+
+        <p class="pricing-note" data-pricing-note hidden>
+          {%- if can_charge_custom -%}
+            {{ 'product.custom_priced_note' | t }}
+          {%- else -%}
+            {{ 'product.estimate_note' | t }}
+          {%- endif -%}
+        </p>
+
+        <p class="form-errors" data-add-error hidden role="alert">{{ 'product.add_error' | t }}</p>
+      {% endform %}
+
+      <div class="product-assurances">
+        {%- for i in (1..3) -%}
+          {%- assign t_key = 'product.assurance_' | append: i | append: '_title' -%}
+          {%- assign b_key = 'product.assurance_' | append: i | append: '_body' -%}
+          <p>
+            <strong>{{ t_key | t }}</strong>
+            <span>{{ b_key | t }}</span>
+          </p>
+        {%- endfor -%}
+      </div>
+    </div>
   </div>
-</div></section>
-{% schema %}{"name":"t:general.product","settings":[],"disabled_on":{"groups":["header","footer"]}}{% endschema %}
+</section>
+
+{% stylesheet %}
+  .product-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(330px, 0.8fr);
+    align-items: start;
+    gap: 6vw;
+  }
+
+  .product-gallery {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .product-media {
+    background: color-mix(in srgb, var(--line) 55%, var(--background));
+  }
+
+  .product-media:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .product-media img,
+  .product-media video,
+  .product-media model-viewer,
+  .product-media svg {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+  }
+
+  .product-details {
+    position: sticky;
+    top: calc(var(--header-height) + 38px);
+  }
+
+  .product-details h1 {
+    margin-bottom: 10px;
+    font-size: clamp(2.25rem, 4vw, 3.6rem);
+  }
+
+  .product-price {
+    margin-bottom: 22px;
+    font-size: 1.1rem;
+  }
+
+  .product-description {
+    margin-bottom: 24px;
+    color: var(--muted);
+  }
+
+  .product-form {
+    display: grid;
+    gap: 22px;
+    padding-block: 20px;
+    border-block: 1px solid var(--line);
+  }
+
+  .size-options {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .size-options legend {
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+
+  .segmented {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .segmented input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .segmented span {
+    min-height: 42px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    font-size: 0.78rem;
+    cursor: pointer;
+  }
+
+  .segmented input:checked + span {
+    border-color: var(--copper);
+    box-shadow: inset 0 0 0 1px var(--copper);
+    color: var(--copper);
+  }
+
+  .segmented input:focus-visible + span {
+    outline: 2px solid var(--copper);
+    outline-offset: 3px;
+  }
+
+  .standard-size {
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: 0.79rem;
+  }
+
+  .custom-size {
+    margin-top: 14px;
+  }
+
+  .dimension-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 10px;
+    margin-top: 6px;
+  }
+
+  .dimension-row span {
+    padding: 11px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--line) 30%, var(--background));
+    font-size: 0.78rem;
+  }
+
+  .estimate-line {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0;
+    padding-bottom: 4px;
+  }
+
+  .estimate-line span {
+    color: var(--muted);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .estimate-line strong {
+    color: var(--copper);
+    font-size: 1.1rem;
+  }
+
+  .pricing-note {
+    margin: 0;
+    padding: 10px 12px;
+    border-left: 2px solid var(--copper);
+    background: color-mix(in srgb, var(--copper) 9%, var(--background));
+    font-size: 0.72rem;
+  }
+
+  .purchase-row {
+    display: grid;
+    grid-template-columns: 84px 1fr;
+    align-items: end;
+    gap: 8px;
+  }
+
+  .quantity-label input {
+    margin-top: 6px;
+  }
+
+  .add-button,
+  .quote-button {
+    min-height: 52px;
+  }
+
+  .purchase-row .quote-button {
+    grid-column: 2;
+  }
+
+  .product-assurances {
+    margin-top: 15px;
+    padding-top: 18px;
+  }
+
+  .product-assurances p {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 10px;
+    margin: 0;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.74rem;
+  }
+
+  .product-assurances span {
+    color: var(--muted);
+  }
+
+  @media (max-width: 1050px) {
+    .product-layout {
+      grid-template-columns: 1fr 390px;
+      gap: 24px;
+    }
+  }
+
+  @media (max-width: 800px) {
+    .product-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .product-details {
+      position: static;
+    }
+  }
+
+  @media (max-width: 540px) {
+    .product-gallery {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+    }
+
+    .product-media {
+      min-width: 92%;
+      scroll-snap-align: start;
+    }
+
+    .product-media:first-child {
+      grid-column: auto;
+    }
+
+    .product-assurances p {
+      grid-template-columns: 120px 1fr;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.product",
+  "settings": [
+    {
+      "type": "range",
+      "id": "default_width",
+      "label": "t:labels.default_width",
+      "min": 0.5,
+      "max": 10,
+      "step": 0.5,
+      "unit": "ft",
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "default_height",
+      "label": "t:labels.default_height",
+      "min": 0.5,
+      "max": 10,
+      "step": 0.5,
+      "unit": "ft",
+      "default": 2
+    },
+    {
+      "type": "select",
+      "id": "pricing_basis",
+      "label": "t:labels.pricing_basis",
+      "options": [
+        { "value": "area", "label": "t:options.pricing.area" },
+        { "value": "height", "label": "t:options.pricing.height" }
+      ],
+      "default": "area"
+    }
+  ],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}

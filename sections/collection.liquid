@@ -1,4 +1,116 @@
-<section class="container page-section">{% render 'breadcrumbs' %}<header class="collection-header"><p class="eyebrow">The collection</p><h1>{{ collection.title }}</h1>{% if collection.description != blank %}<div class="rte">{{ collection.description }}</div>{% endif %}</header>
-{% paginate collection.products by section.settings.products_per_page %}<div class="collection-toolbar"><p>{{ collection.products_count }} {% if collection.products_count == 1 %}piece{% else %}pieces{% endif %}</p><form><label for="SortBy">Sort by</label><select id="SortBy" name="sort_by" data-sort-by>{% assign sort_by = collection.sort_by | default: collection.default_sort_by %}{% for option in collection.sort_options %}<option value="{{ option.value }}"{% if option.value == sort_by %} selected{% endif %}>{{ option.name }}</option>{% endfor %}</select></form></div>
-<div class="product-grid">{% for product in collection.products %}{% render 'product-card', product: product %}{% else %}<div class="empty-state"><h2>No pieces here yet</h2><p>This collection is being prepared.</p></div>{% endfor %}</div>{% if paginate.pages > 1 %}<div class="pagination">{{ paginate | default_pagination }}</div>{% endif %}{% endpaginate %}</section>
-{% schema %}{"name":"t:general.collection","settings":[{"type":"range","id":"products_per_page","label":"Products per page","min":8,"max":32,"step":4,"default":16}]}{% endschema %}
+<section class="container page-section">
+  {% render 'breadcrumbs' %}
+
+  <header class="collection-header">
+    <p class="eyebrow">{{ 'collection.eyebrow' | t }}</p>
+    <h1>{{ collection.title }}</h1>
+    {%- if collection.description != blank -%}
+      <div class="rte lede">{{ collection.description }}</div>
+    {%- endif -%}
+  </header>
+
+  {%- paginate collection.products by section.settings.products_per_page -%}
+    <div class="collection-toolbar">
+      <p>{{ 'collection.count' | t: count: collection.products_count }}</p>
+
+      {%- if collection.sort_options.size > 0 -%}
+        <form>
+          <label for="SortBy">{{ 'general.sort_by' | t }}</label>
+          <select id="SortBy" name="sort_by" data-sort-by>
+            {%- assign sort_by = collection.sort_by | default: collection.default_sort_by -%}
+            {%- for option in collection.sort_options -%}
+              <option value="{{ option.value }}" {% if option.value == sort_by %}selected{% endif %}>
+                {{- option.name -}}
+              </option>
+            {%- endfor -%}
+          </select>
+          <noscript><button class="button button--secondary" type="submit">{{ 'general.sort_by' | t }}</button></noscript>
+        </form>
+      {%- endif -%}
+    </div>
+
+    <div class="product-grid">
+      {%- for product in collection.products -%}
+        {% render 'product-card', product: product %}
+      {%- else -%}
+        <div class="empty-state">
+          <h2>{{ 'collection.empty_title' | t }}</h2>
+          <p>{{ 'collection.empty_body' | t }}</p>
+        </div>
+      {%- endfor -%}
+    </div>
+
+    {%- if paginate.pages > 1 -%}
+      <div class="pagination">{{ paginate | default_pagination }}</div>
+    {%- endif -%}
+  {%- endpaginate -%}
+</section>
+
+{% stylesheet %}
+  .collection-header {
+    max-width: 900px;
+    padding: 40px 0 30px;
+  }
+
+  .collection-header h1 {
+    margin-bottom: 14px;
+    font-size: clamp(3rem, 9vw, 8rem);
+  }
+
+  .collection-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding-block: 10px;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.78rem;
+  }
+
+  .collection-toolbar p {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .collection-toolbar form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .collection-toolbar select {
+    width: auto;
+    padding: 7px 10px;
+  }
+
+  @media (max-width: 540px) {
+    .collection-header {
+      padding-top: 12px;
+    }
+
+    .collection-toolbar {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 10px;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.collection",
+  "settings": [
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "label": "t:labels.products_per_page",
+      "min": 8,
+      "max": 32,
+      "step": 4,
+      "default": 16
+    }
+  ],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}

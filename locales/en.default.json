@@ -1,34 +1,188 @@
 {
+  "general": {
+    "skip_to_content": "Skip to content",
+    "menu": "Menu",
+    "close": "Close",
+    "search": "Search",
+    "account": "Account",
+    "home": "Home",
+    "breadcrumb": "Breadcrumb",
+    "primary_navigation": "Primary navigation",
+    "footer_navigation": "Footer navigation",
+    "brand_home": "{{ shop_name }} home",
+    "cart_label": "Cart, {{ count }} items",
+    "page_of": "Page {{ page }}",
+    "tagged": "Tagged \"{{ tags }}\"",
+    "shop_all": "Shop all",
+    "about": "About",
+    "contact": "Contact",
+    "explore": "Explore",
+    "visit": "Visit",
+    "email": "Email",
+    "studio": "Studio",
+    "sort_by": "Sort by",
+    "quantity": "Quantity",
+    "remove": "Remove",
+    "read_more": "Read more"
+  },
   "404": {
-    "title": "404",
-    "not_found": "Page not found.",
-    "back_to_shopping": "Back to shopping"
+    "title": "Page not found",
+    "eyebrow": "Error 404",
+    "not_found": "The page you were looking for isn't here. It may have moved, or the piece may have found a wall.",
+    "back_to_shopping": "Browse the collection"
   },
   "blog": {
+    "title": "Journal",
+    "eyebrow": "Notes from the studio",
     "article_comments": "Comments",
     "article_metadata_html": "{{ date }} by {{ author }}",
     "comment_form_body": "Comment",
     "comment_form_email": "Email",
     "comment_form_name": "Name",
-    "comment_form_submit": "Post",
-    "comment_form_title": "Add a comment"
+    "comment_form_submit": "Post comment",
+    "comment_form_title": "Add a comment",
+    "comment_moderated": "Your comment was posted and will appear once approved.",
+    "comment_posted": "Your comment was posted.",
+    "empty": "No entries yet.",
+    "back_to_blog": "Back to {{ title }}",
+    "comment_count": {
+      "one": "{{ count }} comment",
+      "other": "{{ count }} comments"
+    }
   },
   "cart": {
-    "checkout": "Checkout",
     "title": "Cart",
-    "update": "Update",
-    "remove": "Remove"
+    "eyebrow": "Your selection",
+    "checkout": "Secure checkout",
+    "update": "Update cart",
+    "remove": "Remove",
+    "empty_title": "Your cart is empty",
+    "empty_body": "Find a piece that gives the wall its character.",
+    "empty_action": "Explore metal art",
+    "summary": "Order summary",
+    "subtotal": "Subtotal",
+    "tax_note": "Shipping and taxes are calculated at checkout.",
+    "continue": "Continue shopping",
+    "made_to_order_qty": "Made to order — add the piece again to order another.",
+    "sizing_line": "Custom sizing"
   },
-  "customers": {
-    "login": {
-      "email": "Email",
-      "password": "Password",
-      "submit": "Sign in",
-      "title": "Login"
+  "collection": {
+    "eyebrow": "The collection",
+    "empty_title": "No pieces here yet",
+    "empty_body": "This collection is being prepared.",
+    "count": {
+      "one": "{{ count }} piece",
+      "other": "{{ count }} pieces"
     }
   },
   "collections": {
-    "title": "Collections"
+    "title": "Collections",
+    "eyebrow": "Browse by expression",
+    "empty": "No collections yet."
+  },
+  "contact": {
+    "eyebrow": "Let's talk metal",
+    "title": "Contact",
+    "lede": "Questions about a piece, finish, or delivery? Send us a note and we'll get back to you.",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "optional": "(optional)",
+    "message": "Message",
+    "send": "Send message",
+    "success": "Thanks. Your message is with us."
+  },
+  "customer": {
+    "account": {
+      "title": "Account",
+      "eyebrow": "Your account",
+      "details": "Account details",
+      "view_addresses": "View addresses",
+      "logout": "Log out",
+      "orders": "Order history",
+      "no_orders": "You haven't placed any orders yet.",
+      "order_number": "Order",
+      "date": "Date",
+      "payment_status": "Payment",
+      "fulfillment_status": "Fulfillment",
+      "total": "Total"
+    },
+    "login": {
+      "title": "Login",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign in",
+      "forgot": "Forgot your password?",
+      "guest": "Continue as guest",
+      "new_customer": "New here?",
+      "create_account": "Create an account",
+      "recover_title": "Reset your password",
+      "recover_body": "We'll send you an email to reset it.",
+      "recover_submit": "Send reset link",
+      "recover_success": "We've sent you an email with a link to reset your password.",
+      "cancel": "Cancel"
+    },
+    "register": {
+      "title": "Create an account",
+      "first_name": "First name",
+      "last_name": "Last name",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Create account",
+      "has_account": "Already have an account?",
+      "login": "Sign in"
+    },
+    "activate": {
+      "title": "Activate your account",
+      "body": "Choose a password to activate your account.",
+      "password": "Password",
+      "confirm": "Confirm password",
+      "submit": "Activate account",
+      "decline": "Decline invitation"
+    },
+    "reset": {
+      "title": "Choose a new password",
+      "password": "Password",
+      "confirm": "Confirm password",
+      "submit": "Save password"
+    },
+    "order": {
+      "title": "Order {{ name }}",
+      "placed_on": "Placed on {{ date }}",
+      "product": "Product",
+      "price": "Price",
+      "quantity": "Quantity",
+      "total": "Total",
+      "subtotal": "Subtotal",
+      "shipping": "Shipping",
+      "tax": "Tax",
+      "billing_address": "Billing address",
+      "shipping_address": "Shipping address",
+      "back": "Back to account"
+    },
+    "addresses": {
+      "title": "Addresses",
+      "add": "Add a new address",
+      "edit": "Edit",
+      "delete": "Delete",
+      "default": "Default address",
+      "set_default": "Set as default address",
+      "first_name": "First name",
+      "last_name": "Last name",
+      "company": "Company",
+      "address1": "Address",
+      "address2": "Apartment, suite, etc.",
+      "city": "City",
+      "country": "Country",
+      "province": "Province",
+      "zip": "Postal code",
+      "phone": "Phone",
+      "save": "Save address",
+      "cancel": "Cancel",
+      "none": "You haven't saved an address yet.",
+      "confirm_delete": "Delete this address?",
+      "back": "Back to account"
+    }
   },
   "gift_card": {
     "add_to_apple_wallet": "Add to Apple Wallet",
@@ -37,16 +191,70 @@
     "expires_on": "Expires on {{ expires_on }}",
     "use_at_checkout": "Use this gift card at checkout"
   },
+  "home": {
+    "kicker": "CNC-cut metalwork / Pakistan",
+    "tagline": "Art, Cut in Metal.",
+    "hero_body": "Architectural wall pieces, drawn with precision and finished by hand.",
+    "hero_cta": "View the collection",
+    "hero_alt": "Intricate CNC-cut metal wall art mounted on concrete",
+    "intro_eyebrow": "The MetaliQ collection",
+    "intro_heading": "Metalwork that changes the character of a room.",
+    "intro_body": "We turn considered linework into lasting objects. Each piece is cut in steel, refined by hand, and made to sit naturally within contemporary spaces.",
+    "collections_index": "01 / Collections",
+    "collections_heading": "Explore by expression",
+    "featured_index": "02 / Selected work",
+    "featured_link": "See all pieces",
+    "process_index": "03 / The process",
+    "process_alt": "Close detail of CNC-cut metal artwork",
+    "closing_cta": "Find your piece"
+  },
   "password": {
     "title": "This shop is private",
+    "body": "Enter the store password to continue.",
     "password": "Password",
-    "enter": "Enter"
+    "enter": "Enter",
+    "opening_soon": "Opening soon."
+  },
+  "product": {
+    "eyebrow": "Made to order",
+    "view": "View {{ title }}",
+    "add_to_cart": "Add to cart",
+    "sold_out": "Sold out",
+    "unavailable": "Unavailable",
+    "on_sale": "Edition price",
+    "default_type": "Metal art",
+    "option": "Finish or option",
+    "size": "Size",
+    "size_standard": "Standard",
+    "size_custom": "Custom size",
+    "standard_size_html": "Standard size: <strong>{{ width }} × {{ height }} ft</strong>",
+    "height": "Height (ft)",
+    "width_readout": "Width",
+    "feet": "ft",
+    "proportional_note": "Width stays proportional to the original artwork.",
+    "dimensions": "Dimensions",
+    "custom_priced_note": "Custom sizing is priced by area and added to your cart with the piece.",
+    "estimate": "Estimated",
+    "estimate_note": "Estimate only — we confirm the final price with you before production.",
+    "request_size": "Request this size",
+    "adding": "Adding…",
+    "added": "Added to cart",
+    "add_error": "We couldn't add that to your cart. Please try again.",
+    "size_range_error": "Enter a height between {{ min }} and {{ max }} ft.",
+    "assurance_1_title": "Precision cut",
+    "assurance_1_body": "Clean detail, engineered in steel",
+    "assurance_2_title": "Made for your wall",
+    "assurance_2_body": "Custom proportions calculated live",
+    "assurance_3_title": "Secure checkout",
+    "assurance_3_body": "Processed by Shopify"
   },
   "search": {
     "title": "Search",
-    "placeholder": "Search articles, pages, or products",
+    "eyebrow": "Find a piece",
+    "placeholder": "Search pieces, collections, or journal entries",
     "submit": "Search",
-    "no_results_html": "No results found for {{ terms }}",
-    "results_for_html": "{{ count }} results found for {{ terms }}"
+    "no_results_html": "No results found for \"{{ terms }}\"",
+    "no_results_body": "Try a different word, or browse the full collection.",
+    "results_for_html": "{{ count }} results for \"{{ terms }}\""
   }
 }

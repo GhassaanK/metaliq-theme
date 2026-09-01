@@ -1,0 +1,102 @@
+{% comment %}
+  Address management without any JavaScript: each address carries its own edit
+  form in a <details> disclosure and its own delete form, so the page keeps
+  working if scripts fail. Country selects are prefilled by Shopify from the
+  `all_country_option_tags` object.
+{% endcomment %}
+
+<section class="container page-section narrow-page">
+  <header class="page-header account-header">
+    <div>
+      <p class="eyebrow">{{ 'customer.account.eyebrow' | t }}</p>
+      <h1>{{ 'customer.addresses.title' | t }}</h1>
+    </div>
+    <a class="text-link" href="{{ routes.account_url }}">{{ 'customer.addresses.back' | t }}</a>
+  </header>
+
+  {%- paginate customer.addresses by 12 -%}
+    {%- if customer.addresses.size > 0 -%}
+      <ul class="address-list">
+        {%- for address in customer.addresses -%}
+          <li class="address-card">
+            {%- if address == customer.default_address -%}
+              <h2>{{ 'customer.addresses.default' | t }}</h2>
+            {%- endif -%}
+
+            {{ address | format_address }}
+
+            <div class="address-card__actions">
+              {% form 'customer_address', address %}
+                <input type="hidden" name="_method" value="delete">
+                <button class="text-link" type="submit">{{ 'customer.addresses.delete' | t }}</button>
+              {% endform %}
+            </div>
+
+            <details class="address-edit">
+              <summary class="text-link">{{ 'customer.addresses.edit' | t }}</summary>
+              {% form 'customer_address', address, class: 'address-form' %}
+                {% render 'address-fields', address: address %}
+                <button class="button button--primary" type="submit">{{ 'customer.addresses.save' | t }}</button>
+              {% endform %}
+            </details>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- else -%}
+      <p class="account-empty">{{ 'customer.addresses.none' | t }}</p>
+    {%- endif -%}
+
+    {%- if paginate.pages > 1 -%}
+      <div class="pagination">{{ paginate | default_pagination }}</div>
+    {%- endif -%}
+  {%- endpaginate -%}
+
+  <h2 class="address-form-title">{{ 'customer.addresses.add' | t }}</h2>
+
+  {% form 'customer_address', customer.new_address, class: 'address-form' %}
+    {% render 'address-fields' %}
+    <button class="button button--primary" type="submit">{{ 'customer.addresses.save' | t }}</button>
+  {% endform %}
+</section>
+
+{% render 'account-styles' %}
+
+{% stylesheet %}
+  .address-form-title {
+    margin: 46px 0 0;
+    padding-top: 26px;
+    border-top: 1px solid var(--line);
+    font-size: 1.4rem;
+  }
+
+  .address-card__actions button {
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+
+  .address-edit {
+    margin-top: 10px;
+  }
+
+  .address-edit summary {
+    display: inline-block;
+    cursor: pointer;
+    font-size: 0.75rem;
+  }
+
+  .address-edit .address-form {
+    margin-top: 14px;
+    padding: 0;
+    background: none;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.addresses",
+  "settings": [],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}

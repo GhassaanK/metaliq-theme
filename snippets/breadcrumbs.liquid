@@ -1,2 +1,34 @@
-{% doc %}Renders simple breadcrumbs for the current page.{% enddoc %}
-<nav class="breadcrumbs" aria-label="Breadcrumb"><a href="{{ routes.root_url }}">Home</a><span aria-hidden="true">/</span>{% if collection %}<span>{{ collection.title }}</span>{% elsif product %}<span>{{ product.title }}</span>{% elsif page %}<span>{{ page.title }}</span>{% else %}<span>{{ page_title }}</span>{% endif %}</nav>
+{% doc %}
+  Renders breadcrumbs for the current page, using the collection a product was
+  reached through when one is available.
+
+  @example
+  {% render 'breadcrumbs' %}
+{% enddoc %}
+
+<nav class="breadcrumbs" aria-label="{{ 'general.breadcrumb' | t }}">
+  <a href="{{ routes.root_url }}">{{ 'general.home' | t }}</a>
+
+  {%- if product -%}
+    {%- if collection -%}
+      <span aria-hidden="true">/</span>
+      <a href="{{ collection.url }}">{{ collection.title }}</a>
+    {%- endif -%}
+    <span aria-hidden="true">/</span>
+    <span aria-current="page">{{ product.title }}</span>
+  {%- elsif collection -%}
+    <span aria-hidden="true">/</span>
+    <span aria-current="page">{{ collection.title }}</span>
+  {%- elsif article -%}
+    <span aria-hidden="true">/</span>
+    <a href="{{ blog.url }}">{{ blog.title }}</a>
+    <span aria-hidden="true">/</span>
+    <span aria-current="page">{{ article.title }}</span>
+  {%- elsif page -%}
+    <span aria-hidden="true">/</span>
+    <span aria-current="page">{{ page.title }}</span>
+  {%- else -%}
+    <span aria-hidden="true">/</span>
+    <span aria-current="page">{{ page_title }}</span>
+  {%- endif -%}
+</nav>

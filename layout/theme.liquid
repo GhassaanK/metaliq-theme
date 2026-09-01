@@ -1,15 +1,31 @@
 <!doctype html>
-<html lang="{{ request.locale.iso_code }}">
+<html lang="{{ request.locale.iso_code }}" dir="{{ request.locale.direction | default: 'ltr' }}">
   <head>
     {% render 'meta-tags' %}
+    {% render 'fonts' %}
+    {% render 'css-variables' %}
+    <meta name="theme-color" content="{{ settings.background_color }}">
     {{ 'critical.css' | asset_url | stylesheet_tag: preload: true }}
     {{ content_for_header }}
   </head>
-  <body>
-    <a class="skip-link" href="#MainContent">Skip to content</a>
+  <body class="template-{{ request.page_type | handle }}">
+    <a class="skip-link" href="#MainContent">{{ 'general.skip_to_content' | t }}</a>
+
     {% sections 'header-group' %}
+
     <main id="MainContent" tabindex="-1">{{ content_for_layout }}</main>
+
     {% sections 'footer-group' %}
+
+    <script>
+      window.MetaliQ = {
+        routes: {
+          cart: '{{ routes.cart_url }}',
+          cartAdd: '{{ routes.cart_add_url }}',
+          cartChange: '{{ routes.cart_change_url }}'
+        }
+      };
+    </script>
     <script src="{{ 'theme.js' | asset_url }}" defer></script>
   </body>
 </html>

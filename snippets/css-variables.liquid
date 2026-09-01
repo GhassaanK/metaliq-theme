@@ -1,18 +1,34 @@
-{% style %}
-  {% # Loads all font variantions with display: swap %}
-  {{ settings.type_primary_font | font_face: font_display: 'swap' }}
-  {{ settings.type_primary_font | font_modify: 'weight', 'bold' | font_face: font_display: 'swap' }}
-  {{ settings.type_primary_font | font_modify: 'weight', 'bold' | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}
-  {{ settings.type_primary_font | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}
+{% doc %}
+  Emits the theme's design tokens as CSS custom properties.
 
+  Every value here is driven by a setting in `config/settings_schema.json`, so
+  changing a colour or width in the theme editor updates the storefront without
+  a redeploy. Must be rendered inside `<head>` on every layout.
+
+  @example
+  {% render 'css-variables' %}
+{% enddoc %}
+
+{% style %}
   :root {
-    --font-primary--family: {{ settings.type_primary_font.family }}, {{ settings.type_primary_font.fallback_families }};
-    --font-primary--style: {{ settings.type_primary_font.style }};
-    --font-primary--weight: {{ settings.type_primary_font.weight }};
-    --page-width: {{ settings.max_page_width }};
+    --background: {{ settings.background_color }};
+    --surface: {{ settings.surface_color }};
+    --ink: {{ settings.foreground_color }};
+    --muted: {{ settings.muted_color }};
+    --line: {{ settings.line_color }};
+    --copper: {{ settings.accent_color }};
+    --copper-dark: {{ settings.accent_color | color_darken: 10 }};
+    --copper-light: {{ settings.accent_color | color_lighten: 18 }};
+    --charcoal: {{ settings.dark_color }};
+    --charcoal-deep: {{ settings.dark_color | color_darken: 4 }};
+    --on-dark: {{ settings.background_color }};
+    --on-dark-muted: {{ settings.background_color | color_mix: settings.dark_color, 65 }};
+
+    --container: {{ settings.max_page_width }};
     --page-margin: {{ settings.min_page_margin }}px;
-    --color-background: {{ settings.background_color }};
-    --color-foreground: {{ settings.foreground_color }};
-    --style-border-radius-inputs: {{ settings.input_corner_radius }}px;
+    --radius: {{ settings.input_corner_radius }}px;
+
+    --serif: 'Fraunces', 'Times New Roman', Georgia, serif;
+    --sans: 'Inter', -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
   }
 {% endstyle %}

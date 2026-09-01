@@ -8,5 +8,36 @@
  * ------------------------------------------------------------
  */
 {
-  "current": {}
+  "current": {
+    "max_page_width": "1440px",
+    "min_page_margin": 32,
+    "input_corner_radius": 6,
+    "background_color": "#F5F3EF",
+    "surface_color": "#FFFFFF",
+    "foreground_color": "#1E1D1B",
+    "muted_color": "#6C6862",
+    "line_color": "#CBC5BC",
+    "accent_color": "#B5652D",
+    "dark_color": "#292725",
+    "custom_size_enabled": true,
+    "custom_size_min": 1,
+    "custom_size_max": 12
+  },
+  "presets": {
+    "MetaliQ": {
+      "max_page_width": "1440px",
+      "min_page_margin": 32,
+      "input_corner_radius": 6,
+      "background_color": "#F5F3EF",
+      "surface_color": "#FFFFFF",
+      "foreground_color": "#1E1D1B",
+      "muted_color": "#6C6862",
+      "line_color": "#CBC5BC",
+      "accent_color": "#B5652D",
+      "dark_color": "#292725",
+      "custom_size_enabled": true,
+      "custom_size_min": 1,
+      "custom_size_max": 12
+    }
+  }
 }

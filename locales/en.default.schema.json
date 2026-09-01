@@ -1,6 +1,8 @@
 {
   "general": {
     "404": "Not found",
+    "account": "Account",
+    "addresses": "Addresses",
     "article": "Article",
     "block": "Block",
     "blog": "Blog",
@@ -12,17 +14,23 @@
     "colors": "Colors",
     "column": "Column",
     "content": "Content",
+    "contact": "Contact",
     "custom_section": "Custom section",
+    "custom_sizing": "Custom sizing",
     "fonts": "Fonts",
     "footer": "Footer",
     "group": "Group",
     "header": "Header",
+    "home": "Home",
     "layout": "Layout",
+    "login": "Login",
     "main": "Main",
+    "order": "Order",
     "page": "Page",
     "password": "Password",
     "primary": "Primary",
     "product": "Product",
+    "register": "Register",
     "row": "Row",
     "search": "Search",
     "secondary": "Secondary",
@@ -33,22 +41,62 @@
     "theme": "Theme",
     "typography": "Typography"
   },
+  "sections": {
+    "home": {
+      "name": "MetaliQ home",
+      "category": "Category",
+      "hero": "Hero",
+      "intro": "Introduction",
+      "collections": "Collections",
+      "featured": "Featured work",
+      "process": "Process",
+      "closing": "Closing"
+    }
+  },
   "labels": {
     "alignment": "Alignment",
     "background": "Background",
+    "background_image": "Background image",
+    "body_font": "Body font",
+    "button_label": "Button label",
+    "button_link": "Button link",
+    "collection": "Collection",
+    "custom_size_enabled": "Enable custom sizing",
+    "custom_size_max": "Maximum height (ft)",
+    "custom_size_min": "Minimum height (ft)",
+    "customer_account_menu": "Customer account menu",
+    "default_height": "Default height (ft)",
+    "default_width": "Default width (ft)",
+    "display_font": "Display font",
+    "email": "Email",
+    "fallback_title": "Fallback title",
+    "featured_collection": "Featured collection",
+    "featured_heading": "Featured heading",
     "foreground": "Foreground",
     "grid_gap": "Grid spacing",
     "grid_item_width": "Grid item width",
+    "heading": "Heading",
+    "hero_image": "Hero image",
     "input_corner_radius": "Input corner radius",
     "layout_direction": "Layout direction",
+    "location": "Location",
     "menu": "Menu",
-    "customer_account_menu": "Customer account menu",
     "padding": "Padding",
     "page_margin": "Page margin",
     "page_width": "Page width",
+    "posts_per_page": "Entries per page",
+    "pricing_basis": "Custom size pricing",
+    "products_per_page": "Products per page",
+    "quote_page": "Quote request page",
     "show_payment_icons": "Show payment icons",
-    "text_style": "Text style",
-    "text": "Text"
+    "story_image": "Process image",
+    "surcharge_variant": "Surcharge product",
+    "text": "Text",
+    "text_style": "Text style"
+  },
+  "info": {
+    "custom_sizing": "Custom sizes are priced by area. To charge the scaled price correctly, create a hidden \"Custom sizing\" product with a single variant priced at one unit of your currency (for example PKR 1), then select it here — the theme adds however many units are needed as a linked line item. Its price is read from the product itself, so nothing can drift out of sync. Leave it empty and custom sizes show an estimate and route to a quote request instead, so a price is never shown that checkout would not charge.",
+    "quote_page": "Used when no surcharge product is set."
   },
   "options": {
     "alignment": {
@@ -73,5 +121,9 @@
       "subtitle": "Subtitle",
       "normal": "Normal text"
     },
+    "pricing": {
+      "area": "By area (height × width)",
+      "height": "By height only"
+    }
   }
 }

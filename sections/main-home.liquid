@@ -1,0 +1,780 @@
+{% liquid
+  assign hero_alt = section.settings.image.alt | default: 'home.hero_alt' | t
+  assign featured_collection = section.settings.featured_collection | default: collections.all
+  assign fallback_handles = 'calligraphy,islamic,clocks,anime-comics,floral' | split: ','
+%}
+
+<section class="hero">
+  <picture class="hero__media">
+    {%- if section.settings.image -%}
+      {{
+        section.settings.image
+        | image_url: width: 2400
+        | image_tag:
+          loading: 'eager',
+          fetchpriority: 'high',
+          widths: '760, 1100, 1500, 1900, 2400',
+          sizes: '100vw',
+          alt: hero_alt
+      }}
+    {%- else -%}
+      <img
+        src="{{ 'metaliq-hero.jpg' | asset_url }}"
+        width="1672"
+        height="941"
+        alt="{{ 'home.hero_alt' | t }}"
+        fetchpriority="high"
+      >
+    {%- endif -%}
+  </picture>
+
+  <div class="hero__shade"></div>
+
+  <div class="container hero__content">
+    <p class="hero__kicker">{{ section.settings.kicker | default: 'home.kicker' | t }}</p>
+    <h1>{{ section.settings.heading | default: shop.name }}</h1>
+    <p class="hero__tagline">{{ section.settings.tagline | default: 'home.tagline' | t }}</p>
+
+    <div class="hero__action">
+      <p>{{ section.settings.body | default: 'home.hero_body' | t }}</p>
+      <a class="rule-link" href="{{ section.settings.button_link | default: routes.all_products_collection_url }}">
+        {{ section.settings.button_label | default: 'home.hero_cta' | t }}
+        <span aria-hidden="true">&#8594;</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="editorial-intro container">
+  <p class="eyebrow">{{ 'home.intro_eyebrow' | t }}</p>
+  <div>
+    <h2>{{ section.settings.intro_heading | default: 'home.intro_heading' | t }}</h2>
+    <p>{{ section.settings.intro_body | default: 'home.intro_body' | t }}</p>
+  </div>
+</section>
+
+{%- if section.blocks.size > 0 -%}
+  <section class="collection-showcase container">
+    <header class="showcase-heading">
+      <span>{{ 'home.collections_index' | t }}</span>
+      <h2>{{ 'home.collections_heading' | t }}</h2>
+    </header>
+
+    <div class="editorial-grid">
+      {%- for block in section.blocks -%}
+        {% liquid
+          assign chosen = block.settings.collection
+          if chosen == blank
+            assign chosen = collections[fallback_handles[forloop.index0]]
+          endif
+          assign tile_title = chosen.title | default: block.settings.fallback_title
+        %}
+        <a
+          class="editorial-tile"
+          href="{{ chosen.url | default: routes.all_products_collection_url }}"
+          {{ block.shopify_attributes }}
+        >
+          <div class="editorial-tile__media">
+            {%- if chosen.featured_image -%}
+              {{
+                chosen.featured_image
+                | image_url: width: 1400
+                | image_tag:
+                  loading: 'lazy',
+                  widths: '400, 600, 900, 1100, 1400',
+                  sizes: '(min-width: 900px) 50vw, 100vw',
+                  alt: tile_title
+              }}
+            {%- else -%}
+              <span class="editorial-tile__placeholder" aria-hidden="true">
+                {{- tile_title | slice: 0 -}}
+              </span>
+            {%- endif -%}
+          </div>
+          <div class="editorial-tile__caption">
+            <span>{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>
+            <h3>{{ tile_title }}</h3>
+            <span aria-hidden="true">&#8599;</span>
+          </div>
+        </a>
+      {%- endfor -%}
+    </div>
+  </section>
+{%- endif -%}
+
+{%- if featured_collection.products_count > 0 -%}
+  <section class="featured-work">
+    <div class="container">
+      <header class="showcase-heading showcase-heading--light">
+        <span>{{ 'home.featured_index' | t }}</span>
+        <h2>{{ section.settings.featured_heading }}</h2>
+        <a class="rule-link" href="{{ featured_collection.url }}">{{ 'home.featured_link' | t }}</a>
+      </header>
+
+      <div class="product-grid product-grid--featured">
+        {%- for product in featured_collection.products limit: 4 -%}
+          {% render 'product-card', product: product %}
+        {%- endfor -%}
+      </div>
+    </div>
+  </section>
+{%- endif -%}
+
+<section class="craft-story container">
+  <div class="craft-story__image">
+    {%- if section.settings.story_image -%}
+      {{
+        section.settings.story_image
+        | image_url: width: 1600
+        | image_tag: loading: 'lazy', widths: '600, 900, 1200, 1600', sizes: '(min-width: 900px) 55vw, 100vw', alt: section.settings.story_image.alt | default: 'home.process_alt' | t
+      }}
+    {%- else -%}
+      <img
+        src="{{ 'metaliq-hero.jpg' | asset_url }}"
+        width="1672"
+        height="941"
+        loading="lazy"
+        alt="{{ 'home.process_alt' | t }}"
+      >
+    {%- endif -%}
+  </div>
+
+  <div class="craft-story__copy">
+    <span class="craft-story__index">{{ 'home.process_index' | t }}</span>
+    <p class="craft-quote">&ldquo;{{ section.settings.quote }}&rdquo;</p>
+    <ol>
+      {%- for i in (1..3) -%}
+        {%- assign title_key = 'step_' | append: i | append: '_title' -%}
+        {%- assign body_key = 'step_' | append: i | append: '_body' -%}
+        <li>
+          <span>0{{ i }}</span>
+          <div>
+            <h3>{{ section.settings[title_key] }}</h3>
+            <p>{{ section.settings[body_key] }}</p>
+          </div>
+        </li>
+      {%- endfor -%}
+    </ol>
+  </div>
+</section>
+
+<section class="closing-statement">
+  <div class="container">
+    <p>{{ section.settings.closing }}</p>
+    <a class="rule-link" href="{{ routes.all_products_collection_url }}">
+      {{ 'home.closing_cta' | t }}
+      <span aria-hidden="true">&#8594;</span>
+    </a>
+  </div>
+</section>
+
+{% stylesheet %}
+  /* Hero */
+  .hero {
+    position: relative;
+    min-height: calc(100svh - var(--header-height));
+    max-height: 900px;
+    display: grid;
+    align-items: center;
+    overflow: hidden;
+    background: #28231e;
+    color: #fff;
+  }
+
+  .hero__media,
+  .hero__media img,
+  .hero__shade {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .hero__media img {
+    object-fit: cover;
+  }
+
+  .hero__shade {
+    background: rgb(17 15 13 / 0.34);
+  }
+
+  .hero__content {
+    position: relative;
+    z-index: 1;
+    min-height: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 10vh;
+    padding-bottom: 7vh;
+  }
+
+  .hero__kicker {
+    margin-bottom: auto;
+    padding-top: 5vh;
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .hero h1 {
+    margin: 0 0 5px;
+    font-size: clamp(4.4rem, 13vw, 12rem);
+    line-height: 0.8;
+  }
+
+  .hero__tagline {
+    margin: 0;
+    font-family: var(--serif);
+    font-size: clamp(1.35rem, 2.4vw, 2rem);
+    font-style: italic;
+  }
+
+  .hero__action {
+    width: min(100%, 590px);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 45px;
+    margin-top: auto;
+  }
+
+  .hero__action p {
+    margin: 0;
+    color: rgb(255 255 255 / 0.82);
+    font-size: 0.84rem;
+    line-height: 1.6;
+  }
+
+  .hero__action .rule-link {
+    border-color: rgb(255 255 255 / 0.7);
+    font-size: 0.72rem;
+  }
+
+  /* Intro */
+  .editorial-intro {
+    display: grid;
+    grid-template-columns: 1fr 2.2fr;
+    gap: 50px;
+    padding-block: 110px;
+  }
+
+  .editorial-intro .eyebrow {
+    padding-top: 12px;
+  }
+
+  .editorial-intro > div {
+    display: grid;
+    grid-template-columns: 1.6fr 0.75fr;
+    align-items: end;
+    gap: 70px;
+  }
+
+  .editorial-intro h2 {
+    max-width: 820px;
+    margin: 0;
+    font-size: clamp(2.6rem, 5vw, 5.2rem);
+    line-height: 1.02;
+  }
+
+  .editorial-intro > div p {
+    max-width: 380px;
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  /* Showcase */
+  .collection-showcase {
+    padding-bottom: 120px;
+  }
+
+  .showcase-heading {
+    display: grid;
+    grid-template-columns: 1fr 2.2fr;
+    align-items: end;
+    gap: 50px;
+    margin-bottom: 30px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--ink);
+  }
+
+  .showcase-heading > span {
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .showcase-heading h2 {
+    margin: 0;
+    font-family: var(--sans);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .editorial-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 14px 18px;
+  }
+
+  /* A five-beat rhythm that repeats, so any number of tiles stays composed. */
+  .editorial-tile:nth-child(5n + 1) {
+    grid-column: 1 / span 7;
+  }
+
+  .editorial-tile:nth-child(5n + 2) {
+    grid-column: 8 / -1;
+    margin-top: 110px;
+  }
+
+  .editorial-tile:nth-child(5n + 3) {
+    grid-column: 1 / span 4;
+    margin-top: 50px;
+  }
+
+  .editorial-tile:nth-child(5n + 4) {
+    grid-column: 5 / span 5;
+    margin-top: 50px;
+  }
+
+  .editorial-tile:nth-child(5n + 5) {
+    grid-column: 10 / -1;
+    margin-top: 160px;
+  }
+
+  .editorial-tile__media {
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--line) 70%, var(--background));
+  }
+
+  .editorial-tile:nth-child(5n + 1) .editorial-tile__media {
+    aspect-ratio: 5 / 4;
+  }
+
+  .editorial-tile:nth-child(5n + 3) .editorial-tile__media,
+  .editorial-tile:nth-child(5n + 5) .editorial-tile__media {
+    aspect-ratio: 3 / 4;
+  }
+
+  .editorial-tile__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.7s var(--ease);
+  }
+
+  .editorial-tile:hover img {
+    transform: scale(1.025);
+  }
+
+  .editorial-tile__placeholder {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    color: color-mix(in srgb, var(--ink) 22%, transparent);
+    font-family: var(--serif);
+    font-size: 6rem;
+  }
+
+  .editorial-tile__caption {
+    display: grid;
+    grid-template-columns: 30px 1fr auto;
+    align-items: baseline;
+    gap: 10px;
+    padding-top: 12px;
+  }
+
+  .editorial-tile__caption span {
+    color: var(--muted);
+    font-size: 0.6rem;
+  }
+
+  .editorial-tile__caption h3 {
+    margin: 0;
+    font-size: 1.45rem;
+  }
+
+  /* Featured */
+  .featured-work {
+    padding-block: 95px 110px;
+    background: var(--charcoal);
+    color: var(--on-dark);
+  }
+
+  .showcase-heading--light {
+    grid-template-columns: 1fr 2fr auto;
+    border-color: rgb(255 255 255 / 0.35);
+  }
+
+  .product-grid--featured {
+    gap: 10px;
+  }
+
+  .featured-work .product-card {
+    color: var(--on-dark);
+  }
+
+  .featured-work .product-card p {
+    color: var(--on-dark-muted);
+  }
+
+  .featured-work .price {
+    color: var(--copper-light);
+  }
+
+  /* Process */
+  .craft-story {
+    display: grid;
+    grid-template-columns: 1.3fr 0.9fr;
+    gap: 8vw;
+    padding-block: 120px;
+  }
+
+  .craft-story__image {
+    min-height: 680px;
+    overflow: hidden;
+  }
+
+  .craft-story__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 73% center;
+  }
+
+  .craft-story__index {
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .craft-quote {
+    margin: 80px 0 100px;
+    font-family: var(--serif);
+    font-size: clamp(2rem, 3.6vw, 3.8rem);
+    line-height: 1.08;
+  }
+
+  .craft-story ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .craft-story li {
+    display: grid;
+    grid-template-columns: 35px 1fr;
+    gap: 15px;
+    padding: 16px 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .craft-story li > span {
+    color: var(--copper);
+    font-size: 0.58rem;
+  }
+
+  .craft-story h3 {
+    margin-bottom: 3px;
+    font-family: var(--sans);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .craft-story li p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
+
+  /* Closing */
+  .closing-statement {
+    padding-block: 80px;
+    background: var(--copper);
+    color: #fff;
+  }
+
+  .closing-statement .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+  }
+
+  .closing-statement p {
+    margin: 0;
+    font-family: var(--serif);
+    font-size: clamp(2rem, 4vw, 4.2rem);
+  }
+
+  @media (max-width: 900px) {
+    .editorial-intro,
+    .editorial-intro > div {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    .editorial-intro {
+      padding-block: 75px;
+    }
+
+    .showcase-heading {
+      grid-template-columns: 1fr auto;
+    }
+
+    .showcase-heading h2 {
+      grid-row: 2;
+      grid-column: 1 / -1;
+    }
+
+    .editorial-tile:nth-child(5n + 3) {
+      grid-column: 1 / span 6;
+    }
+
+    .editorial-tile:nth-child(5n + 4) {
+      grid-column: 7 / -1;
+    }
+
+    .editorial-tile:nth-child(5n + 5) {
+      grid-column: 3 / span 7;
+      margin-top: 50px;
+    }
+
+    .editorial-tile:nth-child(5n + 2) {
+      margin-top: 70px;
+    }
+
+    .craft-story {
+      grid-template-columns: 1fr;
+      gap: 50px;
+    }
+
+    .craft-story__image {
+      min-height: 500px;
+    }
+
+    .craft-quote {
+      margin: 50px 0;
+    }
+
+    .product-grid--featured {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .hero__media img {
+      object-position: 64% center;
+    }
+
+    .hero__shade {
+      background: rgb(17 15 13 / 0.42);
+    }
+
+    .hero__content {
+      padding-bottom: 30px;
+    }
+
+    .hero__kicker {
+      padding-top: 25px;
+    }
+
+    .hero h1 {
+      font-size: clamp(3.6rem, 19vw, 5rem);
+    }
+
+    .hero__action {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .hero__action p {
+      max-width: 280px;
+    }
+
+    .hero__action .rule-link {
+      width: max-content;
+    }
+
+    .editorial-intro {
+      padding-block: 60px;
+    }
+
+    .editorial-intro h2 {
+      font-size: 2.65rem;
+    }
+
+    .collection-showcase {
+      padding-bottom: 70px;
+    }
+
+    .editorial-grid {
+      grid-template-columns: 1fr;
+      gap: 36px;
+    }
+
+    .editorial-tile:nth-child(n) {
+      grid-column: 1;
+      margin-top: 0;
+    }
+
+    .editorial-tile:nth-child(n) .editorial-tile__media {
+      aspect-ratio: 4 / 5;
+    }
+
+    .featured-work {
+      padding-block: 65px;
+    }
+
+    .showcase-heading--light {
+      grid-template-columns: 1fr auto;
+    }
+
+    .showcase-heading--light .rule-link {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .showcase-heading--light h2 {
+      grid-column: 1 / -1;
+    }
+
+    .craft-story {
+      padding-block: 70px;
+    }
+
+    .craft-story__image {
+      min-height: 420px;
+    }
+
+    .craft-quote {
+      font-size: 2.2rem;
+    }
+
+    .closing-statement {
+      padding-block: 55px;
+    }
+
+    .closing-statement .container {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .closing-statement p {
+      font-size: 2.5rem;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:sections.home.name",
+  "settings": [
+    { "type": "header", "content": "t:sections.home.hero" },
+    { "type": "image_picker", "id": "image", "label": "t:labels.hero_image" },
+    { "type": "text", "id": "kicker", "label": "t:labels.text", "default": "CNC-cut metalwork / Pakistan" },
+    { "type": "text", "id": "heading", "label": "t:labels.heading", "default": "MetaliQ" },
+    { "type": "text", "id": "tagline", "label": "t:general.secondary", "default": "Art, Cut in Metal." },
+    {
+      "type": "text",
+      "id": "body",
+      "label": "t:labels.text",
+      "default": "Architectural wall pieces, drawn with precision and finished by hand."
+    },
+    { "type": "text", "id": "button_label", "label": "t:labels.button_label", "default": "View the collection" },
+    { "type": "url", "id": "button_link", "label": "t:labels.button_link" },
+
+    { "type": "header", "content": "t:sections.home.intro" },
+    {
+      "type": "text",
+      "id": "intro_heading",
+      "label": "t:labels.heading",
+      "default": "Metalwork that changes the character of a room."
+    },
+    {
+      "type": "textarea",
+      "id": "intro_body",
+      "label": "t:labels.text",
+      "default": "We turn considered linework into lasting objects. Each piece is cut in steel, refined by hand, and made to sit naturally within contemporary spaces."
+    },
+
+    { "type": "header", "content": "t:sections.home.featured" },
+    { "type": "collection", "id": "featured_collection", "label": "t:labels.featured_collection" },
+    {
+      "type": "text",
+      "id": "featured_heading",
+      "label": "t:labels.featured_heading",
+      "default": "Objects with presence"
+    },
+
+    { "type": "header", "content": "t:sections.home.process" },
+    { "type": "image_picker", "id": "story_image", "label": "t:labels.story_image" },
+    {
+      "type": "textarea",
+      "id": "quote",
+      "label": "t:labels.text",
+      "default": "Precision gives the piece its form. The hand finish gives it presence."
+    },
+    { "type": "text", "id": "step_1_title", "label": "t:labels.heading", "default": "Composed" },
+    {
+      "type": "text",
+      "id": "step_1_body",
+      "label": "t:labels.text",
+      "default": "Artwork balanced for detail, strength, and scale."
+    },
+    { "type": "text", "id": "step_2_title", "label": "t:labels.heading", "default": "Cut" },
+    {
+      "type": "text",
+      "id": "step_2_body",
+      "label": "t:labels.text",
+      "default": "Every line translated precisely into steel."
+    },
+    { "type": "text", "id": "step_3_title", "label": "t:labels.heading", "default": "Finished" },
+    {
+      "type": "text",
+      "id": "step_3_body",
+      "label": "t:labels.text",
+      "default": "Refined and coated for a durable architectural surface."
+    },
+
+    { "type": "header", "content": "t:sections.home.closing" },
+    {
+      "type": "text",
+      "id": "closing",
+      "label": "t:labels.text",
+      "default": "Made to order. Sized for your space."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "category",
+      "name": "t:sections.home.category",
+      "limit": 10,
+      "settings": [
+        { "type": "collection", "id": "collection", "label": "t:labels.collection" },
+        { "type": "text", "id": "fallback_title", "label": "t:labels.fallback_title", "default": "Collection" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.home.name",
+      "blocks": [
+        { "type": "category", "settings": { "fallback_title": "Calligraphy" } },
+        { "type": "category", "settings": { "fallback_title": "Islamic" } },
+        { "type": "category", "settings": { "fallback_title": "Clocks" } },
+        { "type": "category", "settings": { "fallback_title": "Anime & Comics" } },
+        { "type": "category", "settings": { "fallback_title": "Floral" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,2 +1,307 @@
-<section class="container page-section cart-page"><header class="page-header"><p class="eyebrow">Your selection</p><h1>{{ 'cart.title' | t }}</h1></header>{% if cart.item_count == 0 %}<div class="empty-state"><h2>Your cart is empty</h2><p>Find a piece that gives the wall its character.</p><a class="button button--primary" href="{{ routes.all_products_collection_url }}">Explore metal art</a></div>{% else %}<form action="{{ routes.cart_url }}" method="post"><div class="cart-layout"><div class="cart-lines">{% for item in cart.items %}<article class="cart-line"><a class="cart-line__image" href="{{ item.url }}">{% if item.image %}{{ item.image | image_url: width: 400 | image_tag: loading: 'lazy', alt: item.image.alt | default: item.product.title }}{% endif %}</a><div class="cart-line__content"><div><p class="cart-line__collection">{{ item.product.type }}</p><h2><a href="{{ item.url }}">{{ item.product.title }}</a></h2>{% unless item.product.has_only_default_variant %}<p>{{ item.variant.title }}</p>{% endunless %}{% for property in item.properties %}{% assign property_first = property.first | slice: 0 %}{% unless property.last == blank or property_first == '_' %}<p class="line-property"><span>{{ property.first }}:</span> {{ property.last }}</p>{% endunless %}{% endfor %}</div><div class="cart-line__controls"><label for="Updates-{{ item.key }}">Quantity</label><input id="Updates-{{ item.key }}" type="number" name="updates[]" value="{{ item.quantity }}" min="0"><a href="{{ item.url_to_remove }}">Remove</a></div></div><strong class="cart-line__price">{{ item.final_line_price | money }}</strong></article>{% endfor %}<button class="button button--secondary" type="submit" name="update">Update cart</button></div><aside class="cart-summary"><h2>Order summary</h2><div><span>Subtotal</span><strong>{{ cart.total_price | money }}</strong></div><p>Shipping and taxes are calculated at checkout.</p><button class="button button--primary" type="submit" name="checkout">Secure checkout</button><a class="text-link" href="{{ routes.all_products_collection_url }}">Continue shopping</a></aside></div></form>{% endif %}</section>
-{% schema %}{"name":"t:general.cart","settings":[]}{% endschema %}
+{% comment %}
+  A custom-size piece is two line items: the piece itself, and the surcharge
+  units that make its price correct. This template folds the surcharge back into
+  the piece it belongs to so the customer sees one line at one honest price.
+  `cart.total_price` already counts both, so the summary needs no adjustment.
+{% endcomment %}
+
+<section class="container page-section cart-page">
+  <header class="page-header">
+    <p class="eyebrow">{{ 'cart.eyebrow' | t }}</p>
+    <h1>{{ 'cart.title' | t }}</h1>
+  </header>
+
+  {%- if cart.item_count == 0 -%}
+    <div class="empty-state">
+      <h2>{{ 'cart.empty_title' | t }}</h2>
+      <p>{{ 'cart.empty_body' | t }}</p>
+      <a class="button button--primary" href="{{ routes.all_products_collection_url }}">
+        {{- 'cart.empty_action' | t -}}
+      </a>
+    </div>
+  {%- else -%}
+    <form action="{{ routes.cart_url }}" method="post">
+      <div class="cart-layout">
+        <div class="cart-lines">
+          {%- for item in cart.items -%}
+            {% liquid
+              assign surcharge_for = item.properties['_surcharge_for']
+              assign group = item.properties['_size_group']
+
+              # Find the piece a surcharge line belongs to; if it has none left
+              # in the cart it is shown on its own rather than silently charged.
+              assign has_parent = false
+              if surcharge_for != blank
+                for other in cart.items
+                  if other.properties['_size_group'] == surcharge_for
+                    assign has_parent = true
+                    break
+                  endif
+                endfor
+              endif
+
+              assign extra_price = 0
+              assign remove_keys = item.key
+              if group != blank
+                for other in cart.items
+                  if other.properties['_surcharge_for'] == group
+                    assign extra_price = extra_price | plus: other.final_line_price
+                    assign remove_keys = remove_keys | append: ',' | append: other.key
+                  endif
+                endfor
+              endif
+
+              assign line_total = item.final_line_price | plus: extra_price
+              assign is_grouped = false
+              if extra_price > 0
+                assign is_grouped = true
+              endif
+            %}
+
+            {%- if surcharge_for != blank and has_parent -%}
+              {% continue %}
+            {%- endif -%}
+
+            <article class="cart-line">
+              <a class="cart-line__image" href="{{ item.url }}">
+                {%- if item.image -%}
+                  {{
+                    item.image
+                    | image_url: width: 400
+                    | image_tag: loading: 'lazy', widths: '130, 260, 400', sizes: '130px', alt: item.image.alt | default: item.product.title
+                  }}
+                {%- endif -%}
+              </a>
+
+              <div class="cart-line__content">
+                <div>
+                  {%- if item.product.type != blank -%}
+                    <p class="cart-line__collection">{{ item.product.type }}</p>
+                  {%- endif -%}
+                  <h2><a href="{{ item.url }}">{{ item.product.title }}</a></h2>
+
+                  {%- unless item.product.has_only_default_variant -%}
+                    <p>{{ item.variant.title }}</p>
+                  {%- endunless -%}
+
+                  {%- for property in item.properties -%}
+                    {%- assign first_char = property.first | slice: 0 -%}
+                    {%- unless property.last == blank or first_char == '_' -%}
+                      <p class="line-property">
+                        <span>{{ property.first }}:</span>
+                        {{ property.last }}
+                      </p>
+                    {%- endunless -%}
+                  {%- endfor -%}
+
+                  {%- if surcharge_for != blank -%}
+                    <p class="line-property"><span>{{ 'cart.sizing_line' | t }}</span></p>
+                  {%- endif -%}
+                </div>
+
+                <div class="cart-line__controls">
+                  {%- if is_grouped -%}
+                    {%- comment -%}
+                      Quantity is locked: the piece and its surcharge units have
+                      to move together, and re-deriving that ratio in the cart
+                      invites rounding drift. Adding the piece again is exact.
+                    {%- endcomment -%}
+                    <span class="cart-line__qty">{{ 'general.quantity' | t }}: {{ item.quantity }}</span>
+                    <p class="field-note">{{ 'cart.made_to_order_qty' | t }}</p>
+                  {%- else -%}
+                    <label class="field" for="Updates-{{ item.key }}">{{ 'general.quantity' | t }}</label>
+                    <input
+                      id="Updates-{{ item.key }}"
+                      type="number"
+                      name="updates[]"
+                      value="{{ item.quantity }}"
+                      min="0"
+                    >
+                  {%- endif -%}
+
+                  <a
+                    href="{{ item.url_to_remove }}"
+                    class="cart-line__remove"
+                    data-remove-group="{{ remove_keys }}"
+                  >
+                    {{- 'cart.remove' | t -}}
+                  </a>
+                </div>
+              </div>
+
+              <strong class="cart-line__price">{{ line_total | money }}</strong>
+            </article>
+          {%- endfor -%}
+
+          <button class="button button--secondary" type="submit" name="update">{{ 'cart.update' | t }}</button>
+        </div>
+
+        <aside class="cart-summary">
+          <h2>{{ 'cart.summary' | t }}</h2>
+          <div>
+            <span>{{ 'cart.subtotal' | t }}</span>
+            <strong>{{ cart.total_price | money }}</strong>
+          </div>
+          <p>{{ 'cart.tax_note' | t }}</p>
+          <button class="button button--primary" type="submit" name="checkout">{{ 'cart.checkout' | t }}</button>
+          <a class="text-link" href="{{ routes.all_products_collection_url }}">{{ 'cart.continue' | t }}</a>
+        </aside>
+      </div>
+    </form>
+  {%- endif -%}
+</section>
+
+{% stylesheet %}
+  .cart-page .page-header {
+    margin-bottom: 26px;
+  }
+
+  .cart-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(300px, 0.65fr);
+    align-items: start;
+    gap: 38px;
+  }
+
+  .cart-line {
+    display: grid;
+    grid-template-columns: 130px 1fr auto;
+    gap: 18px;
+    padding: 16px 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .cart-line__image {
+    aspect-ratio: 1;
+    background: color-mix(in srgb, var(--line) 45%, var(--background));
+  }
+
+  .cart-line__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .cart-line__content {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .cart-line__content h2 {
+    margin: 0;
+    font-size: 1.2rem;
+  }
+
+  .cart-line__content p {
+    margin: 2px 0;
+    color: var(--muted);
+    font-size: 0.72rem;
+  }
+
+  .cart-line__collection {
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .line-property span {
+    color: var(--ink);
+  }
+
+  .cart-line__controls {
+    min-width: 96px;
+  }
+
+  .cart-line__controls input {
+    width: 72px;
+    padding: 6px;
+  }
+
+  .cart-line__qty {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+
+  .cart-line__remove {
+    display: block;
+    margin-top: 6px;
+    color: var(--copper);
+    font-size: 0.7rem;
+    text-decoration: underline;
+  }
+
+  .cart-line__price {
+    font-size: 0.9rem;
+  }
+
+  .cart-summary {
+    position: sticky;
+    top: calc(var(--header-height) + 28px);
+    padding: 28px;
+    background: var(--surface);
+  }
+
+  .cart-summary h2 {
+    font-size: 1.5rem;
+  }
+
+  .cart-summary > div {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 0;
+    border-block: 1px solid var(--line);
+  }
+
+  .cart-summary p {
+    color: var(--muted);
+    font-size: 0.72rem;
+  }
+
+  .cart-summary .button {
+    width: 100%;
+    margin-bottom: 13px;
+  }
+
+  .cart-summary .text-link {
+    display: block;
+    text-align: center;
+    font-size: 0.75rem;
+  }
+
+  @media (max-width: 800px) {
+    .cart-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .cart-summary {
+      position: static;
+    }
+  }
+
+  @media (max-width: 540px) {
+    .cart-line {
+      grid-template-columns: 86px 1fr;
+    }
+
+    .cart-line__content {
+      display: block;
+    }
+
+    .cart-line__controls {
+      margin-top: 10px;
+    }
+
+    .cart-line__price {
+      grid-column: 2;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.cart",
+  "settings": [],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}

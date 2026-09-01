@@ -1,2 +1,154 @@
-<section class="container page-section contact-layout"><div><p class="eyebrow">Let’s talk metal</p><h1>{{ page.title | default: 'Contact' }}</h1><p class="lede">Questions about a piece, finish, or delivery? Send us a note and we’ll get back to you.</p><div class="contact-details"><p><span>Email</span><a href="mailto:{{ section.settings.email }}">{{ section.settings.email }}</a></p><p><span>Studio</span>{{ section.settings.location }}</p></div></div><div class="contact-form">{% form 'contact' %}{% if form.posted_successfully? %}<p class="form-success" tabindex="-1" autofocus>Thanks. Your message is with us.</p>{% endif %}{{ form.errors | default_errors }}<div class="field-grid"><label>Name<input type="text" name="contact[name]" autocomplete="name" required></label><label>Email<input type="email" name="contact[email]" autocomplete="email" required></label></div><label>Phone <span>(optional)</span><input type="tel" name="contact[phone]" autocomplete="tel"></label><label>Message<textarea name="contact[body]" rows="6" required></textarea></label><button class="button button--primary" type="submit">Send message</button>{% endform %}</div></section>
-{% schema %}{"name":"Contact","settings":[{"type":"text","id":"email","label":"Email","default":"hello@metaliq.com"},{"type":"text","id":"location","label":"Studio location","default":"Pakistan"}],"presets":[{"name":"Contact"}]}{% endschema %}
+{% comment %}
+  The product page sends customers here with `piece` and `size` query
+  parameters when a store has no surcharge product configured, so a custom size
+  request arrives with the details already filled in.
+{% endcomment %}
+
+{% liquid
+  assign requested_piece = request.get.piece
+  assign requested_size = request.get.size
+%}
+
+<section class="container page-section contact-layout">
+  <div>
+    <p class="eyebrow">{{ 'contact.eyebrow' | t }}</p>
+    <h1>{{ page.title | default: 'contact.title' | t }}</h1>
+    <p class="lede">{{ section.settings.lede | default: 'contact.lede' | t }}</p>
+
+    <div class="contact-details">
+      {%- if section.settings.email != blank -%}
+        <p>
+          <span>{{ 'general.email' | t }}</span>
+          <a href="mailto:{{ section.settings.email | escape }}">{{ section.settings.email | escape }}</a>
+        </p>
+      {%- endif -%}
+      {%- if section.settings.location != blank -%}
+        <p>
+          <span>{{ 'general.studio' | t }}</span>
+          {{ section.settings.location | escape }}
+        </p>
+      {%- endif -%}
+    </div>
+  </div>
+
+  <div class="contact-form">
+    {% form 'contact' %}
+      {%- if form.posted_successfully? -%}
+        <p class="form-success" tabindex="-1" autofocus>{{ 'contact.success' | t }}</p>
+      {%- endif -%}
+
+      {%- if form.errors -%}
+        <div class="form-errors">{{ form.errors | default_errors }}</div>
+      {%- endif -%}
+
+      <div class="field-grid">
+        <label class="field">
+          {{ 'contact.name' | t }}
+          <input type="text" name="contact[name]" autocomplete="name" required>
+        </label>
+        <label class="field">
+          {{ 'contact.email' | t }}
+          <input type="email" name="contact[email]" autocomplete="email" required>
+        </label>
+      </div>
+
+      <label class="field">
+        {{ 'contact.phone' | t }}
+        <span>{{ 'contact.optional' | t }}</span>
+        <input type="tel" name="contact[phone]" autocomplete="tel">
+      </label>
+
+      {%- if requested_piece != blank or requested_size != blank -%}
+        <div class="field-grid">
+          <label class="field">
+            {{ 'product.eyebrow' | t }}
+            <input type="text" name="contact[Piece]" value="{{ requested_piece | escape }}" readonly>
+          </label>
+          <label class="field">
+            {{ 'product.size' | t }}
+            <input type="text" name="contact[Requested size]" value="{{ requested_size | escape }}" readonly>
+          </label>
+        </div>
+      {%- endif -%}
+
+      <label class="field">
+        {{ 'contact.message' | t }}
+        <textarea name="contact[body]" rows="6" required></textarea>
+      </label>
+
+      <button class="button button--primary" type="submit">{{ 'contact.send' | t }}</button>
+    {% endform %}
+  </div>
+</section>
+
+{% stylesheet %}
+  .contact-layout {
+    display: grid;
+    grid-template-columns: 0.7fr 1.2fr;
+    gap: 70px;
+    padding-block: 40px 90px;
+  }
+
+  .contact-details {
+    margin-top: 35px;
+  }
+
+  .contact-details p {
+    display: grid;
+    margin: 0;
+    padding: 12px 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .contact-details span {
+    color: var(--muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .contact-details a {
+    color: var(--copper);
+  }
+
+  .contact-form {
+    padding: 28px;
+    background: var(--surface);
+  }
+
+  .contact-form form {
+    display: grid;
+    gap: 16px;
+  }
+
+  .contact-form input[readonly] {
+    background: color-mix(in srgb, var(--line) 30%, var(--surface));
+    color: var(--muted);
+  }
+
+  @media (max-width: 800px) {
+    .contact-layout {
+      grid-template-columns: 1fr;
+      gap: 30px;
+    }
+  }
+
+  @media (max-width: 540px) {
+    .contact-form {
+      padding: 20px;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.contact",
+  "settings": [
+    { "type": "textarea", "id": "lede", "label": "t:labels.text" },
+    { "type": "text", "id": "email", "label": "t:labels.email", "default": "hello@metaliq.com" },
+    { "type": "text", "id": "location", "label": "t:labels.location", "default": "Pakistan" }
+  ],
+  "presets": [{ "name": "t:general.contact" }],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}

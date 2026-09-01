@@ -1,0 +1,38 @@
+<section class="container page-section auth-page auth-page--single">
+  <div class="auth-card">
+    <p class="eyebrow">{{ 'customer.account.eyebrow' | t }}</p>
+    <h1>{{ 'customer.activate.title' | t }}</h1>
+    <p class="field-note">{{ 'customer.activate.body' | t }}</p>
+
+    {% form 'activate_customer_password' %}
+      {%- if form.errors -%}
+        <div class="form-errors">{{ form.errors | default_errors }}</div>
+      {%- endif -%}
+
+      <label class="field">
+        {{ 'customer.activate.password' | t }}
+        <input type="password" name="customer[password]" autocomplete="new-password" required>
+      </label>
+
+      <label class="field">
+        {{ 'customer.activate.confirm' | t }}
+        <input type="password" name="customer[password_confirmation]" autocomplete="new-password" required>
+      </label>
+
+      <button class="button button--primary" type="submit">{{ 'customer.activate.submit' | t }}</button>
+      <button class="button button--secondary" type="submit" name="decline">
+        {{- 'customer.activate.decline' | t -}}
+      </button>
+    {% endform %}
+  </div>
+</section>
+
+{% render 'account-styles' %}
+
+{% schema %}
+{
+  "name": "t:general.account",
+  "settings": [],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}

@@ -1,11 +1,69 @@
 <footer class="site-footer">
   <div class="container footer-grid">
-    <div class="footer-brand"><a class="brand" href="{{ routes.root_url }}"><span class="brand-mark" aria-hidden="true">Q</span><span><strong>MetaliQ</strong><small>Art, Cut in Metal.</small></span></a><p>Custom CNC-cut metal art, made to hold a room.</p></div>
-    <div><h2>Explore</h2><nav aria-label="Footer navigation">{% for link in section.settings.menu.links %}<a href="{{ link.url }}">{{ link.title }}</a>{% else %}<a href="{{ routes.all_products_collection_url }}">Shop all</a><a href="{{ pages.about.url | default: routes.root_url }}">About</a><a href="{{ pages.contact.url | default: routes.root_url }}">Contact</a>{% endfor %}</nav></div>
-    <div><h2>Visit</h2><p>{{ section.settings.location | escape }}</p><a href="mailto:{{ section.settings.email | escape }}">{{ section.settings.email | escape }}</a></div>
+    <div class="footer-brand">
+      <a class="brand" href="{{ routes.root_url }}">
+        <span class="brand-mark" aria-hidden="true">{{ section.settings.mark | default: 'Q' }}</span>
+        <span>
+          <strong>{{ section.settings.brand_name | default: shop.name }}</strong>
+          <small>{{ section.settings.tagline }}</small>
+        </span>
+      </a>
+      <p>{{ section.settings.statement }}</p>
+    </div>
+
+    <div>
+      <h2>{{ 'general.explore' | t }}</h2>
+      <nav aria-label="{{ 'general.footer_navigation' | t }}">
+        {%- for link in section.settings.menu.links -%}
+          <a href="{{ link.url }}">{{ link.title }}</a>
+        {%- else -%}
+          <a href="{{ routes.all_products_collection_url }}">{{ 'general.shop_all' | t }}</a>
+          <a href="{{ routes.search_url }}">{{ 'general.search' | t }}</a>
+        {%- endfor -%}
+      </nav>
+    </div>
+
+    <div>
+      <h2>{{ 'general.visit' | t }}</h2>
+      {%- if section.settings.location != blank -%}
+        <p>{{ section.settings.location | escape }}</p>
+      {%- endif -%}
+      {%- if section.settings.email != blank -%}
+        <a href="mailto:{{ section.settings.email | escape }}">{{ section.settings.email | escape }}</a>
+      {%- endif -%}
+    </div>
   </div>
-  <div class="container footer-bottom"><span>&copy; {{ 'now' | date: '%Y' }} MetaliQ</span>{% if section.settings.show_payment_icons %}<div class="payment-icons">{% for type in shop.enabled_payment_types %}{{ type | payment_type_svg_tag }}{% endfor %}</div>{% endif %}</div>
+
+  <div class="container footer-bottom">
+    <span>&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}</span>
+    {%- if section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
+      <div class="payment-icons">
+        {%- for type in shop.enabled_payment_types -%}
+          {{ type | payment_type_svg_tag }}
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  </div>
 </footer>
+
 {% schema %}
-{"name":"t:general.footer","settings":[{"type":"link_list","id":"menu","label":"t:labels.menu"},{"type":"text","id":"location","label":"Location","default":"Made in Pakistan"},{"type":"text","id":"email","label":"Email","default":"hello@metaliq.com"},{"type":"checkbox","id":"show_payment_icons","label":"t:labels.show_payment_icons","default":true}]}
+{
+  "name": "t:general.footer",
+  "settings": [
+    { "type": "link_list", "id": "menu", "label": "t:labels.menu" },
+    { "type": "text", "id": "brand_name", "label": "t:labels.heading" },
+    { "type": "text", "id": "mark", "label": "t:labels.text", "default": "Q" },
+    { "type": "text", "id": "tagline", "label": "t:general.secondary", "default": "Art, Cut in Metal." },
+    {
+      "type": "textarea",
+      "id": "statement",
+      "label": "t:labels.text",
+      "default": "Custom CNC-cut metal art, made to hold a room."
+    },
+    { "type": "text", "id": "location", "label": "t:labels.location", "default": "Made in Pakistan" },
+    { "type": "text", "id": "email", "label": "t:labels.email", "default": "hello@metaliq.com" },
+    { "type": "checkbox", "id": "show_payment_icons", "label": "t:labels.show_payment_icons", "default": true }
+  ],
+  "enabled_on": { "groups": ["footer"] }
+}
 {% endschema %}

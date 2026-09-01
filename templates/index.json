@@ -1,7 +1,7 @@
 {
   "sections": {
     "main": {
-      "type": "hello-world",
+      "type": "main-home",
       "blocks": {
         "calligraphy": { "type": "category", "settings": { "fallback_title": "Calligraphy" } },
         "islamic": { "type": "category", "settings": { "fallback_title": "Islamic" } },

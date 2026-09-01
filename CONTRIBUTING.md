@@ -1,24 +1,37 @@
-# Contributing to Skeleton Theme
+# Contributing to the MetaliQ theme
 
-## How to contribute
+## Before you push
 
-We ❤️ pull requests. If you'd like to fix a bug, contribute a feature, or just correct a typo, feel free to do so, as long as you follow our [Code of Conduct](./CODE_OF_CONDUCT.md).
+Every change must pass the same checks CI runs:
 
-If you're thinking of adding a new feature or proposing a new pattern across the theme, please consider opening an issue first. This will allow us to discuss your idea, ensure it aligns with the project's direction, and potentially save you some time.
+```bash
+shopify theme check      # must report no offenses
+shopify theme dev        # look at the pages you touched, at 375px and 1440px
+```
 
-For your contribution to be accepted, you'll need to sign the [Shopify Contributor License Agreement (CLA)](https://cla.shopify.com/).
+Both are cheap. The theme currently checks clean, and it should stay that way.
 
-## Standards
+## Conventions
 
-* This codebase must be minimalist, not a fully featured theme.
-* This theme must provide a common foundational starting point for most developers.
-* Do not include or reference legacy or non-recommended features.
-* All changes must preserve the principles defined in the README.
+- **No hardcoded customer-facing text.** Storefront copy goes in `locales/en.default.json` and is
+  rendered with `{{ 'key' | t }}`. Theme-editor labels go in `locales/en.default.schema.json` and
+  are referenced as `"t:some.key"`. Only English is added here; translators handle the rest.
+- **No hardcoded design values.** Colours, widths and radii come from CSS custom properties
+  declared in `snippets/css-variables.liquid`, which reads them from theme settings.
+- **Section-scoped CSS.** Page-specific styles belong in that section's `{% stylesheet %}` block.
+  Only genuinely global styles go in `assets/critical.css`. If two sections need the same rules,
+  put them in a snippet and render it from both — theme check will flag the alternative.
+- **Never display a price the checkout will not charge.** See the made-to-order sizing section of
+  the README. This is the one rule in this repo with money attached to it.
+- **Readable source.** Liquid is rendered server-side; minifying it by hand buys nothing and costs
+  reviewable diffs. One tag per line, formatted schemas.
+- **Every snippet gets a `{% doc %}` header** describing its parameters.
 
-## Steps to contribute
+## Steps
 
-1. Fork the repository: [https://github.com/Shopify/skeleton-theme/fork](https://github.com/Shopify/skeleton-theme/fork)
-2. Create your feature branch: `git checkout -b my-new-feature`
-3. Commit your changes: `git commit -am 'Add some feature'`
-4. Push to your branch: `git push origin my-new-feature`
-5. Create a new Pull Request
+1. Create a branch: `git checkout -b short-description`
+2. Make the change, run the checks above
+3. Commit with a message that says what changed and why
+4. Open a pull request
+
+This project follows the [Code of Conduct](./CODE_OF_CONDUCT.md).

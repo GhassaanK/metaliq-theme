@@ -1,17 +1,74 @@
-<header class="site-header" data-site-header>
+<header class="site-header">
   <div class="container header-inner">
-    <a class="brand" href="{{ routes.root_url }}" aria-label="{{ shop.name }} home"><span class="brand-mark" aria-hidden="true">Q</span><span><strong>MetaliQ</strong><small>Art, Cut in Metal.</small></span></a>
-    <button class="icon-button menu-toggle" type="button" aria-expanded="false" aria-controls="PrimaryNavigation" data-menu-toggle><span class="menu-lines" aria-hidden="true"></span><span class="visually-hidden">Menu</span></button>
-    <nav id="PrimaryNavigation" class="primary-nav" aria-label="Primary navigation" data-navigation>
-      {% for link in section.settings.menu.links %}<a href="{{ link.url }}"{% if link.current %} aria-current="page"{% endif %}>{{ link.title }}</a>{% else %}<a href="{{ collections.calligraphy.url | default: routes.collections_url }}">Calligraphy</a><a href="{{ collections.islamic.url | default: routes.collections_url }}">Islamic</a><a href="{{ collections.clocks.url | default: routes.collections_url }}">Clocks</a><a href="{{ collections['anime-comics'].url | default: routes.collections_url }}">Anime &amp; Comics</a><a href="{{ collections.floral.url | default: routes.collections_url }}">Floral</a>{% endfor %}
+    <a class="brand" href="{{ routes.root_url }}" aria-label="{{ 'general.brand_home' | t: shop_name: shop.name }}">
+      <span class="brand-mark" aria-hidden="true">{{ section.settings.mark | default: 'Q' }}</span>
+      <span>
+        <strong>{{ section.settings.brand_name | default: shop.name }}</strong>
+        <small>{{ section.settings.tagline }}</small>
+      </span>
+    </a>
+
+    <button
+      class="icon-button menu-toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="PrimaryNavigation"
+      data-menu-toggle
+    >
+      <span class="menu-lines" aria-hidden="true"></span>
+      <span class="visually-hidden">{{ 'general.menu' | t }}</span>
+    </button>
+
+    <nav
+      id="PrimaryNavigation"
+      class="primary-nav"
+      aria-label="{{ 'general.primary_navigation' | t }}"
+      data-navigation
+    >
+      {%- for link in section.settings.menu.links -%}
+        <a href="{{ link.url }}" {% if link.current %}aria-current="page"{% endif %}>{{ link.title }}</a>
+      {%- else -%}
+        <a href="{{ routes.all_products_collection_url }}">{{ 'general.shop_all' | t }}</a>
+      {%- endfor -%}
     </nav>
+
     <div class="header-actions">
-      <a class="icon-button" href="{{ routes.search_url }}" aria-label="Search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg></a>
-      {% if shop.customer_accounts_enabled %}<a class="icon-button account-link" href="{{ routes.account_url }}" aria-label="Account">{{ 'icon-account.svg' | inline_asset_content }}</a>{% endif %}
-      <a class="icon-button cart-link" href="{{ routes.cart_url }}" aria-label="Cart, {{ cart.item_count }} items">{{ 'icon-cart.svg' | inline_asset_content }}<span class="cart-count">{{ cart.item_count }}</span></a>
+      <a class="icon-button" href="{{ routes.search_url }}" aria-label="{{ 'general.search' | t }}">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="m20 20-4-4"></path>
+        </svg>
+      </a>
+
+      {%- if shop.customer_accounts_enabled -%}
+        <a class="icon-button account-link" href="{{ routes.account_url }}" aria-label="{{ 'general.account' | t }}">
+          {{- 'icon-account.svg' | inline_asset_content -}}
+        </a>
+      {%- endif -%}
+
+      <a
+        class="icon-button cart-link"
+        href="{{ routes.cart_url }}"
+        aria-label="{{ 'general.cart_label' | t: count: cart.item_count }}"
+      >
+        {{- 'icon-cart.svg' | inline_asset_content -}}
+        {%- if cart.item_count > 0 -%}
+          <span class="cart-count">{{ cart.item_count }}</span>
+        {%- endif -%}
+      </a>
     </div>
   </div>
 </header>
+
 {% schema %}
-{"name":"t:general.header","settings":[{"type":"link_list","id":"menu","label":"t:labels.menu"}]}
+{
+  "name": "t:general.header",
+  "settings": [
+    { "type": "link_list", "id": "menu", "label": "t:labels.menu" },
+    { "type": "text", "id": "brand_name", "label": "t:labels.heading" },
+    { "type": "text", "id": "mark", "label": "t:labels.text", "default": "Q" },
+    { "type": "text", "id": "tagline", "label": "t:general.secondary", "default": "Art, Cut in Metal." }
+  ],
+  "enabled_on": { "groups": ["header"] }
+}
 {% endschema %}

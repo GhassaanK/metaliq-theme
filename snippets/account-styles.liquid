@@ -1,0 +1,182 @@
+{% doc %}
+  Styles shared by every customer account screen.
+
+  Kept in a snippet so each account section can render it: stylesheet tags may
+  be included many times but their CSS is only emitted once, which keeps the
+  login, register, activate, reset and address pages consistent without any
+  one of them depending on another being on the page.
+
+  @example
+  {% render 'account-styles' %}
+{% enddoc %}
+
+{% stylesheet %}
+  .auth-page {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 24px;
+    max-width: 900px;
+    margin-inline: auto;
+    padding-block: 50px 100px;
+  }
+
+  .auth-page--single {
+    max-width: 520px;
+    grid-template-columns: 1fr;
+  }
+
+  .auth-card {
+    padding: 30px;
+    background: var(--surface);
+  }
+
+  .auth-card h1 {
+    margin-bottom: 22px;
+    font-size: clamp(2rem, 5vw, 3rem);
+  }
+
+  .auth-card h2 {
+    margin-bottom: 6px;
+    font-size: 1.3rem;
+  }
+
+  .auth-card form {
+    display: grid;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .auth-card .text-link {
+    justify-self: start;
+    font-size: 0.78rem;
+  }
+
+  .auth-alt {
+    margin: 20px 0 0;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    font-size: 0.8rem;
+  }
+
+  .account-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 20px;
+    max-width: none;
+    padding-block: 20px 30px;
+  }
+
+  .account-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(240px, 0.6fr);
+    align-items: start;
+    gap: 46px;
+  }
+
+  .account-layout h2 {
+    margin-bottom: 14px;
+    font-size: 1.4rem;
+  }
+
+  .table-scroll {
+    overflow-x: auto;
+  }
+
+  .account-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    text-align: left;
+  }
+
+  .account-table th,
+  .account-table td {
+    padding: 12px 14px 12px 0;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+
+  .account-table th {
+    color: var(--muted);
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+  }
+
+  .account-empty {
+    color: var(--muted);
+  }
+
+  .account-aside {
+    padding: 24px;
+    background: var(--surface);
+    font-size: 0.85rem;
+  }
+
+  .account-aside .text-link {
+    display: inline-block;
+    margin-top: 14px;
+    font-size: 0.78rem;
+  }
+
+  .address-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 18px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .address-card {
+    padding: 22px;
+    background: var(--surface);
+    font-size: 0.85rem;
+  }
+
+  .address-card h2 {
+    margin-bottom: 8px;
+    font-size: 1.05rem;
+  }
+
+  .address-card__actions {
+    display: flex;
+    gap: 14px;
+    margin-top: 14px;
+    font-size: 0.75rem;
+  }
+
+  .address-form {
+    display: grid;
+    gap: 16px;
+    max-width: 620px;
+    margin-top: 24px;
+    padding: 28px;
+    background: var(--surface);
+  }
+
+  .address-form .checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+  }
+
+  .address-form .checkbox input {
+    width: auto;
+  }
+
+  @media (max-width: 800px) {
+    .auth-page {
+      grid-template-columns: 1fr;
+    }
+
+    .account-layout {
+      grid-template-columns: 1fr;
+      gap: 30px;
+    }
+  }
+{% endstylesheet %}
