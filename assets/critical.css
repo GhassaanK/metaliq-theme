@@ -13,18 +13,18 @@
 
 :root {
   /* Palette — overridden by css-variables.liquid from theme settings */
-  --background: #f4f1ea;
-  --surface: #fffdf9;
-  --ink: #16130d;
-  --muted: #6d665b;
-  --line: #e0d9c9;
-  --copper: #b0552e;
-  --copper-dark: #8f4222;
-  --copper-light: #d98a5c;
-  --charcoal: #201c16;
-  --charcoal-deep: #16130f;
-  --on-dark: #f4f1ea;
-  --on-dark-muted: #a49a88;
+  --background: #eceae4;
+  --surface: #fbfaf7;
+  --ink: #1a1917;
+  --muted: #6a655d;
+  --line: #dad5ca;
+  --copper: #9e5a38;
+  --copper-dark: #7f4527;
+  --copper-light: #c9855c;
+  --charcoal: #25231e;
+  --charcoal-deep: #1b1a16;
+  --on-dark: #eceae4;
+  --on-dark-muted: #9b9285;
 
   --container: 1320px;
   --page-margin: 40px;

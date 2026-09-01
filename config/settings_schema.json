@@ -54,43 +54,43 @@
       {
         "type": "color",
         "id": "background_color",
-        "default": "#F4F1EA",
+        "default": "#ECEAE4",
         "label": "t:labels.background"
       },
       {
         "type": "color",
         "id": "surface_color",
-        "default": "#FFFDF9",
+        "default": "#FBFAF7",
         "label": "t:general.section"
       },
       {
         "type": "color",
         "id": "foreground_color",
-        "default": "#16130D",
+        "default": "#1A1917",
         "label": "t:labels.foreground"
       },
       {
         "type": "color",
         "id": "muted_color",
-        "default": "#6D665B",
+        "default": "#6A655D",
         "label": "t:general.secondary"
       },
       {
         "type": "color",
         "id": "line_color",
-        "default": "#E0D9C9",
+        "default": "#DAD5CA",
         "label": "t:general.content"
       },
       {
         "type": "color",
         "id": "accent_color",
-        "default": "#B0552E",
+        "default": "#9E5A38",
         "label": "t:general.primary"
       },
       {
         "type": "color",
         "id": "dark_color",
-        "default": "#201C16",
+        "default": "#25231E",
         "label": "t:general.theme"
       }
     ]
