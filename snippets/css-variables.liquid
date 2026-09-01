@@ -1,7 +1,7 @@
 {% doc %}
   Emits the theme's design tokens as CSS custom properties from theme settings,
-  so colour, container width and radius are editable in the theme editor without
-  a redeploy. Rendered inside <head> on every layout.
+  so colour, type, container width and radius are editable in the theme editor
+  without a redeploy. Rendered inside <head> on every layout.
 
   @example
   {% render 'css-variables' %}
@@ -11,24 +11,38 @@
   :root {
     --background: {{ settings.background_color }};
     --surface: {{ settings.surface_color }};
+    --surface-2: {{ settings.surface_color | color_lighten: 4 }};
     --ink: {{ settings.foreground_color }};
     --muted: {{ settings.muted_color }};
     --line: {{ settings.line_color }};
+    --hairline: {{ settings.foreground_color | color_modify: 'alpha', 0.1 }};
 
     --copper: {{ settings.accent_color }};
-    --copper-dark: {{ settings.accent_color | color_darken: 9 }};
-    --copper-light: {{ settings.accent_color | color_lighten: 16 }};
+    --copper-dark: {{ settings.accent_color | color_darken: 6 }};
+    --copper-light: {{ settings.accent_color | color_lighten: 12 }};
+    --on-accent: #151513;
 
+    --nav: {{ settings.dark_color }};
+    --nav-deep: {{ settings.dark_color | color_darken: 8 }};
+    --on-nav: #ffffff;
+    --on-nav-muted: {{ settings.dark_color | color_lighten: 42 }};
+
+    --footer: {{ settings.footer_color }};
+    --on-footer: {{ settings.foreground_color }};
+
+    /* legacy aliases still referenced by a few sections */
     --charcoal: {{ settings.dark_color }};
-    --charcoal-deep: {{ settings.dark_color | color_darken: 4 }};
-    --on-dark: {{ settings.background_color }};
-    --on-dark-muted: {{ settings.background_color | color_mix: settings.dark_color, 62 }};
+    --charcoal-deep: {{ settings.dark_color | color_darken: 8 }};
+    --on-dark: #ffffff;
+    --on-dark-muted: {{ settings.dark_color | color_lighten: 42 }};
 
     --container: {{ settings.max_page_width }};
     --page-margin: {{ settings.min_page_margin }}px;
     --radius: {{ settings.input_corner_radius }}px;
+    --radius-lg: {{ settings.input_corner_radius | plus: 4 }}px;
 
-    --serif: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+    --serif: {{ settings.heading_font.family }}, {{ settings.heading_font.fallback_families }}, Georgia, serif;
     --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    --heading-weight: {{ settings.heading_font.weight | default: 600 }};
   }
 {% endstyle %}

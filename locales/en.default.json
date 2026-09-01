@@ -15,8 +15,10 @@
     "tagged": "Tagged \"{{ tags }}\"",
     "shop_all": "Shop all",
     "about": "About",
+    "about_us": "About us",
     "contact": "Contact",
     "explore": "Explore",
+    "rights_reserved": "All rights reserved.",
     "visit": "Visit",
     "email": "Email",
     "studio": "Studio",
@@ -76,6 +78,7 @@
     }
   },
   "collections": {
+    "view_all": "View all collections",
     "title": "Collections",
     "eyebrow": "Browse by expression",
     "empty": "No collections yet."
@@ -192,13 +195,10 @@
     "use_at_checkout": "Use this gift card at checkout"
   },
   "home": {
-    "kicker": "CNC-cut metalwork / Pakistan",
-    "hero_lead": "Art, cut in",
-    "ghost_word": "Metal",
-    "hero_note": "Made to order in our workshop. Shipped worldwide.",
-    "tagline": "Art, Cut in Metal.",
-    "hero_body": "Architectural wall pieces, drawn with precision and finished by hand.",
-    "hero_cta": "View the collection",
+    "hero_heading": "Art, cut in metal.",
+    "hero_body": "Architectural wall pieces, precision-cut in steel and made to fit your space.",
+    "hero_cta": "Shop wall art",
+    "hero_cta2": "Create something custom",
     "hero_alt": "Intricate CNC-cut metal wall art mounted on concrete",
     "intro_eyebrow": "The MetaliQ collection",
     "intro_heading": "Metalwork that changes the character of a room.",
@@ -239,6 +239,7 @@
     "dimensions": "Dimensions",
     "custom_priced_note": "Custom sizing is priced by area and added to your cart with the piece.",
     "estimate": "Estimated",
+    "price_from": "Starting from",
     "estimate_note": "Estimate only — we confirm the final price with you before production.",
     "request_size": "Request this size",
     "adding": "Adding…",

@@ -7,7 +7,6 @@
 
   @example
   {% render 'product-card', product: product %}
-  {% render 'product-card', product: product, loading: 'eager' %}
 {% enddoc %}
 
 {% liquid
@@ -17,6 +16,13 @@
   assign on_sale = false
   if product.compare_at_price > product.price
     assign on_sale = true
+  endif
+  assign show_from = false
+  if settings.custom_size_enabled
+    assign show_from = true
+  endif
+  if product.price_varies
+    assign show_from = true
   endif
 %}
 
@@ -42,19 +48,21 @@
 
     {%- if on_sale -%}
       <span class="product-card__badge tag">{{ 'product.on_sale' | t }}</span>
+    {%- elsif settings.custom_size_enabled -%}
+      <span class="product-card__badge tag">{{ 'product.size_custom' | t }}</span>
     {%- endif -%}
   </a>
 
   <div class="product-card__body">
-    <div>
-      {%- if card_kicker != blank -%}
-        <p class="product-card__kicker">{{ card_kicker }}</p>
-      {%- endif -%}
-      <h3 class="product-card__title"><a href="{{ product.url }}">{{ product.title }}</a></h3>
-    </div>
-    <span class="price {% if on_sale %}price--sale{% endif %}">
+    {%- if card_kicker != blank -%}
+      <p class="product-card__kicker">{{ card_kicker }}</p>
+    {%- endif -%}
+    <h3 class="product-card__title"><a href="{{ product.url }}">{{ product.title }}</a></h3>
+
+    <div class="product-card__price price {% if on_sale %}price--sale{% endif %}">
+      {%- if show_from -%}<span class="price__from">{{ 'product.price_from' | t }}</span>{%- endif -%}
       {%- if on_sale -%}<s>{{ product.compare_at_price | money }}</s>{%- endif -%}
-      {{ product.price | money }}
-    </span>
+      <strong>{{ product.price | money }}</strong>
+    </div>
   </div>
 </article>

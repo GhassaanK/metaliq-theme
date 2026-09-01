@@ -19,6 +19,7 @@
     "custom_sizing": "Custom sizing",
     "fonts": "Fonts",
     "footer": "Footer",
+    "explore": "Explore",
     "group": "Group",
     "header": "Header",
     "home": "Home",
@@ -39,7 +40,8 @@
     "sidebar": "Sidebar",
     "text": "Text",
     "theme": "Theme",
-    "typography": "Typography"
+    "typography": "Typography",
+    "visit": "Visit"
   },
   "sections": {
     "home": {
@@ -55,12 +57,14 @@
   },
   "labels": {
     "alignment": "Alignment",
+    "announcement": "Announcement bar text",
     "background": "Background",
     "background_image": "Background image",
     "body_font": "Body font",
     "button_label": "Button label",
     "button_link": "Button link",
     "collection": "Collection",
+    "collections_menu": "Collections dropdown menu",
     "custom_size_enabled": "Enable custom sizing",
     "custom_size_max": "Maximum height (ft)",
     "custom_size_min": "Minimum height (ft)",
@@ -96,7 +100,8 @@
   },
   "info": {
     "custom_sizing": "Custom sizes are priced by area. To charge the scaled price correctly, create a hidden \"Custom sizing\" product with a single variant priced at one unit of your currency (for example PKR 1), then select it here — the theme adds however many units are needed as a linked line item. Its price is read from the product itself, so nothing can drift out of sync. Leave it empty and custom sizes show an estimate and route to a quote request instead, so a price is never shown that checkout would not charge.",
-    "quote_page": "Used when no surcharge product is set."
+    "quote_page": "Used when no surcharge product is set.",
+    "body_font": "Body text is set in Inter, bundled with the theme."
   },
   "options": {
     "alignment": {

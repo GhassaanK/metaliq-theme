@@ -1,110 +1,218 @@
 {% liquid
-  assign hero_lead = section.settings.heading | default: 'home.hero_lead' | t
-  assign hero_ghost = section.settings.ghost_word | default: 'home.ghost_word' | t
+  assign hero_heading = section.settings.heading
+  if hero_heading == blank
+    assign hero_heading = 'home.hero_heading' | t
+  endif
+  assign hero_body = section.settings.body
+  if hero_body == blank
+    assign hero_body = 'home.hero_body' | t
+  endif
+  assign hero_label_1 = section.settings.button_label
+  if hero_label_1 == blank
+    assign hero_label_1 = 'home.hero_cta' | t
+  endif
+  assign hero_label_2 = section.settings.button2_label
+  if hero_label_2 == blank
+    assign hero_label_2 = 'home.hero_cta2' | t
+  endif
+  assign hero_link_1 = section.settings.button_link | default: routes.all_products_collection_url
+  assign hero_link_2 = section.settings.button2_link | default: settings.quote_page.url | default: routes.root_url
+  assign intro_heading = section.settings.intro_heading
+  if intro_heading == blank
+    assign intro_heading = 'home.intro_heading' | t
+  endif
+  assign intro_body = section.settings.intro_body
+  if intro_body == blank
+    assign intro_body = 'home.intro_body' | t
+  endif
+  assign featured_heading = section.settings.featured_heading
+  if featured_heading == blank
+    assign featured_heading = 'home.featured_heading' | t
+  endif
   assign featured = section.settings.featured_collection | default: collections.all
-  assign fallback_handles = 'calligraphy,islamic,clocks,anime-comics,floral' | split: ','
 %}
 
 <section class="home-hero">
-  <div class="container home-hero__grid">
+  <div class="container home-hero__inner">
     <div class="home-hero__copy">
-      <p class="home-hero__kicker">{{ section.settings.kicker | default: 'home.kicker' | t }}</p>
-
-      <h1 class="home-hero__title">
-        <span class="home-hero__lead">{{ hero_lead }}</span>
-        <span class="home-hero__ghost">{{ hero_ghost }}</span>
-      </h1>
-
-      <p class="home-hero__body">{{ section.settings.body | default: 'home.hero_body' | t }}</p>
-
+      <h1 class="home-hero__title">{{ hero_heading }}</h1>
+    </div>
+    <div class="home-hero__artworks" aria-label="Featured artwork">
+      {%- assign hero_card_index = 0 -%}
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'category' -%}
+          {%- liquid
+            assign hero_product = block.settings.product
+            if hero_product == blank
+              assign hero_product = featured.products[hero_card_index]
+            endif
+            assign hero_card_url = hero_product.url | default: routes.all_products_collection_url
+            assign hero_card_title = hero_product.title | default: block.settings.fallback_title | default: 'Explore artwork'
+            assign hero_card_delta = hero_card_index | minus: 2
+            assign hero_card_offset = hero_card_delta | times: 8
+            assign hero_card_rotation = hero_card_delta | times: 3
+          -%}
+          <a class="home-hero-card" href="{{ hero_card_url }}" aria-label="{{ hero_card_title | escape }}" style="--fan-offset: {{ hero_card_offset }}px; --fan-rotation: {{ hero_card_rotation }}deg" {{ block.shopify_attributes }}>
+            <span class="home-hero-card__media">
+              {%- if block.settings.image != blank -%}
+                {{ block.settings.image | image_url: width: 900 | image_tag: loading: 'eager', widths: '360, 540, 720, 900', sizes: '(max-width: 760px) 44vw, 220px', alt: hero_card_title }}
+              {%- else -%}
+                {%- case hero_card_index -%}
+                  {%- when 1 -%}
+                    <img src="{{ 'hero-art-botanical.jpg' | asset_url }}" width="733" height="1100" alt="{{ hero_card_title | escape }}" loading="eager">
+                  {%- when 2 -%}
+                    <img src="{{ 'hero-art-anime-silhouette.jpg' | asset_url }}" width="733" height="1100" alt="{{ hero_card_title | escape }}" loading="eager">
+                  {%- when 3 -%}
+                    <img src="{{ 'hero-art-anime-portrait.jpg' | asset_url }}" width="1100" height="1100" alt="{{ hero_card_title | escape }}" loading="eager">
+                  {%- when 4 -%}
+                    <img src="{{ 'metaliq-architectural-hero.jpg' | asset_url }}" width="1680" height="945" alt="{{ hero_card_title | escape }}" loading="eager">
+                  {%- else -%}
+                    <img src="{{ 'hero-art-western.jpg' | asset_url }}" width="1100" height="733" alt="{{ hero_card_title | escape }}" loading="eager">
+                {%- endcase -%}
+              {%- endif -%}
+            </span>
+            <span class="home-hero-card__info">
+              <strong>{{ hero_card_title }}</strong>
+              {%- if hero_product != blank -%}<span>{{ hero_product.price | money }}</span>{%- endif -%}
+            </span>
+          </a>
+          {%- assign hero_card_index = hero_card_index | plus: 1 -%}
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+    <div class="home-hero__footer">
+      <p class="home-hero__body">{{ hero_body }}</p>
       <div class="home-hero__actions">
-        <a
-          class="button button--primary home-hero__cta"
-          href="{{ section.settings.button_link | default: routes.all_products_collection_url }}"
-        >
-          {{ section.settings.button_label | default: 'home.hero_cta' | t }}
-        </a>
-        {%- if section.settings.hero_note != blank -%}
-          <p class="home-hero__note">{{ section.settings.hero_note }}</p>
+        <a class="button" href="{{ hero_link_1 }}">{{ hero_label_1 }}</a>
+        {%- if hero_label_2 != blank -%}
+          <a class="home-hero__text-link" href="{{ hero_link_2 }}">{{ hero_label_2 }} <span aria-hidden="true">&rarr;</span></a>
         {%- endif -%}
       </div>
     </div>
+  </div>
+</section>
 
-    <div class="home-hero__figure">
-      {%- if section.settings.image -%}
-        {{
-          section.settings.image
-          | image_url: width: 1600
-          | image_tag:
-            loading: 'eager',
-            fetchpriority: 'high',
-            widths: '600, 900, 1200, 1600',
-            sizes: '(min-width: 900px) 46vw, 88vw',
-            alt: section.settings.image.alt | default: hero_lead
-        }}
-      {%- else -%}
-        <div class="home-hero__disc" aria-hidden="true">{% render 'engraving', seed: 12 %}</div>
-      {%- endif -%}
+<section class="home-collections section">
+  <div class="container">
+    <div class="section-head reveal">
+      <div>
+        <p class="eyebrow">{{ 'home.collections_index' | t }}</p>
+        <h2>{{ 'home.collections_heading' | t }}</h2>
+      </div>
+      <a class="link" href="{{ routes.collections_url }}">{{ 'collections.view_all' | t }}</a>
+    </div>
+
+    <div class="home-collections__grid">
+      {%- for collection_item in collections -%}
+        {%- liquid
+          assign tile_image = collection_item.featured_image
+          if tile_image == blank and collection_item.products.first != blank
+            assign tile_image = collection_item.products.first.featured_image
+          endif
+          assign placeholder_index = forloop.index0 | modulo: 4
+        -%}
+        <a class="home-tile reveal" href="{{ collection_item.url }}">
+          <span class="home-tile__media media">
+            {%- if tile_image != blank -%}
+              {{
+                tile_image
+                | image_url: width: 1000
+                | image_tag:
+                  loading: 'lazy',
+                  widths: '320, 480, 720, 1000',
+                  sizes: '(min-width: 1100px) 25vw, (min-width: 620px) 50vw, 100vw',
+                  alt: collection_item.title
+              }}
+            {%- else -%}
+              {%- case placeholder_index -%}
+                {%- when 1 -%}
+                  <img src="{{ 'hero-art-botanical.jpg' | asset_url }}" width="733" height="1100" alt="" loading="lazy">
+                {%- when 2 -%}
+                  <img src="{{ 'hero-art-anime-silhouette.jpg' | asset_url }}" width="733" height="1100" alt="" loading="lazy">
+                {%- when 3 -%}
+                  <img src="{{ 'hero-art-anime-portrait.jpg' | asset_url }}" width="1100" height="1100" alt="" loading="lazy">
+                {%- else -%}
+                  <img src="{{ 'hero-art-western.jpg' | asset_url }}" width="1100" height="733" alt="" loading="lazy">
+              {%- endcase -%}
+            {%- endif -%}
+          </span>
+          <span class="home-tile__caption">
+            <span class="home-tile__index">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>
+            <span class="home-tile__title">{{ collection_item.title }}</span>
+            <span class="home-tile__arrow" aria-hidden="true">&#8599;</span>
+          </span>
+        </a>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{%- capture testimonial_names -%}Ayesha R.|Hamza K.|Sarah M.|Bilal A.|Mariam S.|Usman T.|Noor F.|Daniyal H.|Zara I.|Farhan Q.{%- endcapture -%}
+{%- capture testimonial_locations -%}Karachi|Lahore|Islamabad|Rawalpindi|Faisalabad|Karachi|Lahore|Islamabad|Multan|Peshawar{%- endcapture -%}
+{%- capture testimonial_quotes -%}The piece has real presence without overpowering the room. The finish and detail are even better in person.|Ordering the right size was straightforward, and the installation guidance made mounting it simple.|It arrived carefully packed and looked exactly right above our console. The metalwork feels substantial and refined.|The custom sizing was accurate to the measurements we shared. It fits the wall as though it was designed with the room.|I was unsure how the black finish would sit against a warm wall, but the contrast is excellent.|The edges are clean, the coating is consistent, and the piece casts beautiful shadows throughout the day.|We wanted something personal without making the space feel busy. This struck the right balance.|The team kept us informed from confirmation through dispatch. Everything arrived secure and ready to install.|It feels more like an architectural object than wall decor. That is exactly what we were looking for.|The scale recommendation was useful and saved us from ordering too small. It anchors the entire room now.{%- endcapture -%}
+{%- assign testimonial_name_list = testimonial_names | split: '|' -%}
+{%- assign testimonial_location_list = testimonial_locations | split: '|' -%}
+{%- assign testimonial_quote_list = testimonial_quotes | split: '|' -%}
+
+<section class="home-testimonials section">
+  <div class="container">
+    <div class="section-head reveal">
+      <div>
+        <p class="eyebrow">02 / Customer stories</p>
+        <h2>{{ section.settings.testimonial_heading | default: 'Made for their spaces' }}</h2>
+      </div>
+      <p class="home-testimonials__intro">{{ section.settings.testimonial_intro | default: 'Experiences with the artwork, the process, and the finished installation.' }}</p>
+    </div>
+
+    <div class="home-testimonials__layout">
+      <div class="home-testimonials__cards" aria-label="Customer testimonials">
+        {%- for quote in testimonial_quote_list -%}
+          <article class="testimonial-card reveal">
+            <div class="testimonial-card__rating" aria-label="5 out of 5 stars">
+              <span aria-hidden="true">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+            </div>
+            <blockquote>{{ quote }}</blockquote>
+            <footer>
+              <span class="testimonial-card__avatar" aria-hidden="true">{{ testimonial_name_list[forloop.index0] | slice: 0 }}</span>
+              <span>
+                <strong>{{ testimonial_name_list[forloop.index0] }}</strong>
+                <small>{{ testimonial_location_list[forloop.index0] }}</small>
+              </span>
+            </footer>
+          </article>
+        {%- endfor -%}
+      </div>
+
+      <div class="home-testimonials__video reveal">
+        {%- if section.settings.testimonial_video != blank -%}
+          {{
+            section.settings.testimonial_video
+            | video_tag:
+              controls: true,
+              image_size: '1000x',
+              preload: 'metadata'
+          }}
+        {%- else -%}
+          <div class="home-testimonials__poster">
+            {%- if section.settings.testimonial_poster != blank -%}
+              {{ section.settings.testimonial_poster | image_url: width: 1200 | image_tag: loading: 'lazy', widths: '500, 800, 1200', sizes: '(min-width: 980px) 42vw, 100vw', alt: '' }}
+            {%- else -%}
+              <img src="{{ 'hero-art-western.jpg' | asset_url }}" width="1100" height="733" alt="" loading="lazy">
+            {%- endif -%}
+            <span class="home-testimonials__play" aria-hidden="true">{% render 'icon', name: 'play' %}</span>
+            <span class="home-testimonials__video-label">Customer stories &amp; installation</span>
+          </div>
+        {%- endif -%}
+      </div>
     </div>
   </div>
 </section>
 
 <section class="home-statement section container reveal">
   <p class="eyebrow">{{ 'home.intro_eyebrow' | t }}</p>
-  <h2>{{ section.settings.intro_heading | default: 'home.intro_heading' | t }}</h2>
-  <p class="lede">{{ section.settings.intro_body | default: 'home.intro_body' | t }}</p>
+  <h2>{{ intro_heading }}</h2>
+  <p class="lede">{{ intro_body }}</p>
 </section>
-
-{%- if section.blocks.size > 0 -%}
-  <section class="home-collections section container">
-    <div class="section-head reveal">
-      <div>
-        <p class="eyebrow">{{ 'home.collections_index' | t }}</p>
-        <h2>{{ 'home.collections_heading' | t }}</h2>
-      </div>
-      <a class="link" href="{{ routes.all_products_collection_url }}">{{ 'general.shop_all' | t }}</a>
-    </div>
-
-    <div class="home-collections__grid">
-      {%- for block in section.blocks -%}
-        {% liquid
-          assign chosen = block.settings.collection
-          if chosen == blank
-            assign chosen = collections[fallback_handles[forloop.index0]]
-          endif
-          assign tile_title = chosen.title | default: block.settings.fallback_title
-          assign tile_seed = chosen.id | default: forloop.index
-        %}
-        <a
-          class="home-tile reveal"
-          href="{{ chosen.url | default: routes.all_products_collection_url }}"
-          {{ block.shopify_attributes }}
-        >
-          <span class="home-tile__media media">
-            {%- if chosen.featured_image -%}
-              {{
-                chosen.featured_image
-                | image_url: width: 1200
-                | image_tag:
-                  loading: 'lazy',
-                  widths: '400, 600, 900, 1200',
-                  sizes: '(min-width: 900px) 33vw, 100vw',
-                  alt: tile_title
-              }}
-            {%- else -%}
-              <span class="media-fallback">{% render 'engraving', seed: tile_seed %}</span>
-            {%- endif -%}
-          </span>
-          <span class="home-tile__caption">
-            <span class="home-tile__index">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>
-            <span class="home-tile__title">{{ tile_title }}</span>
-            <span class="home-tile__arrow" aria-hidden="true">&#8599;</span>
-          </span>
-        </a>
-      {%- endfor -%}
-    </div>
-  </section>
-{%- endif -%}
 
 {%- if featured.products_count > 0 -%}
   <section class="home-featured section">
@@ -112,7 +220,7 @@
       <div class="section-head reveal">
         <div>
           <p class="eyebrow">{{ 'home.featured_index' | t }}</p>
-          <h2>{{ section.settings.featured_heading | default: 'home.featured_heading' | t }}</h2>
+          <h2>{{ featured_heading }}</h2>
         </div>
         <a class="link" href="{{ featured.url }}">{{ 'home.featured_link' | t }}</a>
       </div>
@@ -179,144 +287,184 @@
 </section>
 
 {% stylesheet %}
-  /* ---- Hero: split copy / figure, oversized ghost word ---- */
+  /* ---- Hero: centered headline and interactive artwork fan ---- */
   .home-hero {
+    position: relative;
+    isolation: isolate;
     background:
-      radial-gradient(
-        68% 88% at 86% 32%,
-        color-mix(in srgb, var(--copper) 13%, transparent),
-        transparent 62%
-      ),
-      var(--surface);
-    border-bottom: 1px solid var(--line);
+      linear-gradient(112deg, #11110f 0%, #1c1c1a 46%, #242420 72%, #161614 100%);
+    color: #f7f5f0;
     overflow: hidden;
   }
-  .home-hero__grid {
+  .home-hero::before,
+  .home-hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .home-hero::before {
+    background-image:
+      linear-gradient(118deg, transparent 0 22%, rgb(255 255 255 / 0.055) 22.05% 22.14%, transparent 22.2%),
+      linear-gradient(64deg, transparent 0 68%, rgb(255 255 255 / 0.045) 68.05% 68.14%, transparent 68.2%),
+      linear-gradient(146deg, transparent 0 48%, rgb(166 93 53 / 0.11) 48.05% 48.13%, transparent 48.2%),
+      linear-gradient(28deg, transparent 0 78%, rgb(255 255 255 / 0.035) 78.05% 78.14%, transparent 78.2%);
+  }
+  .home-hero::after {
+    background-image:
+      repeating-linear-gradient(90deg, transparent 0 119px, rgb(255 255 255 / 0.022) 119px 120px),
+      repeating-linear-gradient(0deg, transparent 0 119px, rgb(255 255 255 / 0.018) 119px 120px);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+  }
+  .home-hero__inner {
+    position: relative;
+    z-index: 1;
     display: grid;
-    grid-template-columns: 1.02fr 0.98fr;
-    align-items: center;
-    gap: clamp(24px, 5vw, 72px);
-    min-height: clamp(520px, 76svh, 760px);
-    padding-block: clamp(40px, 7vw, 92px);
+    justify-items: center;
+    gap: clamp(24px, 4vh, 42px);
+    min-height: clamp(620px, calc(100svh - var(--header-height) - var(--announce-height) - 24px), 820px);
+    padding-block: clamp(48px, 7vh, 76px);
   }
   .home-hero__copy {
-    display: grid;
-    justify-items: start;
-    gap: var(--sp-4);
-    max-width: 34rem;
-  }
-  .home-hero__kicker {
-    color: var(--copper);
-    font-size: var(--fs-eyebrow);
-    font-weight: 600;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
+    display: contents;
   }
   .home-hero__title {
     margin: 0;
-    display: grid;
-    line-height: 0.9;
-  }
-  .home-hero__lead {
-    font-size: clamp(1.55rem, 1rem + 2.4vw, 2.8rem);
-    font-weight: 460;
-    letter-spacing: -0.01em;
-  }
-  .home-hero__ghost {
-    font-size: clamp(3.4rem, 1rem + 12vw, 8.5rem);
+    max-width: 14ch;
+    font-size: clamp(3rem, 5.5vw, 5.4rem);
     font-weight: 500;
-    letter-spacing: -0.03em;
-    text-transform: uppercase;
-    color: transparent;
-    -webkit-text-stroke: 1.5px color-mix(in srgb, var(--ink) 28%, transparent);
+    line-height: 0.96;
+    letter-spacing: -0.01em;
+    text-align: center;
+    text-wrap: balance;
   }
-  @supports not ((-webkit-text-stroke: 1px black)) {
-    .home-hero__ghost {
-      color: color-mix(in srgb, var(--ink) 12%, transparent);
-    }
+  .home-hero__artworks {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: min(100%, 880px);
+    min-height: 250px;
+    padding-inline: 44px;
+    isolation: isolate;
+  }
+  .home-hero-card {
+    position: relative;
+    flex: 0 1 220px;
+    aspect-ratio: 4 / 5;
+    margin-inline: -14px;
+    overflow: hidden;
+    border: 1px solid rgb(255 255 255 / 0.2);
+    border-radius: var(--radius-lg);
+    background: var(--charcoal-deep);
+    box-shadow: 0 18px 34px rgb(0 0 0 / 0.28);
+    transform: translateY(var(--fan-offset)) rotate(var(--fan-rotation));
+    transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+  }
+  .home-hero-card:nth-child(2),
+  .home-hero-card:nth-child(3) { z-index: 2; }
+  .home-hero-card:hover,
+  .home-hero-card:focus-visible {
+    z-index: 5;
+    box-shadow: 0 24px 48px rgb(0 0 0 / 0.42);
+    transform: translateY(-18px) rotate(0deg) scale(1.04);
+  }
+  .home-hero-card__media,
+  .home-hero-card__media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .home-hero-card__media img { object-fit: cover; }
+  .home-hero-card__info {
+    position: absolute;
+    inset: auto 0 0;
+    display: grid;
+    gap: 2px;
+    padding: 42px 14px 14px;
+    background: linear-gradient(transparent, rgb(0 0 0 / 0.9));
+    color: #fff;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.25s var(--ease), transform 0.25s var(--ease);
+  }
+  .home-hero-card:hover .home-hero-card__info,
+  .home-hero-card:focus-visible .home-hero-card__info {
+    opacity: 1;
+    transform: none;
+  }
+  .home-hero-card__info strong {
+    font-size: 0.78rem;
+    line-height: 1.25;
+  }
+  .home-hero-card__info span {
+    color: rgb(255 255 255 / 0.72);
+    font-size: 0.7rem;
+  }
+  .home-hero__footer {
+    display: grid;
+    justify-items: center;
+    gap: 18px;
+    text-align: center;
   }
   .home-hero__body {
-    max-width: 32rem;
-    margin-top: var(--sp-2);
-    color: var(--muted);
+    max-width: 44rem;
+    color: rgb(247 245 240 / 0.76);
+    font-size: 1rem;
+    line-height: 1.6;
   }
   .home-hero__actions {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--sp-4);
-    margin-top: var(--sp-3);
+    gap: 24px;
+    margin-top: 8px;
   }
-  .home-hero__cta {
-    padding-inline: var(--sp-7);
+  .home-hero__actions .button {
+    min-width: 154px;
+    background: #f7f5f0;
+    color: #171715;
   }
-  .home-hero__note {
-    max-width: 24ch;
-    color: var(--muted);
-    font-size: 0.72rem;
-    line-height: 1.5;
+  .home-hero__actions .button:hover { background: #fff; }
+  .home-hero__text-link {
+    padding-block: 8px;
+    border-bottom: 1px solid rgb(247 245 240 / 0.5);
+    color: #f7f5f0;
+    font-size: 0.78rem;
+    font-weight: 500;
   }
-  .home-hero__figure {
-    position: relative;
-    align-self: stretch;
-    display: grid;
-    place-items: center;
-    min-height: 300px;
-  }
-  .home-hero__figure::before {
-    content: '';
-    position: absolute;
-    inset: 6% 0;
-    background: radial-gradient(
-      closest-side,
-      color-mix(in srgb, var(--copper) 15%, transparent),
-      transparent
-    );
-  }
-  .home-hero__figure img {
-    position: relative;
-    width: 100%;
-    max-height: 560px;
-    object-fit: contain;
-  }
-  .home-hero__disc {
-    position: relative;
-    width: min(100%, 440px);
-    color: var(--copper);
-  }
-  .home-hero__disc .engraving {
-    width: 100%;
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    .home-hero__disc {
-      animation: home-hero-spin 120s linear infinite;
-    }
-  }
-  @keyframes home-hero-spin {
-    to {
-      rotate: 360deg;
-    }
-  }
+  .home-hero__text-link span { margin-left: 12px; }
 
-  @media (max-width: 900px) {
-    .home-hero__grid {
-      grid-template-columns: 1fr;
+  @media (max-width: 760px) {
+    .home-hero::before { opacity: 0.62; }
+    .home-hero::after {
+      opacity: 0.55;
+      background-size: 84px 84px;
+    }
+    .home-hero__inner {
       min-height: 0;
-      gap: var(--sp-6);
-      padding-block: var(--sp-7);
+      padding: clamp(48px, 12vw, 72px) 0;
     }
-    .home-hero__figure {
-      order: -1;
-      min-height: 220px;
+    .home-hero__title { font-size: clamp(3rem, 15vw, 4.2rem); }
+    .home-hero__artworks {
+      justify-content: flex-start;
+      width: calc(100% + (var(--page-margin) * 2));
+      min-height: 230px;
+      margin-inline: calc(var(--page-margin) * -1);
+      padding: 20px var(--page-margin) 30px;
+      overflow-x: auto;
+      scroll-snap-type: x proximity;
     }
-    .home-hero__disc {
-      width: min(74%, 300px);
+    .home-hero-card {
+      flex: 0 0 min(52vw, 210px);
+      margin-inline: 0;
+      scroll-snap-align: center;
+      transform: none;
     }
-  }
-  @media (max-width: 560px) {
-    .home-hero__ghost {
-      font-size: clamp(2.9rem, 17vw, 4.6rem);
-    }
+    .home-hero-card + .home-hero-card { margin-left: 12px; }
+    .home-hero-card__info { opacity: 1; transform: none; }
+    .home-hero__actions { flex-direction: column; gap: 12px; }
   }
 
   /* ---- Statement ---- */
@@ -331,14 +479,26 @@
   }
 
   /* ---- Collections ---- */
+  .home-collections {
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+  }
   .home-collections__grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--sp-7) var(--sp-5);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .home-tile {
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface-2);
   }
   .home-tile__media {
     display: block;
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 4 / 5;
   }
   .home-tile__media img,
   .home-tile__media .media-fallback {
@@ -352,28 +512,177 @@
     transform: scale(1.04);
   }
   .home-tile__caption {
+    position: absolute;
+    inset: auto 0 0;
     display: grid;
     grid-template-columns: auto 1fr auto;
-    align-items: baseline;
+    align-items: center;
     gap: var(--sp-3);
-    padding-top: var(--sp-3);
+    padding: 64px var(--sp-4) var(--sp-4);
+    background: linear-gradient(transparent, rgb(0 0 0 / 0.82));
+    color: #fff;
   }
   .home-tile__index {
-    color: var(--muted);
+    color: rgb(255 255 255 / 0.62);
     font-size: 0.7rem;
     font-variant-numeric: tabular-nums;
   }
   .home-tile__title {
     font-family: var(--serif);
-    font-size: var(--fs-h4);
+    font-size: clamp(1.2rem, 1rem + 0.7vw, 1.65rem);
+    line-height: 1.1;
   }
   .home-tile__arrow {
-    color: var(--muted);
+    color: rgb(255 255 255 / 0.72);
     transition: transform 0.25s var(--ease);
   }
   .home-tile:hover .home-tile__arrow {
     transform: translate(3px, -3px);
     color: var(--copper);
+  }
+
+  /* ---- Testimonials ---- */
+  .home-testimonials {
+    border-bottom: 1px solid var(--line);
+    background: var(--background);
+  }
+  .home-testimonials__intro {
+    max-width: 38ch;
+    color: var(--muted);
+    font-size: var(--fs-label);
+  }
+  .home-testimonials__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(340px, 0.85fr);
+    align-items: start;
+    gap: clamp(32px, 5vw, 72px);
+  }
+  .home-testimonials__cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    max-height: 670px;
+    padding-right: 8px;
+    overflow-y: auto;
+    scrollbar-color: var(--line) transparent;
+    scrollbar-width: thin;
+  }
+  .testimonial-card {
+    display: grid;
+    align-content: space-between;
+    gap: 24px;
+    min-height: 210px;
+    padding: 24px;
+    border: 1px solid #c9c2b8;
+    border-radius: 8px;
+    background: #e8e4dd;
+    color: #171715;
+    box-shadow: 0 12px 28px rgb(0 0 0 / 0.16);
+    transition: border-color 0.25s var(--ease), transform 0.25s var(--ease);
+  }
+  .testimonial-card:hover {
+    border-color: color-mix(in srgb, var(--copper) 62%, #c9c2b8);
+    transform: translateY(-3px);
+  }
+  .testimonial-card__rating {
+    color: var(--copper);
+    font-size: 0.75rem;
+    letter-spacing: 0;
+  }
+  .testimonial-card blockquote {
+    padding: 0;
+    border: 0;
+    color: #171715;
+    font-family: var(--serif);
+    font-size: clamp(1.05rem, 0.96rem + 0.3vw, 1.25rem);
+    font-style: normal;
+    line-height: 1.45;
+  }
+  .testimonial-card footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .testimonial-card footer > span:last-child {
+    display: grid;
+  }
+  .testimonial-card footer strong,
+  .testimonial-card footer small {
+    font-family: var(--sans);
+    font-size: 0.72rem;
+  }
+  .testimonial-card footer small {
+    color: #68645e;
+  }
+  .testimonial-card__avatar {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    border-radius: 50%;
+    background: var(--charcoal);
+    color: var(--on-dark);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .home-testimonials__video {
+    position: sticky;
+    top: calc(var(--header-height) + 24px);
+    overflow: hidden;
+    border-radius: 8px;
+    background: var(--charcoal-deep);
+  }
+  .home-testimonials__video video,
+  .home-testimonials__poster,
+  .home-testimonials__poster img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+  }
+  .home-testimonials__video video,
+  .home-testimonials__poster img {
+    object-fit: cover;
+  }
+  .home-testimonials__poster {
+    position: relative;
+  }
+  .home-testimonials__poster::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(transparent 52%, rgb(0 0 0 / 0.72));
+  }
+  .home-testimonials__play {
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    left: 50%;
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border: 1px solid rgb(255 255 255 / 0.5);
+    border-radius: 50%;
+    background: rgb(17 17 15 / 0.64);
+    color: #fff;
+    transform: translate(-50%, -50%);
+    backdrop-filter: blur(8px);
+  }
+  .home-testimonials__play svg {
+    width: 22px;
+    height: 22px;
+    fill: currentColor;
+  }
+  .home-testimonials__video-label {
+    position: absolute;
+    z-index: 1;
+    right: 24px;
+    bottom: 22px;
+    left: 24px;
+    color: #fff;
+    font-family: var(--serif);
+    font-size: 1.35rem;
   }
 
   /* ---- Featured ---- */
@@ -478,7 +787,7 @@
   .home-closing {
     padding-block: var(--section);
     background: var(--copper);
-    color: #fff;
+    color: var(--on-accent);
   }
   .home-closing .container {
     display: flex;
@@ -497,10 +806,29 @@
   @media (max-width: 980px) {
     .home-collections__grid {
       grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
     }
     .home-process {
       grid-template-columns: 1fr;
       gap: var(--sp-7);
+    }
+    .home-testimonials__layout {
+      grid-template-columns: 1fr;
+    }
+    .home-testimonials__video {
+      position: relative;
+      top: auto;
+      grid-row: 1;
+    }
+    .home-testimonials__video video,
+    .home-testimonials__poster,
+    .home-testimonials__poster img {
+      aspect-ratio: 16 / 9;
+    }
+    .home-testimonials__cards {
+      max-height: none;
+      padding-right: 0;
+      overflow: visible;
     }
   }
 
@@ -510,8 +838,26 @@
       text-align: left;
     }
     .home-collections__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .home-tile__caption {
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      padding: 42px 12px 12px;
+    }
+    .home-tile__index {
+      display: none;
+    }
+    .home-tile__title {
+      font-size: 1rem;
+    }
+    .home-testimonials__cards {
       grid-template-columns: 1fr;
-      gap: var(--sp-6);
+    }
+    .testimonial-card {
+      min-height: 0;
+      padding: 20px;
     }
   }
 {% endstylesheet %}
@@ -522,23 +868,33 @@
   "settings": [
     { "type": "header", "content": "t:sections.home.hero" },
     { "type": "image_picker", "id": "image", "label": "t:labels.hero_image" },
-    { "type": "text", "id": "kicker", "label": "t:labels.text", "default": "CNC-cut metalwork / Pakistan" },
-    { "type": "text", "id": "heading", "label": "t:labels.heading", "default": "Art, cut in" },
-    { "type": "text", "id": "ghost_word", "label": "t:labels.text", "default": "Metal" },
+    { "type": "text", "id": "heading", "label": "t:labels.heading", "default": "Art, cut in metal." },
     {
       "type": "textarea",
       "id": "body",
       "label": "t:labels.text",
-      "default": "Architectural wall pieces, drawn with precision and finished by hand."
+      "default": "Architectural wall pieces, precision-cut in steel and made to fit your space."
     },
-    { "type": "text", "id": "button_label", "label": "t:labels.button_label", "default": "Shop the collection" },
+    { "type": "text", "id": "button_label", "label": "t:labels.button_label", "default": "Shop wall art" },
     { "type": "url", "id": "button_link", "label": "t:labels.button_link" },
+    { "type": "text", "id": "button2_label", "label": "t:labels.button_label", "default": "Create something custom" },
+    { "type": "url", "id": "button2_link", "label": "t:labels.button_link" },
+
+    { "type": "header", "content": "Testimonials" },
     {
       "type": "text",
-      "id": "hero_note",
-      "label": "t:labels.text",
-      "default": "Made to order in our workshop. Shipped worldwide."
+      "id": "testimonial_heading",
+      "label": "Heading",
+      "default": "Made for their spaces"
     },
+    {
+      "type": "textarea",
+      "id": "testimonial_intro",
+      "label": "Introduction",
+      "default": "Experiences with the artwork, the process, and the finished installation."
+    },
+    { "type": "video", "id": "testimonial_video", "label": "Testimonial video" },
+    { "type": "image_picker", "id": "testimonial_poster", "label": "Video placeholder image" },
 
     { "type": "header", "content": "t:sections.home.intro" },
     {
@@ -608,7 +964,10 @@
       "limit": 12,
       "settings": [
         { "type": "collection", "id": "collection", "label": "t:labels.collection" },
-        { "type": "text", "id": "fallback_title", "label": "t:labels.fallback_title", "default": "Collection" }
+        { "type": "text", "id": "fallback_title", "label": "t:labels.fallback_title", "default": "Collection" },
+        { "type": "header", "content": "Hero card" },
+        { "type": "product", "id": "product", "label": "Product" },
+        { "type": "image_picker", "id": "image", "label": "Artwork image" }
       ]
     }
   ],

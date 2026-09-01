@@ -8,6 +8,21 @@
     "theme_support_url": "https://support.shopify.com/"
   },
   {
+    "name": "t:general.typography",
+    "settings": [
+      {
+        "type": "font_picker",
+        "id": "heading_font",
+        "default": "playfair_display_n7",
+        "label": "t:general.primary"
+      },
+      {
+        "type": "paragraph",
+        "content": "t:info.body_font"
+      }
+    ]
+  },
+  {
     "name": "t:general.layout",
     "settings": [
       {
@@ -16,25 +31,25 @@
         "label": "t:labels.page_width",
         "options": [
           {
-            "value": "1200px",
+            "value": "1280px",
             "label": "t:options.page_width.narrow"
           },
           {
-            "value": "1320px",
+            "value": "1440px",
             "label": "t:options.page_width.wide"
           }
         ],
-        "default": "1320px"
+        "default": "1440px"
       },
       {
         "type": "range",
         "id": "min_page_margin",
         "min": 16,
-        "max": 64,
+        "max": 80,
         "step": 2,
         "unit": "px",
         "label": "t:labels.page_margin",
-        "default": 40
+        "default": 64
       },
       {
         "type": "range",
@@ -54,44 +69,50 @@
       {
         "type": "color",
         "id": "background_color",
-        "default": "#ECEAE4",
+        "default": "#121210",
         "label": "t:labels.background"
       },
       {
         "type": "color",
         "id": "surface_color",
-        "default": "#FBFAF7",
+        "default": "#1C1C19",
         "label": "t:general.section"
       },
       {
         "type": "color",
         "id": "foreground_color",
-        "default": "#1A1917",
+        "default": "#F4F2ED",
         "label": "t:labels.foreground"
       },
       {
         "type": "color",
         "id": "muted_color",
-        "default": "#6A655D",
+        "default": "#AAA69F",
         "label": "t:general.secondary"
       },
       {
         "type": "color",
         "id": "line_color",
-        "default": "#DAD5CA",
+        "default": "#383833",
         "label": "t:general.content"
       },
       {
         "type": "color",
         "id": "accent_color",
-        "default": "#9E5A38",
+        "default": "#FF7A2F",
         "label": "t:general.primary"
       },
       {
         "type": "color",
         "id": "dark_color",
-        "default": "#25231E",
+        "default": "#1C1C1A",
         "label": "t:general.theme"
+      },
+      {
+        "type": "color",
+        "id": "footer_color",
+        "default": "#0E0E0D",
+        "label": "t:general.footer"
       }
     ]
   },

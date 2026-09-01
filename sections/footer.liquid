@@ -1,54 +1,43 @@
-{% liquid
-  assign brand_name = section.settings.brand_name | default: shop.name
-  assign brand_mark = section.settings.mark
-  if brand_mark == blank
-    assign brand_mark = shop.name | slice: 0
-  endif
-%}
-
 <footer class="site-footer">
   <div class="container">
     <div class="footer-top">
       <div class="footer-brand">
-        <a class="brand" href="{{ routes.root_url }}">
-          <span class="brand__mark" aria-hidden="true">{{ brand_mark }}</span>
-          <span class="brand__name">{{ brand_name }}</span>
+        <a class="footer-logo" href="{{ routes.root_url }}" aria-label="{{ 'general.brand_home' | t: shop_name: shop.name }}">
+          <img src="{{ 'metaliq-logo.png' | asset_url }}" width="1000" height="614" alt="">
         </a>
         {%- if section.settings.statement != blank -%}
           <p>{{ section.settings.statement }}</p>
         {%- endif -%}
+        <small>&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. {{ 'general.rights_reserved' | t }}</small>
       </div>
 
-      <div class="footer-col">
-        <h2>{{ 'general.explore' | t }}</h2>
-        <nav aria-label="{{ 'general.footer_navigation' | t }}">
-          {%- for link in section.settings.menu.links -%}
-            <a href="{{ link.url }}">{{ link.title }}</a>
-          {%- else -%}
-            <a href="{{ routes.all_products_collection_url }}">{{ 'general.shop_all' | t }}</a>
-            <a href="{{ routes.search_url }}">{{ 'general.search' | t }}</a>
-          {%- endfor -%}
-        </nav>
-      </div>
-
-      <div class="footer-col">
-        <h2>{{ 'general.visit' | t }}</h2>
-        <nav>
-          {%- if section.settings.location != blank -%}
-            <p>{{ section.settings.location | escape }}</p>
-          {%- endif -%}
-          {%- if section.settings.email != blank -%}
-            <a href="mailto:{{ section.settings.email | escape }}">{{ section.settings.email | escape }}</a>
-          {%- endif -%}
-          {%- if shop.customer_accounts_enabled -%}
-            <a href="{{ routes.account_url }}">{{ 'general.account' | t }}</a>
-          {%- endif -%}
-        </nav>
-      </div>
+      {%- for i in (1..3) -%}
+        {%- liquid
+          assign menu_key = 'menu_' | append: i
+          assign heading_key = 'heading_' | append: i
+          assign menu = section.settings[menu_key]
+          assign heading = section.settings[heading_key]
+        -%}
+        {%- if menu != blank -%}
+          <div class="footer-col">
+            <h2>{{ heading | default: menu.title }}</h2>
+            <nav aria-label="{{ heading | default: menu.title | escape }}">
+              {%- for link in menu.links -%}
+                <a href="{{ link.url }}">{{ link.title }}</a>
+              {%- endfor -%}
+            </nav>
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
     </div>
 
     <div class="footer-bottom">
-      <span>&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}</span>
+      {%- if section.settings.location != blank -%}
+        <span>{{ section.settings.location | escape }}</span>
+      {%- endif -%}
+      {%- if section.settings.email != blank -%}
+        <a class="link" href="mailto:{{ section.settings.email | escape }}">{{ section.settings.email | escape }}</a>
+      {%- endif -%}
       {%- if section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
         <div class="payment-icons">
           {%- for type in shop.enabled_payment_types -%}
@@ -64,15 +53,20 @@
 {
   "name": "t:general.footer",
   "settings": [
-    { "type": "link_list", "id": "menu", "label": "t:labels.menu" },
-    { "type": "text", "id": "brand_name", "label": "t:labels.heading" },
-    { "type": "text", "id": "mark", "label": "t:labels.text" },
     {
       "type": "textarea",
       "id": "statement",
       "label": "t:labels.text",
-      "default": "Custom CNC-cut metal art, made to hold a room."
+      "default": "Precision metal art for modern spaces. Tactile, industrial, luxury."
     },
+    { "type": "header", "content": "t:general.explore" },
+    { "type": "text", "id": "heading_1", "label": "t:labels.heading", "default": "Shop" },
+    { "type": "link_list", "id": "menu_1", "label": "t:labels.menu" },
+    { "type": "text", "id": "heading_2", "label": "t:labels.heading", "default": "Support" },
+    { "type": "link_list", "id": "menu_2", "label": "t:labels.menu" },
+    { "type": "text", "id": "heading_3", "label": "t:labels.heading", "default": "Legal" },
+    { "type": "link_list", "id": "menu_3", "label": "t:labels.menu" },
+    { "type": "header", "content": "t:general.visit" },
     { "type": "text", "id": "location", "label": "t:labels.location", "default": "Made in Pakistan" },
     { "type": "text", "id": "email", "label": "t:labels.email", "default": "hello@metaliq.com" },
     { "type": "checkbox", "id": "show_payment_icons", "label": "t:labels.show_payment_icons", "default": true }

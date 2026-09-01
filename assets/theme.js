@@ -100,6 +100,26 @@
     }
   }
 
+  document.querySelectorAll('.nav-dropdown').forEach((dropdown) => {
+    const hoverNavigation = window.matchMedia('(min-width: 861px) and (hover: hover)');
+
+    dropdown.addEventListener('mouseenter', () => {
+      if (hoverNavigation.matches) dropdown.setAttribute('open', '');
+    });
+    dropdown.addEventListener('mouseleave', () => {
+      if (hoverNavigation.matches) dropdown.removeAttribute('open');
+    });
+    document.addEventListener('click', (event) => {
+      if (!dropdown.contains(event.target)) dropdown.removeAttribute('open');
+    });
+    dropdown.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        dropdown.removeAttribute('open');
+        dropdown.querySelector('summary')?.focus();
+      }
+    });
+  });
+
   /* ----------------------------------------------------------------------
      2. Collection sorting
      ---------------------------------------------------------------------- */

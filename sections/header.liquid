@@ -1,18 +1,17 @@
 {% liquid
-  assign brand_name = section.settings.brand_name | default: shop.name
-  assign brand_mark = section.settings.mark
-  if brand_mark == blank
-    assign brand_mark = shop.name | slice: 0
-  endif
+  assign collections_menu = section.settings.collections_menu
+  assign fallback_handles = 'calligraphy,islamic,clocks,anime-comics,floral' | split: ','
 %}
+
+{%- if section.settings.announcement != blank -%}
+  <div class="announcement">
+    <span class="announcement__icon" aria-hidden="true">{% render 'icon', name: 'truck' %}</span>
+    <span>{{ section.settings.announcement | escape }}</span>
+  </div>
+{%- endif -%}
 
 <header class="site-header" data-site-header>
   <div class="container header-inner">
-    <a class="brand" href="{{ routes.root_url }}" aria-label="{{ 'general.brand_home' | t: shop_name: shop.name }}">
-      <span class="brand__mark" aria-hidden="true">{{ brand_mark }}</span>
-      <span class="brand__name">{{ brand_name }}</span>
-    </a>
-
     <button
       class="icon-button nav-toggle"
       type="button"
@@ -24,44 +23,42 @@
       <span class="visually-hidden">{{ 'general.menu' | t }}</span>
     </button>
 
+    <a class="brand" href="{{ routes.root_url }}" aria-label="{{ 'general.brand_home' | t: shop_name: shop.name }}">
+      <img class="brand__logo brand__logo--mark" src="{{ 'metaliq-mark.png' | asset_url }}" width="512" height="494" alt="">
+    </a>
+
     <nav class="header-nav" id="PrimaryNav" aria-label="{{ 'general.primary_navigation' | t }}" data-nav>
-      {%- for link in section.settings.menu.links -%}
-        <a href="{{ link.url }}" {% if link.current %}aria-current="page"{% endif %}>{{ link.title }}</a>
-      {%- else -%}
-        <a href="{{ routes.all_products_collection_url }}">{{ 'general.shop_all' | t }}</a>
-        <a href="{{ routes.all_products_collection_url }}">{{ 'collections.title' | t }}</a>
-      {%- endfor -%}
+      <a href="{{ routes.root_url }}"{% if request.page_type == 'index' %} aria-current="page"{% endif %}>{{ 'general.home' | t }}</a>
+      <a href="{{ routes.all_products_collection_url }}"{% if request.path == routes.all_products_collection_url %} aria-current="page"{% endif %}>{{ 'general.shop_all' | t }}</a>
+
+      <details class="nav-dropdown">
+        <summary>{{ 'collections.title' | t }} <span aria-hidden="true"></span></summary>
+        <div class="nav-dropdown__menu">
+          {%- if collections_menu != blank -%}
+            {%- for link in collections_menu.links -%}
+              <a href="{{ link.url }}"{% if link.current %} aria-current="page"{% endif %}>{{ link.title }}</a>
+            {%- endfor -%}
+          {%- else -%}
+            {%- for handle in fallback_handles -%}
+              {%- assign collection_item = collections[handle] -%}
+              {%- if collection_item != blank -%}<a href="{{ collection_item.url }}">{{ collection_item.title }}</a>{%- endif -%}
+            {%- endfor -%}
+            <a href="{{ routes.collections_url }}">{{ 'collections.view_all' | t }}</a>
+          {%- endif -%}
+        </div>
+      </details>
+
+      <a href="{{ pages.about.url | default: routes.root_url }}"{% if page.handle == 'about' %} aria-current="page"{% endif %}>{{ 'general.about_us' | t }}</a>
+      <a href="{{ pages.contact.url | default: routes.root_url }}"{% if page.handle == 'contact' %} aria-current="page"{% endif %}>{{ 'general.contact' | t }}</a>
     </nav>
 
     <div class="header-actions">
       <a class="icon-button" href="{{ routes.search_url }}" aria-label="{{ 'general.search' | t }}">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="11" cy="11" r="7" />
-          <path d="m20 20-4-4" />
-        </svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
       </a>
-
-      {%- if shop.customer_accounts_enabled -%}
-        <a class="icon-button account-link" href="{{ routes.account_url }}" aria-label="{{ 'general.account' | t }}">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="8" r="4" />
-            <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" />
-          </svg>
-        </a>
-      {%- endif -%}
-
-      <a
-        class="icon-button cart-link"
-        href="{{ routes.cart_url }}"
-        aria-label="{{ 'general.cart_label' | t: count: cart.item_count }}"
-      >
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M6 8h12l-1 12H7L6 8Z" />
-          <path d="M9 8V6a3 3 0 0 1 6 0v2" />
-        </svg>
-        {%- if cart.item_count > 0 -%}
-          <span class="cart-count">{{ cart.item_count }}</span>
-        {%- endif -%}
+      <a class="icon-button cart-link" href="{{ routes.cart_url }}" aria-label="{{ 'general.cart_label' | t: count: cart.item_count }}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+        {%- if cart.item_count > 0 -%}<span class="cart-count">{{ cart.item_count }}</span>{%- endif -%}
       </a>
     </div>
   </div>
@@ -71,9 +68,14 @@
 {
   "name": "t:general.header",
   "settings": [
-    { "type": "link_list", "id": "menu", "label": "t:labels.menu" },
-    { "type": "text", "id": "brand_name", "label": "t:labels.heading" },
-    { "type": "text", "id": "mark", "label": "t:labels.text" }
+    {
+      "type": "text",
+      "id": "announcement",
+      "label": "t:labels.announcement",
+      "default": "Free shipping on orders over $99"
+    },
+    { "type": "link_list", "id": "collections_menu", "label": "t:labels.collections_menu" },
+    { "type": "paragraph", "content": "MetaliQ brand assets are loaded from the theme." }
   ],
   "enabled_on": { "groups": ["header"] }
 }
