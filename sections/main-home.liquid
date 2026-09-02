@@ -83,7 +83,7 @@
     <div class="home-hero__copy">
       <h1 class="home-hero__title"><span>{{ hero_heading_accent }}</span>{{ hero_heading_rest }}</h1>
     </div>
-    <div class="home-hero__artworks" aria-label="{{ 'home.hero_products_label' | t }}">
+    <div class="home-hero__artworks" aria-label="{{ 'home.hero_products_label' | t }}" data-hero-reel>
       <div class="home-hero__track">
         {%- for reel_pass in (1..2) -%}
           <div class="home-hero__group"{% if reel_pass == 2 %} aria-hidden="true"{% endif %}>
@@ -647,10 +647,16 @@
       display: block;
       width: min(100%, 900px);
       padding-inline: 0;
-      overflow: hidden;
+      overflow-x: auto;
+      overflow-y: hidden;
+      cursor: grab;
+      scrollbar-width: none;
+      touch-action: pan-x pan-y;
       -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
       mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
     }
+    .home-hero__artworks::-webkit-scrollbar { display: none; }
+    .home-hero__artworks:active { cursor: grabbing; }
     .home-hero__track,
     .home-hero__group {
       display: flex;
@@ -662,8 +668,8 @@
     .home-hero__track {
       --reel-gap: 16px;
       --reel-half-gap: 8px;
-      animation: hero-film-roll 32s linear infinite;
-      will-change: transform;
+      animation: none;
+      transform: none;
     }
     .home-hero__group[aria-hidden='true'] {
       display: flex;
@@ -678,13 +684,6 @@
     .home-hero-card:hover,
     .home-hero-card:focus-visible {
       transform: translateY(-8px);
-    }
-    .home-hero__artworks:hover .home-hero__track,
-    .home-hero__artworks:focus-within .home-hero__track {
-      animation-play-state: paused;
-    }
-    @keyframes hero-film-roll {
-      to { transform: translateX(calc(-50% - var(--reel-half-gap))); }
     }
   }
 
@@ -712,7 +711,6 @@
     }
     .home-hero__track {
       --reel-half-gap: 6px;
-      animation-duration: 26s;
     }
     .home-hero-card {
       flex-basis: min(46vw, 180px);

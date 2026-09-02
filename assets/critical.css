@@ -1532,6 +1532,53 @@ html.reveal-on .reveal.is-in {
     --cols: 2;
     gap: var(--stack-md);
   }
+  .product-card__media img {
+    object-fit: contain;
+  }
+  .product-card__body {
+    padding: 12px;
+  }
+  .product-card__kicker {
+    margin-bottom: 6px;
+    overflow: hidden;
+    font-size: 0.58rem;
+    letter-spacing: 0;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .product-card__title {
+    display: -webkit-box;
+    min-height: 2.4em;
+    margin-bottom: 10px;
+    overflow: hidden;
+    font-size: clamp(1rem, 4.5vw, 1.2rem);
+    line-height: 1.2;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  .product-card__price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 3px 6px;
+    font-size: 0.82rem;
+    line-height: 1.25;
+  }
+  .product-card__price .price__from {
+    flex-basis: 100%;
+    color: var(--muted);
+    font-size: 0.65rem;
+  }
+  .product-card__badge {
+    top: 8px;
+    left: 8px;
+    max-width: calc(100% - 16px);
+    overflow: hidden;
+    font-size: 0.58rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   .field-grid {
     grid-template-columns: 1fr;
   }

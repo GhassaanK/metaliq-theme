@@ -134,6 +134,68 @@
     });
   });
 
+  document.querySelectorAll('[data-hero-reel]').forEach((reel) => {
+    const track = reel.querySelector('.home-hero__track');
+    const firstGroup = track && track.querySelector('.home-hero__group');
+    const mobileLayout = window.matchMedia('(max-width: 980px)');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (!track || !firstGroup) return;
+
+    let frame;
+    let previousTime;
+    let paused = false;
+    let resumeTimer;
+    const speed = 32;
+
+    const loop = (time) => {
+      if (!mobileLayout.matches || reducedMotion.matches || paused) {
+        previousTime = time;
+        frame = window.requestAnimationFrame(loop);
+        return;
+      }
+
+      const elapsed = Math.min(40, time - (previousTime || time));
+      previousTime = time;
+      reel.scrollLeft += speed * (elapsed / 1000);
+
+      const gap = parseFloat(window.getComputedStyle(track).columnGap) || 0;
+      const cycleWidth = firstGroup.getBoundingClientRect().width + gap;
+      if (cycleWidth > 0 && reel.scrollLeft >= cycleWidth) reel.scrollLeft -= cycleWidth;
+      frame = window.requestAnimationFrame(loop);
+    };
+
+    const pause = () => {
+      paused = true;
+      window.clearTimeout(resumeTimer);
+    };
+    const resume = (delay = 700) => {
+      window.clearTimeout(resumeTimer);
+      resumeTimer = window.setTimeout(() => {
+        paused = false;
+        previousTime = undefined;
+      }, delay);
+    };
+
+    reel.addEventListener('pointerdown', pause);
+    reel.addEventListener('pointerup', () => resume());
+    reel.addEventListener('pointercancel', () => resume());
+    reel.addEventListener('mouseenter', pause);
+    reel.addEventListener('mouseleave', () => resume(0));
+    reel.addEventListener('wheel', () => {
+      pause();
+      resume();
+    }, { passive: true });
+    reel.addEventListener('focusin', pause);
+    reel.addEventListener('focusout', () => resume());
+    mobileLayout.addEventListener('change', () => {
+      reel.scrollLeft = 0;
+      previousTime = undefined;
+    });
+
+    frame = window.requestAnimationFrame(loop);
+    window.addEventListener('pagehide', () => window.cancelAnimationFrame(frame), { once: true });
+  });
+
   /* ----------------------------------------------------------------------
      Money
      ---------------------------------------------------------------------- */
@@ -373,7 +435,7 @@
     const measure = () => {
       const raw = Number(heightInput && heightInput.value);
       const height = Number.isFinite(raw) && raw > 0 ? raw : baseHeight;
-      const valid = height >= minHeight && height <= maxHeight;
+      const valid = Number.isFinite(raw) && raw >= minHeight && raw <= maxHeight;
       const clamped = Math.min(Math.max(height, minHeight), maxHeight);
       const ratio = clamped / baseHeight;
       const scale = byArea ? ratio * ratio : ratio;
@@ -401,6 +463,13 @@
 
     const update = () => {
       const custom = isCustom();
+
+      if (heightInput) {
+        heightInput.disabled = !custom;
+        heightInput.required = custom;
+        if (!custom) heightInput.value = '';
+      }
+
       const state = measure();
 
       if (customPanel) customPanel.hidden = !custom;
@@ -439,11 +508,11 @@
       // Only submit sizing properties when a custom size is actually chosen.
       if (dimensionsProperty) {
         dimensionsProperty.disabled = !custom;
-        dimensionsProperty.value = dimensionLabel(state);
+        dimensionsProperty.value = custom ? dimensionLabel(state) : '';
       }
       if (groupProperty) {
         groupProperty.disabled = true; // set explicitly by the AJAX path below
-        groupProperty.value = `${variantId()}-${dimensionLabel(state)}`;
+        groupProperty.value = custom ? `${variantId()}-${dimensionLabel(state)}` : '';
       }
 
       if (addError) addError.hidden = true;
