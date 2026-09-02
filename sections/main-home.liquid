@@ -3,6 +3,8 @@
   if hero_heading == blank
     assign hero_heading = 'home.hero_heading' | t
   endif
+  assign hero_heading_accent = hero_heading | split: ',' | first
+  assign hero_heading_rest = hero_heading | remove_first: hero_heading_accent
   assign hero_body = section.settings.body
   if hero_body == blank
     assign hero_body = 'home.hero_body' | t
@@ -17,68 +19,109 @@
   endif
   assign hero_link_1 = section.settings.button_link | default: routes.all_products_collection_url
   assign hero_link_2 = section.settings.button2_link | default: settings.quote_page.url | default: routes.root_url
-  assign intro_heading = section.settings.intro_heading
-  if intro_heading == blank
-    assign intro_heading = 'home.intro_heading' | t
-  endif
-  assign intro_body = section.settings.intro_body
-  if intro_body == blank
-    assign intro_body = 'home.intro_body' | t
-  endif
   assign featured_heading = section.settings.featured_heading
   if featured_heading == blank
     assign featured_heading = 'home.featured_heading' | t
   endif
-  assign featured = section.settings.featured_collection | default: collections.all
+  assign featured = section.settings.featured_collection
+  if featured == blank
+    assign featured = collections['best-sellers']
+  endif
+  if featured == blank
+    assign featured = collections.all
+  endif
+  assign why_heading = section.settings.why_heading
+  if why_heading == blank
+    assign why_heading = 'home.why_heading' | t
+  endif
+  assign why_intro = section.settings.why_intro
+  if why_intro == blank
+    assign why_intro = 'home.why_intro' | t
+  endif
+  assign custom_heading = section.settings.custom_heading
+  if custom_heading == blank
+    assign custom_heading = 'home.custom_heading' | t
+  endif
+  assign custom_body = section.settings.custom_body
+  if custom_body == blank
+    assign custom_body = 'home.custom_body' | t
+  endif
+  assign custom_button = section.settings.custom_button
+  if custom_button == blank
+    assign custom_button = 'home.custom_cta' | t
+  endif
+  assign custom_image_alt = section.settings.custom_image.alt
+  if custom_image_alt == blank
+    assign custom_image_alt = 'home.custom_image_alt' | t
+  endif
+  assign custom_link = section.settings.custom_link
+  if custom_link == blank
+    assign custom_link = settings.quote_page.url
+  endif
+  if custom_link == blank
+    assign custom_link = routes.root_url
+  endif
+  assign recent_collection = section.settings.recent_collection
+  if recent_collection == blank
+    assign recent_collection = collections['new-arrivals']
+  endif
+  if recent_collection == blank
+    assign recent_collection = collections.all
+  endif
+  assign recent_heading = section.settings.recent_heading
+  if recent_heading == blank
+    assign recent_heading = 'home.recent_heading' | t
+  endif
+  assign featured_product_handles = featured.products | map: 'handle'
+  assign recent_product_handles = recent_collection.products | map: 'handle'
+  assign all_product_handles = collections.all.products | map: 'handle'
+  assign hero_product_handles = featured_product_handles | concat: recent_product_handles | concat: all_product_handles | uniq
 %}
 
 <section class="home-hero">
   <div class="container home-hero__inner">
     <div class="home-hero__copy">
-      <h1 class="home-hero__title">{{ hero_heading }}</h1>
+      <h1 class="home-hero__title"><span>{{ hero_heading_accent }}</span>{{ hero_heading_rest }}</h1>
     </div>
-    <div class="home-hero__artworks" aria-label="Featured artwork">
-      {%- assign hero_card_index = 0 -%}
-      {%- for block in section.blocks -%}
-        {%- if block.type == 'category' -%}
-          {%- liquid
-            assign hero_product = block.settings.product
-            if hero_product == blank
-              assign hero_product = featured.products[hero_card_index]
-            endif
-            assign hero_card_url = hero_product.url | default: routes.all_products_collection_url
-            assign hero_card_title = hero_product.title | default: block.settings.fallback_title | default: 'Explore artwork'
-            assign hero_card_delta = hero_card_index | minus: 2
-            assign hero_card_offset = hero_card_delta | times: 8
-            assign hero_card_rotation = hero_card_delta | times: 3
-          -%}
-          <a class="home-hero-card" href="{{ hero_card_url }}" aria-label="{{ hero_card_title | escape }}" style="--fan-offset: {{ hero_card_offset }}px; --fan-rotation: {{ hero_card_rotation }}deg" {{ block.shopify_attributes }}>
-            <span class="home-hero-card__media">
-              {%- if block.settings.image != blank -%}
-                {{ block.settings.image | image_url: width: 900 | image_tag: loading: 'eager', widths: '360, 540, 720, 900', sizes: '(max-width: 760px) 44vw, 220px', alt: hero_card_title }}
-              {%- else -%}
-                {%- case hero_card_index -%}
-                  {%- when 1 -%}
-                    <img src="{{ 'hero-art-botanical.jpg' | asset_url }}" width="733" height="1100" alt="{{ hero_card_title | escape }}" loading="eager">
-                  {%- when 2 -%}
-                    <img src="{{ 'hero-art-anime-silhouette.jpg' | asset_url }}" width="733" height="1100" alt="{{ hero_card_title | escape }}" loading="eager">
-                  {%- when 3 -%}
-                    <img src="{{ 'hero-art-anime-portrait.jpg' | asset_url }}" width="1100" height="1100" alt="{{ hero_card_title | escape }}" loading="eager">
-                  {%- when 4 -%}
-                    <img src="{{ 'metaliq-architectural-hero.jpg' | asset_url }}" width="1680" height="945" alt="{{ hero_card_title | escape }}" loading="eager">
-                  {%- else -%}
-                    <img src="{{ 'hero-art-western.jpg' | asset_url }}" width="1100" height="733" alt="{{ hero_card_title | escape }}" loading="eager">
-                {%- endcase -%}
-              {%- endif -%}
-            </span>
-            <span class="home-hero-card__info">
-              <strong>{{ hero_card_title }}</strong>
-              {%- if hero_product != blank -%}<span>{{ hero_product.price | money }}</span>{%- endif -%}
-            </span>
-          </a>
-          {%- assign hero_card_index = hero_card_index | plus: 1 -%}
-        {%- endif -%}
-      {%- endfor -%}
+    <div class="home-hero__artworks" aria-label="{{ 'home.hero_products_label' | t }}">
+      <div class="home-hero__track">
+        {%- for reel_pass in (1..2) -%}
+          <div class="home-hero__group"{% if reel_pass == 2 %} aria-hidden="true"{% endif %}>
+            {%- for hero_card_index in (0..6) -%}
+                {%- liquid
+                  assign hero_block = section.blocks[hero_card_index]
+                  assign hero_product_handle = hero_product_handles[hero_card_index]
+                  assign hero_product = all_products[hero_product_handle]
+                  if hero_product == blank
+                    continue
+                  endif
+                  if hero_product.featured_image == blank
+                    continue
+                  endif
+                  assign hero_card_url = hero_product.url
+                  assign hero_card_title = hero_product.title
+                -%}
+                <a class="home-hero-card" href="{{ hero_card_url }}" aria-label="{{ hero_card_title | escape }}"{% if reel_pass == 2 %} tabindex="-1"{% endif %}{% if reel_pass == 1 %}{% if hero_block != blank %} {{ hero_block.shopify_attributes }}{% endif %}{% endif %}>
+                  <span class="home-hero-card__media">
+                    {{
+                      hero_product.featured_image
+                      | image_url: width: 900
+                      | image_tag:
+                        loading: 'eager',
+                        widths: '360, 540, 720, 900',
+                        sizes: '(max-width: 760px) 46vw, 200px',
+                        alt: hero_product.featured_image.alt | default: hero_card_title
+                    }}
+                  </span>
+                  <span class="home-hero-card__info">
+                    <strong>{{ hero_card_title }}</strong>
+                    <span>{{ hero_product.price | money }}</span>
+                  </span>
+                </a>
+            {%- endfor -%}
+          </div>
+        {%- endfor -%}
+      </div>
     </div>
     <div class="home-hero__footer">
       <p class="home-hero__body">{{ hero_body }}</p>
@@ -104,6 +147,12 @@
 
     <div class="home-collections__grid">
       {%- for collection_item in collections -%}
+        {%- if collection_item.handle == 'best-sellers' -%}
+          {%- continue -%}
+        {%- endif -%}
+        {%- if collection_item.handle == recent_collection.handle -%}
+          {%- continue -%}
+        {%- endif -%}
         {%- liquid
           assign tile_image = collection_item.featured_image
           if tile_image == blank and collection_item.products.first != blank
@@ -156,31 +205,44 @@
 
 <section class="home-testimonials section">
   <div class="container">
-    <div class="section-head reveal">
-      <div>
-        <p class="eyebrow">02 / Customer stories</p>
-        <h2>{{ section.settings.testimonial_heading | default: 'Made for their spaces' }}</h2>
-      </div>
-      <p class="home-testimonials__intro">{{ section.settings.testimonial_intro | default: 'Experiences with the artwork, the process, and the finished installation.' }}</p>
-    </div>
-
     <div class="home-testimonials__layout">
-      <div class="home-testimonials__cards" aria-label="Customer testimonials">
-        {%- for quote in testimonial_quote_list -%}
-          <article class="testimonial-card reveal">
-            <div class="testimonial-card__rating" aria-label="5 out of 5 stars">
-              <span aria-hidden="true">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
-            </div>
-            <blockquote>{{ quote }}</blockquote>
-            <footer>
-              <span class="testimonial-card__avatar" aria-hidden="true">{{ testimonial_name_list[forloop.index0] | slice: 0 }}</span>
-              <span>
-                <strong>{{ testimonial_name_list[forloop.index0] }}</strong>
-                <small>{{ testimonial_location_list[forloop.index0] }}</small>
-              </span>
-            </footer>
-          </article>
-        {%- endfor -%}
+      <div class="home-testimonials__stage reveal" data-testimonial-slider>
+        <div class="home-testimonials__heading">
+          <p class="eyebrow">02 / Customer stories</p>
+          <h2>{{ section.settings.testimonial_heading | default: 'From Our Community.' }}</h2>
+          <p class="home-testimonials__intro">{{ section.settings.testimonial_intro | default: "Here's what our buyers had to say about MetaliQ Art." }}</p>
+        </div>
+        <div class="home-testimonials__navigation">
+          <div>
+            <button class="icon-button home-testimonials__button home-testimonials__button--previous" type="button" aria-label="{{ 'home.testimonials_previous' | t }}" data-testimonial-previous>
+              {% render 'icon', name: 'arrow-right' %}
+            </button>
+            <button class="icon-button home-testimonials__button" type="button" aria-label="{{ 'home.testimonials_next' | t }}" data-testimonial-next>
+              {% render 'icon', name: 'arrow-right' %}
+            </button>
+          </div>
+          <p><span data-testimonial-current>01</span> <span>/ {{ testimonial_quote_list.size }}</span></p>
+        </div>
+        <div class="home-testimonials__slides" aria-label="{{ 'home.testimonials_label' | t }}">
+          {%- for quote in testimonial_quote_list -%}
+            <article class="testimonial-card{% if forloop.first %} is-active{% endif %}" data-testimonial-slide aria-hidden="{% if forloop.first %}false{% else %}true{% endif %}">
+              <div class="testimonial-card__topline">
+                <div class="testimonial-card__rating" aria-label="{{ 'home.testimonials_rating' | t }}">
+                  <span aria-hidden="true">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+                </div>
+                <span class="testimonial-card__index">{{ forloop.index | prepend: '0' }} / {{ testimonial_quote_list.size }}</span>
+              </div>
+              <blockquote>{{ quote }}</blockquote>
+              <footer>
+                <span class="testimonial-card__avatar" aria-hidden="true">{{ testimonial_name_list[forloop.index0] | slice: 0 }}</span>
+                <span>
+                  <strong>{{ testimonial_name_list[forloop.index0] }}</strong>
+                  <small>{{ testimonial_location_list[forloop.index0] }}</small>
+                </span>
+              </footer>
+            </article>
+          {%- endfor -%}
+        </div>
       </div>
 
       <div class="home-testimonials__video reveal">
@@ -208,71 +270,182 @@
   </div>
 </section>
 
-<section class="home-statement section container reveal">
-  <p class="eyebrow">{{ 'home.intro_eyebrow' | t }}</p>
-  <h2>{{ intro_heading }}</h2>
-  <p class="lede">{{ intro_body }}</p>
-</section>
-
 {%- if featured.products_count > 0 -%}
-  <section class="home-featured section">
+  <section class="home-featured home-bestsellers section" data-product-carousel>
     <div class="container">
       <div class="section-head reveal">
         <div>
-          <p class="eyebrow">{{ 'home.featured_index' | t }}</p>
+          <p class="eyebrow">03 / Best sellers</p>
           <h2>{{ featured_heading }}</h2>
+          <p class="home-bestsellers__intro">The pieces customers choose most often.</p>
         </div>
-        <a class="link" href="{{ featured.url }}">{{ 'home.featured_link' | t }}</a>
+        <div class="home-bestsellers__actions">
+          <a class="link" href="{{ featured.url }}">{{ 'home.featured_link' | t }}</a>
+          <div class="home-bestsellers__controls" aria-label="Best seller carousel controls">
+            <button class="icon-button home-bestsellers__button home-bestsellers__button--previous" type="button" aria-label="Previous products" data-carousel-previous>
+              {% render 'icon', name: 'arrow-right' %}
+            </button>
+            <button class="icon-button home-bestsellers__button" type="button" aria-label="Next products" data-carousel-next>
+              {% render 'icon', name: 'arrow-right' %}
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div class="product-grid reveal">
-        {%- for product in featured.products limit: 4 -%}
-          {% render 'product-card', product: product %}
+      <div class="home-bestsellers__track reveal" data-carousel-track tabindex="0" aria-label="Best selling products">
+        {%- for product in featured.products limit: 12 -%}
+          <div class="home-bestsellers__item">
+            <span class="home-bestsellers__rank" aria-hidden="true">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>
+            {% render 'product-card', product: product, sizes: '(min-width: 1100px) 31vw, (min-width: 700px) 45vw, 82vw' %}
+          </div>
         {%- endfor -%}
       </div>
     </div>
   </section>
 {%- endif -%}
 
-<section class="home-process section container">
-  <div class="home-process__visual reveal">
-    {%- if section.settings.story_image -%}
-      <div class="media">
-        {{
-          section.settings.story_image
-          | image_url: width: 1400
-          | image_tag:
-            loading: 'lazy',
-            widths: '500, 800, 1100, 1400',
-            sizes: '(min-width: 900px) 45vw, 100vw',
-            alt: section.settings.story_image.alt | default: 'home.process_alt' | t
-        }}
-      </div>
-    {%- else -%}
-      <div class="media media-fallback home-process__art">
-        {% render 'engraving', seed: 8 %}
-      </div>
-    {%- endif -%}
-  </div>
+<section class="home-why section">
+  <div class="container home-why__layout">
+    <div class="home-why__intro reveal">
+      <p class="eyebrow">{{ 'home.why_index' | t }}</p>
+      <h2>{{ why_heading }}</h2>
+      <p>{{ why_intro }}</p>
+      <a class="link-rule" href="{{ routes.all_products_collection_url }}">
+        {{ 'home.why_cta' | t }}
+        <span aria-hidden="true">&rarr;</span>
+      </a>
+    </div>
 
-  <div class="home-process__copy reveal">
-    <p class="eyebrow">{{ 'home.process_index' | t }}</p>
-    <blockquote class="home-process__quote">
-      {{- section.settings.quote | default: 'Precision gives the piece its form. The hand finish gives it presence.' -}}
-    </blockquote>
-    <ol class="home-process__steps">
-      {%- for i in (1..3) -%}
-        {%- assign title_key = 'step_' | append: i | append: '_title' -%}
-        {%- assign body_key = 'step_' | append: i | append: '_body' -%}
-        <li>
-          <span class="home-process__num">0{{ i }}</span>
+    <ol class="home-why__benefits">
+      {%- for i in (1..5) -%}
+        {%- liquid
+          assign icon_key = 'why_icon_' | append: i
+          assign title_key = 'home.why_' | append: i | append: '_title'
+          assign body_key = 'home.why_' | append: i | append: '_body'
+        -%}
+        <li class="home-why__benefit reveal">
+          <span class="home-why__number" aria-hidden="true">{{ i | prepend: '0' }}</span>
+          <span class="home-why__icon" aria-hidden="true">{% render 'icon', name: section.settings[icon_key] %}</span>
           <div>
-            <h3>{{ section.settings[title_key] }}</h3>
-            <p>{{ section.settings[body_key] }}</p>
+            <h3>{{ title_key | t }}</h3>
+            <p>{{ body_key | t }}</p>
           </div>
         </li>
       {%- endfor -%}
     </ol>
+  </div>
+</section>
+
+<section class="home-custom section">
+  <div class="container home-custom__layout">
+    <div class="home-custom__copy reveal">
+      <p class="eyebrow">{{ 'home.custom_index' | t }}</p>
+      <h2>{{ custom_heading }}</h2>
+      <p class="home-custom__body">{{ custom_body }}</p>
+
+      <ol class="home-custom__steps" aria-label="{{ 'home.custom_steps_label' | t }}">
+        {%- for i in (1..3) -%}
+          {%- assign step_key = 'home.custom_step_' | append: i -%}
+          <li>
+            <span aria-hidden="true">{{ i | prepend: '0' }}</span>
+            <strong>{{ step_key | t }}</strong>
+          </li>
+        {%- endfor -%}
+      </ol>
+
+      <a class="button home-custom__button" href="{{ custom_link }}">
+        {{ custom_button }}
+        <span aria-hidden="true">&rarr;</span>
+      </a>
+      <p class="home-custom__note">{{ 'home.custom_note' | t }}</p>
+    </div>
+
+    <div class="home-custom__visual reveal">
+      {%- if section.settings.custom_image != blank -%}
+        {{
+          section.settings.custom_image
+          | image_url: width: 1400
+          | image_tag:
+            loading: 'lazy',
+            widths: '500, 800, 1100, 1400',
+            sizes: '(min-width: 980px) 48vw, 100vw',
+            alt: custom_image_alt
+        }}
+      {%- else -%}
+        <img src="{{ 'metaliq-architectural-hero.jpg' | asset_url }}" width="1680" height="945" alt="{{ 'home.custom_image_alt' | t }}" loading="lazy">
+      {%- endif -%}
+      <span class="home-custom__visual-label">
+        <span>{{ 'home.custom_visual_label' | t }}</span>
+        <strong>{{ 'home.custom_visual_value' | t }}</strong>
+      </span>
+    </div>
+  </div>
+</section>
+
+{%- if recent_collection.products_count > 0 -%}
+  <section class="home-recent section" data-product-carousel>
+    <div class="container">
+      <div class="section-head home-recent__head reveal">
+        <div>
+          <p class="eyebrow">{{ 'home.recent_index' | t }}</p>
+          <h2>{{ recent_heading }}</h2>
+          <p class="home-recent__intro">{{ 'home.recent_intro' | t }}</p>
+        </div>
+        <div class="home-recent__actions">
+          <a class="link" href="{{ recent_collection.url }}">{{ 'home.recent_view_all' | t }}</a>
+          <div class="home-recent__controls" aria-label="{{ 'home.recent_controls' | t }}">
+            <button class="icon-button home-recent__button home-recent__button--previous" type="button" aria-label="{{ 'home.recent_previous' | t }}" data-carousel-previous>
+              {% render 'icon', name: 'arrow-right' %}
+            </button>
+            <button class="icon-button home-recent__button" type="button" aria-label="{{ 'home.recent_next' | t }}" data-carousel-next>
+              {% render 'icon', name: 'arrow-right' %}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="home-recent__track reveal" data-carousel-track tabindex="0" aria-label="{{ 'home.recent_products' | t }}">
+        {%- for product in recent_collection.products limit: 12 -%}
+          <div class="home-recent__item">
+            <span class="home-recent__date-mark">{{ 'home.recent_badge' | t }}</span>
+            {% render 'product-card', product: product, sizes: '(min-width: 1100px) 23vw, (min-width: 700px) 45vw, 82vw' %}
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+  </section>
+{%- endif -%}
+
+<section class="home-faq section">
+  <div class="container home-faq__layout">
+    <header class="home-faq__heading reveal">
+      <p class="eyebrow">{{ 'home.faq_index' | t }}</p>
+      <h2>{{ 'home.faq_heading' | t }}</h2>
+      <p>{{ 'home.faq_intro' | t }}</p>
+      <a class="link-rule" href="{{ pages.contact.url | default: routes.root_url }}">
+        {{ 'home.faq_contact' | t }}
+        <span aria-hidden="true">&rarr;</span>
+      </a>
+    </header>
+
+    <div class="home-faq__list" data-faq-accordion>
+      {%- for i in (1..8) -%}
+        {%- liquid
+          assign question_key = 'home.faq_' | append: i | append: '_question'
+          assign answer_key = 'home.faq_' | append: i | append: '_answer'
+        -%}
+        <details class="home-faq__item reveal"{% if forloop.first %} open{% endif %}>
+          <summary>
+            <span class="home-faq__number" aria-hidden="true">{{ i | prepend: '0' }}</span>
+            <span>{{ question_key | t }}</span>
+            <span class="home-faq__toggle" aria-hidden="true"></span>
+          </summary>
+          <div class="home-faq__answer">
+            <p>{{ answer_key | t }}</p>
+          </div>
+        </details>
+      {%- endfor -%}
+    </div>
   </div>
 </section>
 
@@ -323,9 +496,9 @@
     z-index: 1;
     display: grid;
     justify-items: center;
-    gap: clamp(24px, 4vh, 42px);
-    min-height: clamp(620px, calc(100svh - var(--header-height) - var(--announce-height) - 24px), 820px);
-    padding-block: clamp(48px, 7vh, 76px);
+    gap: clamp(14px, 2.5vh, 22px);
+    min-height: clamp(500px, calc(100svh - var(--header-height) - var(--announce-height) - 24px), 680px);
+    padding-block: clamp(26px, 4vh, 40px);
   }
   .home-hero__copy {
     display: contents;
@@ -333,42 +506,75 @@
   .home-hero__title {
     margin: 0;
     max-width: 14ch;
-    font-size: clamp(3rem, 5.5vw, 5.4rem);
+    font-size: clamp(3rem, 5vw, 4.7rem);
     font-weight: 500;
     line-height: 0.96;
     letter-spacing: -0.01em;
     text-align: center;
+    text-transform: capitalize;
     text-wrap: balance;
+  }
+  .home-hero__title span {
+    color: var(--copper);
   }
   .home-hero__artworks {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: min(100%, 880px);
-    min-height: 250px;
-    padding-inline: 44px;
+    width: min(100%, 1100px);
+    min-height: 220px;
+    padding-inline: 20px;
     isolation: isolate;
+  }
+  .home-hero__group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+  .home-hero__track {
+    width: 100%;
+    padding-block: 12px;
+  }
+  .home-hero__group[aria-hidden='true'] {
+    display: none;
   }
   .home-hero-card {
     position: relative;
-    flex: 0 1 220px;
+    flex: 0 1 200px;
     aspect-ratio: 4 / 5;
-    margin-inline: -14px;
+    margin-inline: -25px;
     overflow: hidden;
     border: 1px solid rgb(255 255 255 / 0.2);
     border-radius: var(--radius-lg);
     background: var(--charcoal-deep);
     box-shadow: 0 18px 34px rgb(0 0 0 / 0.28);
-    transform: translateY(var(--fan-offset)) rotate(var(--fan-rotation));
+    transform: translateY(var(--fan-y, 0)) rotate(var(--fan-rotation, 0deg));
     transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+    animation: hero-card-float var(--float-duration, 7s) ease-in-out var(--float-delay, 0s) infinite alternate;
+    translate: 0 calc(var(--float-distance, 5px) * -1);
+    will-change: translate;
   }
-  .home-hero-card:nth-child(2),
-  .home-hero-card:nth-child(3) { z-index: 2; }
+  .home-hero-card:nth-child(1) { --fan-y: -18px; --fan-rotation: -7deg; --float-distance: 6px; --float-duration: 6.8s; --float-delay: -2.1s; }
+  .home-hero-card:nth-child(2) { --fan-y: -10px; --fan-rotation: -5deg; --float-distance: 9px; --float-duration: 8.2s; --float-delay: -5.4s; }
+  .home-hero-card:nth-child(3) { --fan-y: -4px; --fan-rotation: -2deg; --float-distance: 7px; --float-duration: 7.4s; --float-delay: -1.2s; }
+  .home-hero-card:nth-child(4) { --fan-y: 0; --fan-rotation: 0deg; --float-distance: 10px; --float-duration: 9.1s; --float-delay: -6.3s; }
+  .home-hero-card:nth-child(5) { --fan-y: 4px; --fan-rotation: 2deg; --float-distance: 7px; --float-duration: 7.8s; --float-delay: -3.7s; }
+  .home-hero-card:nth-child(6) { --fan-y: 10px; --fan-rotation: 5deg; --float-distance: 9px; --float-duration: 8.7s; --float-delay: -4.6s; }
+  .home-hero-card:nth-child(7) { --fan-y: 18px; --fan-rotation: 7deg; --float-distance: 6px; --float-duration: 7.1s; --float-delay: -2.9s; }
+  .home-hero__artworks:hover .home-hero-card,
+  .home-hero__artworks:focus-within .home-hero-card {
+    animation-play-state: paused;
+  }
+  @keyframes hero-card-float {
+    from { translate: 0 calc(var(--float-distance, 5px) * -1); }
+    to { translate: 0 var(--float-distance, 5px); }
+  }
   .home-hero-card:hover,
   .home-hero-card:focus-visible {
     z-index: 5;
     box-shadow: 0 24px 48px rgb(0 0 0 / 0.42);
-    transform: translateY(-18px) rotate(0deg) scale(1.04);
+    transform: translateY(-12px) rotate(0deg);
   }
   .home-hero-card__media,
   .home-hero-card__media img {
@@ -405,21 +611,21 @@
   .home-hero__footer {
     display: grid;
     justify-items: center;
-    gap: 18px;
+    gap: 12px;
     text-align: center;
   }
   .home-hero__body {
     max-width: 44rem;
     color: rgb(247 245 240 / 0.76);
     font-size: 1rem;
-    line-height: 1.6;
+    line-height: 1.5;
   }
   .home-hero__actions {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 24px;
-    margin-top: 8px;
+    margin-top: 2px;
   }
   .home-hero__actions .button {
     min-width: 154px;
@@ -436,6 +642,52 @@
   }
   .home-hero__text-link span { margin-left: 12px; }
 
+  @media (max-width: 980px) {
+    .home-hero__artworks {
+      display: block;
+      width: min(100%, 900px);
+      padding-inline: 0;
+      overflow: hidden;
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+      mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+    }
+    .home-hero__track,
+    .home-hero__group {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      width: max-content;
+      gap: var(--reel-gap, 16px);
+    }
+    .home-hero__track {
+      --reel-gap: 16px;
+      --reel-half-gap: 8px;
+      animation: hero-film-roll 32s linear infinite;
+      will-change: transform;
+    }
+    .home-hero__group[aria-hidden='true'] {
+      display: flex;
+    }
+    .home-hero-card {
+      flex: 0 0 190px;
+      margin-inline: 0;
+      transform: none;
+      animation: none;
+      translate: none;
+    }
+    .home-hero-card:hover,
+    .home-hero-card:focus-visible {
+      transform: translateY(-8px);
+    }
+    .home-hero__artworks:hover .home-hero__track,
+    .home-hero__artworks:focus-within .home-hero__track {
+      animation-play-state: paused;
+    }
+    @keyframes hero-film-roll {
+      to { transform: translateX(calc(-50% - var(--reel-half-gap))); }
+    }
+  }
+
   @media (max-width: 760px) {
     .home-hero::before { opacity: 0.62; }
     .home-hero::after {
@@ -448,34 +700,141 @@
     }
     .home-hero__title { font-size: clamp(3rem, 15vw, 4.2rem); }
     .home-hero__artworks {
-      justify-content: flex-start;
       width: calc(100% + (var(--page-margin) * 2));
-      min-height: 230px;
+      min-height: 220px;
       margin-inline: calc(var(--page-margin) * -1);
-      padding: 20px var(--page-margin) 30px;
-      overflow-x: auto;
-      scroll-snap-type: x proximity;
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+      mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+    }
+    .home-hero__track,
+    .home-hero__group {
+      --reel-gap: 12px;
+    }
+    .home-hero__track {
+      --reel-half-gap: 6px;
+      animation-duration: 26s;
     }
     .home-hero-card {
-      flex: 0 0 min(52vw, 210px);
-      margin-inline: 0;
-      scroll-snap-align: center;
-      transform: none;
+      flex-basis: min(46vw, 180px);
     }
-    .home-hero-card + .home-hero-card { margin-left: 12px; }
     .home-hero-card__info { opacity: 1; transform: none; }
     .home-hero__actions { flex-direction: column; gap: 12px; }
   }
 
-  /* ---- Statement ---- */
-  .home-statement {
-    display: grid;
-    gap: var(--sp-5);
-    max-width: 62rem;
+  @media (prefers-reduced-motion: reduce) {
+    .home-hero__track {
+      animation: none;
+    }
+    .home-hero-card {
+      animation: none;
+      translate: none;
+    }
   }
-  .home-statement h2 {
-    font-size: clamp(2rem, 1.2rem + 3.4vw, 3.8rem);
-    line-height: 1.06;
+
+  /* ---- FAQs ---- */
+  .home-faq {
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .home-faq__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
+    align-items: start;
+    gap: clamp(54px, 9vw, 140px);
+  }
+  .home-faq__heading {
+    position: sticky;
+    top: calc(var(--header-height) + 28px);
+  }
+  .home-faq__heading h2 {
+    max-width: 9ch;
+    margin: 14px 0 22px;
+    font-size: clamp(2.8rem, 2rem + 2.6vw, 5rem);
+    line-height: 0.98;
+  }
+  .home-faq__heading > p:not(.eyebrow) {
+    max-width: 38ch;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .home-faq__heading .link-rule {
+    margin-top: 32px;
+  }
+  .home-faq__list {
+    border-top: 1px solid var(--line);
+  }
+  .home-faq__item {
+    border-bottom: 1px solid var(--line);
+  }
+  .home-faq__item summary {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr) 28px;
+    align-items: center;
+    gap: 16px;
+    min-height: 78px;
+    padding: 18px 0;
+    cursor: pointer;
+    list-style: none;
+  }
+  .home-faq__item summary::-webkit-details-marker {
+    display: none;
+  }
+  .home-faq__item summary > span:nth-child(2) {
+    font-family: var(--serif);
+    font-size: clamp(1.1rem, 1rem + 0.35vw, 1.35rem);
+    font-weight: 600;
+    line-height: 1.35;
+  }
+  .home-faq__number {
+    color: var(--muted);
+    font-size: 0.65rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .home-faq__toggle {
+    position: relative;
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    transition: border-color 0.2s var(--ease), transform 0.3s var(--ease);
+  }
+  .home-faq__toggle::before,
+  .home-faq__toggle::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10px;
+    height: 1px;
+    background: currentColor;
+    content: '';
+    transform: translate(-50%, -50%);
+  }
+  .home-faq__toggle::after {
+    transform: translate(-50%, -50%) rotate(90deg);
+    transition: transform 0.25s var(--ease);
+  }
+  .home-faq__item summary:hover {
+    color: var(--copper);
+  }
+  .home-faq__item summary:hover .home-faq__toggle {
+    border-color: var(--copper);
+  }
+  .home-faq__item[open] .home-faq__toggle {
+    border-color: var(--copper);
+    color: var(--copper);
+    transform: rotate(180deg);
+  }
+  .home-faq__item[open] .home-faq__toggle::after {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  .home-faq__answer {
+    padding: 0 44px 24px 50px;
+  }
+  .home-faq__answer p {
+    max-width: 60ch;
+    color: var(--muted);
+    font-size: var(--fs-sm);
+    line-height: 1.75;
   }
 
   /* ---- Collections ---- */
@@ -547,56 +906,95 @@
     background: var(--background);
   }
   .home-testimonials__intro {
-    max-width: 38ch;
+    max-width: 42ch;
+    margin-top: 18px;
     color: var(--muted);
-    font-size: var(--fs-label);
+    font-size: clamp(0.95rem, 0.9rem + 0.2vw, 1.08rem);
+    line-height: 1.65;
   }
   .home-testimonials__layout {
     display: grid;
-    grid-template-columns: minmax(0, 1.35fr) minmax(340px, 0.85fr);
-    align-items: start;
+    grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.95fr);
+    align-items: stretch;
     gap: clamp(32px, 5vw, 72px);
   }
-  .home-testimonials__cards {
+  .home-testimonials__stage {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-    max-height: 670px;
-    padding-right: 8px;
-    overflow-y: auto;
-    scrollbar-color: var(--line) transparent;
-    scrollbar-width: thin;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    height: 590px;
+    max-height: 590px;
+  }
+  .home-testimonials__heading h2 {
+    max-width: 10ch;
+    margin-top: 14px;
+    font-family: var(--serif);
+    font-size: clamp(2.8rem, 2rem + 2.4vw, 4.8rem);
+    font-weight: var(--heading-weight);
+    line-height: 0.98;
+  }
+  .home-testimonials__slides {
+    position: relative;
+    min-height: 0;
+    overflow: hidden;
+    border-top: 1px solid var(--line);
+    color: var(--ink);
   }
   .testimonial-card {
+    position: absolute;
+    inset: 0;
     display: grid;
     align-content: space-between;
     gap: 24px;
-    min-height: 210px;
-    padding: 24px;
-    border: 1px solid #c9c2b8;
-    border-radius: 8px;
-    background: #e8e4dd;
-    color: #171715;
-    box-shadow: 0 12px 28px rgb(0 0 0 / 0.16);
-    transition: border-color 0.25s var(--ease), transform 0.25s var(--ease);
+    padding: 30px 0 0;
+    color: var(--ink);
+    opacity: 0;
+    transform: translateX(28px);
+    transition: opacity 0.35s var(--ease), transform 0.35s var(--ease);
+    pointer-events: none;
   }
-  .testimonial-card:hover {
-    border-color: color-mix(in srgb, var(--copper) 62%, #c9c2b8);
-    transform: translateY(-3px);
+  .testimonial-card.is-active {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+  }
+  .testimonial-card.is-leaving {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+  .testimonial-card__topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
   }
   .testimonial-card__rating {
     color: var(--copper);
-    font-size: 0.75rem;
+    font-size: 0.82rem;
     letter-spacing: 0;
   }
+  .testimonial-card__index {
+    display: none;
+  }
   .testimonial-card blockquote {
+    position: relative;
     padding: 0;
     border: 0;
-    color: #171715;
+    color: var(--ink);
     font-family: var(--serif);
-    font-size: clamp(1.05rem, 0.96rem + 0.3vw, 1.25rem);
+    font-size: var(--quote-fit-size, clamp(1.75rem, 1.25rem + 1.4vw, 2.75rem));
     font-style: normal;
-    line-height: 1.45;
+    line-height: 1.22;
+    overflow-wrap: anywhere;
+  }
+  .testimonial-card blockquote::before {
+    display: block;
+    height: 30px;
+    margin-bottom: 8px;
+    color: var(--copper);
+    content: '\201C';
+    font-family: var(--serif);
+    font-size: 4rem;
+    line-height: 0.9;
   }
   .testimonial-card footer {
     display: flex;
@@ -612,7 +1010,7 @@
     font-size: 0.72rem;
   }
   .testimonial-card footer small {
-    color: #68645e;
+    color: var(--muted);
   }
   .testimonial-card__avatar {
     display: grid;
@@ -621,14 +1019,51 @@
     height: 36px;
     flex: 0 0 36px;
     border-radius: 50%;
-    background: var(--charcoal);
-    color: var(--on-dark);
+    background: var(--copper);
+    color: var(--on-accent);
     font-size: 0.75rem;
     font-weight: 600;
   }
+  .home-testimonials__navigation {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 20px;
+    margin: 28px 0 24px;
+  }
+  .home-testimonials__navigation p {
+    color: var(--muted);
+    font-size: 0.7rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .home-testimonials__navigation p span:first-child {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .home-testimonials__navigation > div {
+    display: flex;
+    gap: 8px;
+    order: 1;
+  }
+  .home-testimonials__navigation > p {
+    order: 2;
+  }
+  .home-testimonials__button {
+    width: 42px;
+    height: 42px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    color: var(--ink);
+  }
+  .home-testimonials__button:hover {
+    border-color: var(--copper);
+    color: var(--copper-dark);
+  }
+  .home-testimonials__button--previous svg {
+    transform: rotate(180deg);
+  }
   .home-testimonials__video {
-    position: sticky;
-    top: calc(var(--header-height) + 24px);
+    position: relative;
     overflow: hidden;
     border-radius: 8px;
     background: var(--charcoal-deep);
@@ -687,11 +1122,15 @@
 
   /* ---- Featured ---- */
   .home-featured {
-    background: var(--charcoal);
+    border-block: 1px solid var(--line);
+    background: #161614;
     color: var(--on-dark);
   }
   .home-featured .section-head {
-    border-color: rgb(255 255 255 / 0.16);
+    align-items: end;
+    margin-bottom: 40px;
+    padding-bottom: 0;
+    border: 0;
   }
   .home-featured .eyebrow {
     color: var(--copper-light);
@@ -715,72 +1154,392 @@
   .home-featured .price s {
     color: var(--on-dark-muted);
   }
-
-  /* ---- Process ---- */
-  .home-process {
-    display: grid;
-    grid-template-columns: 0.95fr 1.05fr;
+  .home-bestsellers__intro {
+    max-width: 34ch;
+    margin-top: 10px;
+    color: var(--on-dark-muted);
+    font-size: var(--fs-label);
+  }
+  .home-bestsellers__actions,
+  .home-bestsellers__controls {
+    display: flex;
     align-items: center;
-    gap: clamp(32px, 6vw, 88px);
   }
-  .home-process__visual .media {
-    aspect-ratio: 4 / 5;
-    border: 1px solid var(--line);
+  .home-bestsellers__actions {
+    gap: 24px;
   }
-  .home-process__visual img {
-    width: 100%;
+  .home-bestsellers__controls {
+    gap: 8px;
+  }
+  .home-bestsellers__button {
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgb(255 255 255 / 0.22);
+    border-radius: 50%;
+    color: var(--on-dark);
+    transition: border-color 0.2s var(--ease), background 0.2s var(--ease), opacity 0.2s var(--ease);
+  }
+  .home-bestsellers__button:hover {
+    border-color: var(--copper);
+    background: rgb(255 255 255 / 0.06);
+  }
+  .home-bestsellers__button:disabled {
+    opacity: 0.28;
+    cursor: default;
+  }
+  .home-bestsellers__button--previous svg {
+    transform: rotate(180deg);
+  }
+  .home-bestsellers__track {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: calc((100% - 48px) / 3);
+    gap: 24px;
+    padding-bottom: 8px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-behavior: smooth;
+    scroll-snap-type: inline mandatory;
+    scrollbar-width: none;
+  }
+  .home-bestsellers__track::-webkit-scrollbar {
+    display: none;
+  }
+  .home-bestsellers__item {
+    position: relative;
+    min-width: 0;
+    scroll-snap-align: start;
+  }
+  .home-bestsellers__item .product-card {
     height: 100%;
-    object-fit: cover;
+    border-color: rgb(255 255 255 / 0.12);
+    border-radius: 8px;
+    background: #242421;
+    box-shadow: 0 18px 38px rgb(0 0 0 / 0.2);
   }
-  .home-process__art {
+  .home-bestsellers__item .product-card:hover {
+    border-color: rgb(255 122 47 / 0.45);
+    box-shadow: 0 22px 46px rgb(0 0 0 / 0.34);
+  }
+  .home-bestsellers__item .product-card__media {
+    aspect-ratio: 5 / 6;
+    background: #1b1b18;
+  }
+  .home-bestsellers__item .product-card__body {
+    padding: 20px;
+  }
+  .home-bestsellers__item .product-card__title {
+    margin-bottom: 14px;
+    font-size: clamp(1.2rem, 1.05rem + 0.45vw, 1.55rem);
+    line-height: 1.2;
+  }
+  .home-bestsellers__rank {
+    position: absolute;
+    z-index: 2;
+    top: 14px;
+    right: 14px;
     display: grid;
     place-items: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid rgb(255 122 47 / 0.62);
+    border-radius: 50%;
+    background: rgb(18 18 16 / 0.84);
+    color: var(--copper);
+    font-size: 0.68rem;
+    font-weight: 600;
+    backdrop-filter: blur(8px);
   }
-  .home-process__art .engraving {
-    width: 62%;
+
+  /* ---- Why MetaliQ ---- */
+  .home-why {
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
   }
-  .home-process__quote {
-    margin: var(--sp-4) 0 var(--sp-7);
-    padding: 0;
-    border: 0;
-    font-family: var(--serif);
-    font-size: clamp(1.6rem, 1rem + 2.4vw, 3rem);
-    font-style: normal;
-    line-height: 1.14;
+  .home-why::after {
+    position: absolute;
+    top: -180px;
+    left: -140px;
+    width: 460px;
+    height: 460px;
+    border: 1px solid rgb(255 122 47 / 0.12);
+    border-radius: 50%;
+    box-shadow: 0 0 0 70px rgb(255 122 47 / 0.025), 0 0 0 140px rgb(255 255 255 / 0.018);
+    content: '';
+    pointer-events: none;
   }
-  .home-process__quote::before {
-    content: '\201C';
-  }
-  .home-process__quote::after {
-    content: '\201D';
-  }
-  .home-process__steps {
+  .home-why__layout {
+    position: relative;
+    z-index: 1;
     display: grid;
-    gap: 0;
+    grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+    gap: clamp(56px, 9vw, 140px);
   }
-  .home-process__steps li {
-    display: grid;
-    grid-template-columns: 44px 1fr;
-    gap: var(--sp-4);
-    padding: var(--sp-4) 0;
+  .home-why__intro {
+    align-self: start;
+    position: sticky;
+    top: calc(var(--header-height) + 28px);
+  }
+  .home-why__intro h2 {
+    max-width: 9ch;
+    margin: 14px 0 22px;
+    font-size: clamp(2.5rem, 2rem + 2.5vw, 4.7rem);
+    line-height: 0.98;
+  }
+  .home-why__intro > p:not(.eyebrow) {
+    max-width: 43ch;
+    color: var(--muted);
+    font-size: clamp(1rem, 0.96rem + 0.2vw, 1.12rem);
+    line-height: 1.7;
+  }
+  .home-why__intro .link-rule {
+    margin-top: 34px;
+  }
+  .home-why__benefits {
     border-top: 1px solid var(--line);
   }
-  .home-process__num {
-    color: var(--copper);
-    font-size: 0.72rem;
+  .home-why__benefit {
+    display: grid;
+    grid-template-columns: 34px 52px minmax(0, 1fr);
+    align-items: start;
+    gap: 18px;
+    padding: 26px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .home-why__number {
+    padding-top: 4px;
+    color: var(--muted);
+    font-size: 0.64rem;
     font-variant-numeric: tabular-nums;
   }
-  .home-process__steps h3 {
-    margin-bottom: 4px;
-    font-family: var(--sans);
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+  .home-why__icon {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgb(255 122 47 / 0.35);
+    border-radius: 50%;
+    color: var(--copper);
   }
-  .home-process__steps p {
+  .home-why__icon .icon {
+    width: 20px;
+    height: 20px;
+  }
+  .home-why__benefit h3 {
+    margin-bottom: 7px;
+    font-family: var(--serif);
+    font-size: 1.18rem;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+  .home-why__benefit p {
+    max-width: 52ch;
     color: var(--muted);
     font-size: var(--fs-sm);
+    line-height: 1.6;
+  }
+
+  /* ---- Custom design ---- */
+  .home-custom {
+    border-bottom: 1px solid var(--line);
+    background: #10100f;
+    color: var(--on-dark);
+  }
+  .home-custom__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    align-items: center;
+    gap: clamp(44px, 7vw, 104px);
+  }
+  .home-custom__copy .eyebrow {
+    color: var(--copper);
+  }
+  .home-custom__copy h2 {
+    max-width: 10ch;
+    margin: 14px 0 22px;
+    font-size: clamp(2.7rem, 2rem + 3vw, 5.4rem);
+    line-height: 0.96;
+  }
+  .home-custom__body {
+    max-width: 48ch;
+    color: var(--on-dark-muted);
+    font-size: clamp(1rem, 0.95rem + 0.22vw, 1.14rem);
+    line-height: 1.7;
+  }
+  .home-custom__steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 34px 0;
+    border-block: 1px solid rgb(255 255 255 / 0.14);
+  }
+  .home-custom__steps li {
+    display: grid;
+    gap: 7px;
+    padding: 18px 12px 18px 0;
+  }
+  .home-custom__steps li + li {
+    padding-left: 16px;
+    border-left: 1px solid rgb(255 255 255 / 0.14);
+  }
+  .home-custom__steps span {
+    color: var(--copper);
+    font-size: 0.65rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .home-custom__steps strong {
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+  .home-custom__button {
+    display: inline-flex;
+    align-items: center;
+    gap: 30px;
+    background: var(--copper);
+    color: var(--on-accent);
+  }
+  .home-custom__button:hover {
+    background: #ff9255;
+  }
+  .home-custom__note {
+    margin-top: 14px;
+    color: var(--on-dark-muted);
+    font-size: 0.72rem;
+  }
+  .home-custom__visual {
+    position: relative;
+    min-height: 560px;
+    overflow: hidden;
+    border: 1px solid rgb(255 255 255 / 0.14);
+    border-radius: 8px;
+    background: #20201d;
+  }
+  .home-custom__visual::after {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 52%, rgb(0 0 0 / 0.76));
+    content: '';
+    pointer-events: none;
+  }
+  .home-custom__visual img {
+    width: 100%;
+    height: 100%;
+    min-height: 560px;
+    object-fit: cover;
+    transition: transform 0.7s var(--ease);
+  }
+  .home-custom__visual:hover img {
+    transform: scale(1.025);
+  }
+  .home-custom__visual-label {
+    position: absolute;
+    z-index: 1;
+    right: 24px;
+    bottom: 24px;
+    left: 24px;
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .home-custom__visual-label span {
+    color: rgb(255 255 255 / 0.65);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+  }
+  .home-custom__visual-label strong {
+    max-width: 13ch;
+    font-family: var(--serif);
+    font-size: clamp(1.5rem, 1rem + 1.4vw, 2.35rem);
+    font-weight: var(--heading-weight);
+    line-height: 1.05;
+    text-align: right;
+  }
+
+  /* ---- Recently added ---- */
+  .home-recent {
+    border-bottom: 1px solid var(--line);
+    background: var(--background);
+  }
+  .home-recent__head {
+    align-items: end;
+  }
+  .home-recent__intro {
+    max-width: 42ch;
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: var(--fs-label);
+  }
+  .home-recent__actions,
+  .home-recent__controls {
+    display: flex;
+    align-items: center;
+  }
+  .home-recent__actions {
+    gap: 24px;
+  }
+  .home-recent__controls {
+    gap: 8px;
+  }
+  .home-recent__button {
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    color: var(--ink);
+    transition: border-color 0.2s var(--ease), color 0.2s var(--ease), opacity 0.2s var(--ease);
+  }
+  .home-recent__button:hover {
+    border-color: var(--copper);
+    color: var(--copper);
+  }
+  .home-recent__button:disabled {
+    opacity: 0.28;
+    cursor: default;
+  }
+  .home-recent__button--previous svg {
+    transform: rotate(180deg);
+  }
+  .home-recent__track {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: calc((100% - 60px) / 4);
+    gap: 20px;
+    padding-bottom: 8px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-behavior: smooth;
+    scroll-snap-type: inline mandatory;
+    scrollbar-width: none;
+  }
+  .home-recent__track::-webkit-scrollbar {
+    display: none;
+  }
+  .home-recent__item {
+    position: relative;
+    min-width: 0;
+    scroll-snap-align: start;
+  }
+  .home-recent__item .product-card {
+    height: 100%;
+    border-radius: 8px;
+  }
+  .home-recent__date-mark {
+    position: absolute;
+    z-index: 2;
+    top: 14px;
+    right: 14px;
+    padding: 7px 9px;
+    border: 1px solid rgb(255 122 47 / 0.52);
+    border-radius: 4px;
+    background: rgb(18 18 16 / 0.84);
+    color: var(--copper);
+    font-size: 0.62rem;
+    font-weight: 700;
+    line-height: 1;
+    backdrop-filter: blur(8px);
   }
 
   /* ---- Closing ---- */
@@ -808,27 +1567,60 @@
       grid-template-columns: repeat(2, 1fr);
       gap: 20px;
     }
-    .home-process {
+    .home-faq__layout {
       grid-template-columns: 1fr;
-      gap: var(--sp-7);
+      gap: 44px;
+    }
+    .home-faq__heading {
+      position: static;
     }
     .home-testimonials__layout {
       grid-template-columns: 1fr;
+      gap: 42px;
     }
     .home-testimonials__video {
       position: relative;
       top: auto;
-      grid-row: 1;
+      grid-row: 2;
     }
     .home-testimonials__video video,
     .home-testimonials__poster,
     .home-testimonials__poster img {
       aspect-ratio: 16 / 9;
     }
-    .home-testimonials__cards {
+    .home-testimonials__stage {
+      grid-row: 1;
+      grid-template-rows: auto auto 360px;
+      height: auto;
       max-height: none;
-      padding-right: 0;
-      overflow: visible;
+    }
+    .home-bestsellers__track {
+      grid-auto-columns: calc((100% - 20px) / 2);
+      gap: 20px;
+    }
+    .home-why__layout {
+      grid-template-columns: 1fr;
+      gap: 46px;
+    }
+    .home-why__intro {
+      position: static;
+    }
+    .home-why__intro h2 {
+      max-width: 12ch;
+    }
+    .home-custom__layout {
+      grid-template-columns: 1fr;
+    }
+    .home-custom__copy h2 {
+      max-width: 12ch;
+    }
+    .home-custom__visual,
+    .home-custom__visual img {
+      min-height: 460px;
+    }
+    .home-recent__track {
+      grid-auto-columns: calc((100% - 20px) / 2);
+      gap: 20px;
     }
   }
 
@@ -852,12 +1644,98 @@
     .home-tile__title {
       font-size: 1rem;
     }
-    .home-testimonials__cards {
+    .testimonial-card {
+      gap: 18px;
+      padding: 24px 0 4px;
+    }
+    .testimonial-card blockquote {
+      font-size: var(--quote-fit-size, clamp(1.45rem, 1.1rem + 1.5vw, 1.8rem));
+    }
+    .testimonial-card blockquote::before {
+      height: 24px;
+      margin-bottom: 6px;
+      font-size: 3.25rem;
+    }
+    .home-testimonials__stage {
+      grid-template-rows: auto auto 330px;
+      height: auto;
+      max-height: none;
+    }
+    .home-testimonials__navigation {
+      margin: 24px 0 20px;
+      padding: 0;
+    }
+    .home-testimonials__heading h2 {
+      font-size: clamp(2.65rem, 12vw, 3.35rem);
+    }
+    .home-testimonials__intro {
+      margin-top: 14px;
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
+    .home-bestsellers .section-head {
+      align-items: start;
+      margin-bottom: 28px;
+    }
+    .home-bestsellers__actions {
+      width: 100%;
+      justify-content: space-between;
+    }
+    .home-bestsellers__track {
+      grid-auto-columns: 78%;
+      gap: 14px;
+    }
+    .home-why__benefit {
+      grid-template-columns: 42px minmax(0, 1fr);
+      gap: 14px;
+      padding: 22px 0;
+    }
+    .home-faq__item summary {
+      grid-template-columns: minmax(0, 1fr) 28px;
+      gap: 14px;
+      min-height: 68px;
+    }
+    .home-faq__number {
+      display: none;
+    }
+    .home-faq__answer {
+      padding: 0 42px 22px 0;
+    }
+    .home-why__number {
+      display: none;
+    }
+    .home-custom__steps {
       grid-template-columns: 1fr;
     }
-    .testimonial-card {
-      min-height: 0;
-      padding: 20px;
+    .home-custom__steps li,
+    .home-custom__steps li + li {
+      grid-template-columns: 28px 1fr;
+      gap: 10px;
+      padding: 14px 0;
+      border-left: 0;
+    }
+    .home-custom__steps li + li {
+      border-top: 1px solid rgb(255 255 255 / 0.14);
+    }
+    .home-custom__visual,
+    .home-custom__visual img {
+      min-height: 380px;
+    }
+    .home-custom__visual-label {
+      right: 16px;
+      bottom: 16px;
+      left: 16px;
+    }
+    .home-recent__head {
+      align-items: start;
+    }
+    .home-recent__actions {
+      width: 100%;
+      justify-content: space-between;
+    }
+    .home-recent__track {
+      grid-auto-columns: 78%;
+      gap: 14px;
     }
   }
 {% endstylesheet %}
@@ -868,7 +1746,7 @@
   "settings": [
     { "type": "header", "content": "t:sections.home.hero" },
     { "type": "image_picker", "id": "image", "label": "t:labels.hero_image" },
-    { "type": "text", "id": "heading", "label": "t:labels.heading", "default": "Art, cut in metal." },
+    { "type": "text", "id": "heading", "label": "t:labels.heading", "default": "Art, Cut In Metal." },
     {
       "type": "textarea",
       "id": "body",
@@ -885,30 +1763,16 @@
       "type": "text",
       "id": "testimonial_heading",
       "label": "Heading",
-      "default": "Made for their spaces"
+      "default": "From Our Community."
     },
     {
       "type": "textarea",
       "id": "testimonial_intro",
       "label": "Introduction",
-      "default": "Experiences with the artwork, the process, and the finished installation."
+      "default": "Here's what our buyers had to say about MetaliQ Art."
     },
     { "type": "video", "id": "testimonial_video", "label": "Testimonial video" },
     { "type": "image_picker", "id": "testimonial_poster", "label": "Video placeholder image" },
-
-    { "type": "header", "content": "t:sections.home.intro" },
-    {
-      "type": "text",
-      "id": "intro_heading",
-      "label": "t:labels.heading",
-      "default": "Metalwork that changes the character of a room."
-    },
-    {
-      "type": "textarea",
-      "id": "intro_body",
-      "label": "t:labels.text",
-      "default": "We turn considered linework into lasting objects. Each piece is cut in steel, refined by hand, and made to sit naturally within contemporary spaces."
-    },
 
     { "type": "header", "content": "t:sections.home.featured" },
     { "type": "collection", "id": "featured_collection", "label": "t:labels.featured_collection" },
@@ -916,38 +1780,43 @@
       "type": "text",
       "id": "featured_heading",
       "label": "t:labels.featured_heading",
-      "default": "Objects with presence"
+      "default": "Best sellers"
     },
 
-    { "type": "header", "content": "t:sections.home.process" },
-    { "type": "image_picker", "id": "story_image", "label": "t:labels.story_image" },
+    { "type": "header", "content": "Why MetaliQ" },
+    {
+      "type": "text",
+      "id": "why_heading",
+      "label": "Heading",
+      "default": "Why choose MetaliQ"
+    },
     {
       "type": "textarea",
-      "id": "quote",
-      "label": "t:labels.text",
-      "default": "Precision gives the piece its form. The hand finish gives it presence."
+      "id": "why_intro",
+      "label": "Introduction",
+      "default": "Considered design, precise fabrication, and practical details that make every piece easier to choose, install, and live with."
     },
-    { "type": "text", "id": "step_1_title", "label": "t:labels.heading", "default": "Composed" },
+    { "type": "select", "id": "why_icon_1", "label": "Precision icon", "options": [{ "value": "precision", "label": "Precision" }, { "value": "cut", "label": "Cut" }], "default": "precision" },
+    { "type": "select", "id": "why_icon_2", "label": "Durability icon", "options": [{ "value": "shield", "label": "Shield" }, { "value": "layers", "label": "Layers" }], "default": "shield" },
+    { "type": "select", "id": "why_icon_3", "label": "Sizing icon", "options": [{ "value": "layers", "label": "Layers" }, { "value": "precision", "label": "Precision" }], "default": "layers" },
+    { "type": "select", "id": "why_icon_4", "label": "Installation icon", "options": [{ "value": "cut", "label": "Cut" }, { "value": "package", "label": "Package" }], "default": "cut" },
+    { "type": "select", "id": "why_icon_5", "label": "Delivery icon", "options": [{ "value": "package", "label": "Package" }, { "value": "truck", "label": "Truck" }], "default": "package" },
+
+    { "type": "header", "content": "Custom design CTA" },
+    { "type": "image_picker", "id": "custom_image", "label": "Artwork image" },
+    { "type": "text", "id": "custom_heading", "label": "Heading", "default": "Your idea. Made in metal." },
     {
-      "type": "text",
-      "id": "step_1_body",
-      "label": "t:labels.text",
-      "default": "Artwork balanced for detail, strength, and scale."
+      "type": "textarea",
+      "id": "custom_body",
+      "label": "Introduction",
+      "default": "Bring us a name, reference, sketch, or empty wall. We will shape it into a considered metal artwork made for your dimensions."
     },
-    { "type": "text", "id": "step_2_title", "label": "t:labels.heading", "default": "Cut" },
-    {
-      "type": "text",
-      "id": "step_2_body",
-      "label": "t:labels.text",
-      "default": "Every line translated precisely into steel."
-    },
-    { "type": "text", "id": "step_3_title", "label": "t:labels.heading", "default": "Finished" },
-    {
-      "type": "text",
-      "id": "step_3_body",
-      "label": "t:labels.text",
-      "default": "Refined and coated for a durable architectural surface."
-    },
+    { "type": "text", "id": "custom_button", "label": "Button label", "default": "Start a custom design" },
+    { "type": "url", "id": "custom_link", "label": "Button link" },
+
+    { "type": "header", "content": "Recently added" },
+    { "type": "collection", "id": "recent_collection", "label": "Collection" },
+    { "type": "text", "id": "recent_heading", "label": "Heading", "default": "Recently added" },
 
     { "type": "header", "content": "t:sections.home.closing" },
     {
@@ -965,9 +1834,7 @@
       "settings": [
         { "type": "collection", "id": "collection", "label": "t:labels.collection" },
         { "type": "text", "id": "fallback_title", "label": "t:labels.fallback_title", "default": "Collection" },
-        { "type": "header", "content": "Hero card" },
-        { "type": "product", "id": "product", "label": "Product" },
-        { "type": "image_picker", "id": "image", "label": "Artwork image" }
+        { "type": "paragraph", "content": "Hero products are selected automatically from Best Sellers and Recently Added." }
       ]
     }
   ],

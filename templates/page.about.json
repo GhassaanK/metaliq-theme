@@ -1,1 +1,15 @@
-{"sections":{"main":{"type":"page","settings":{}}},"order":["main"]}
+{
+  "sections": {
+    "main": {
+      "type": "about",
+      "blocks": {
+        "principle_1": { "type": "principle", "settings": { "heading": "Designed with intent", "text": "Every line, opening, and proportion is considered for the finished piece and the room it will inhabit." } },
+        "principle_2": { "type": "principle", "settings": { "heading": "Made with precision", "text": "Clean cutting and careful finishing give the work definition, durability, and a refined physical presence." } },
+        "principle_3": { "type": "principle", "settings": { "heading": "Personal by nature", "text": "Choose from the collection or work with us on a custom design shaped around your idea and your space." } }
+      },
+      "block_order": ["principle_1", "principle_2", "principle_3"],
+      "settings": {}
+    }
+  },
+  "order": ["main"]
+}

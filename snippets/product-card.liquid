@@ -13,6 +13,7 @@
   assign card_sizes = sizes | default: '(min-width: 1100px) 22vw, (min-width: 620px) 33vw, 50vw'
   assign card_loading = loading | default: 'lazy'
   assign card_kicker = product.type | default: product.vendor
+  assign secondary_image = product.images[1]
   assign on_sale = false
   if product.compare_at_price > product.price
     assign on_sale = true
@@ -26,7 +27,7 @@
   endif
 %}
 
-<article class="product-card">
+<article class="product-card{% if secondary_image %} product-card--has-secondary{% endif %}">
   <a
     class="product-card__media media"
     href="{{ product.url }}"
@@ -40,8 +41,21 @@
           loading: card_loading,
           widths: '300, 420, 600, 800, 1000, 1200',
           sizes: card_sizes,
+          class: 'product-card__image product-card__image--primary',
           alt: product.featured_image.alt | default: product.title
       }}
+      {%- if secondary_image -%}
+        {{
+          secondary_image
+          | image_url: width: 1200
+          | image_tag:
+            loading: 'lazy',
+            widths: '300, 420, 600, 800, 1000, 1200',
+            sizes: card_sizes,
+            class: 'product-card__image product-card__image--secondary',
+            alt: secondary_image.alt | default: product.title
+        }}
+      {%- endif -%}
     {%- else -%}
       <span class="media-fallback">{% render 'engraving', seed: product.id %}</span>
     {%- endif -%}

@@ -26,6 +26,8 @@
   endif
 
   assign quote_url = settings.quote_page.url | default: routes.root_url
+  assign related_collection = product.collections.first | default: collections.all
+  assign detail_media = product.media[1] | default: product.featured_media
 
   assign min_height = settings.custom_size_min
   if min_height < base_height
@@ -52,34 +54,69 @@
       data-surcharge-unit="{{ surcharge_unit }}"
     {% endif %}
   >
-    <div class="product-gallery">
-      {%- for media in product.media -%}
-        {%- if forloop.first -%}
-          {%- assign media_loading = 'eager' -%}
-        {%- else -%}
-          {%- assign media_loading = 'lazy' -%}
-        {%- endif -%}
-        <div class="product-gallery__item media">
-          {%- case media.media_type -%}
-            {%- when 'image' -%}
+    <div class="product-gallery" data-product-gallery>
+      {%- if product.media.size > 0 -%}
+        <div class="product-gallery__thumbs" role="list" aria-label="{{ 'product.gallery_thumbnails' | t }}">
+          {%- for media in product.media -%}
+            <button
+              class="product-gallery__thumb{% if forloop.first %} is-active{% endif %}"
+              type="button"
+              aria-label="{{ 'product.view_image' | t: index: forloop.index }}"
+              aria-controls="ProductMedia-{{ section.id }}-{{ media.id }}"
+              aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}"
+              data-gallery-thumbnail="{{ media.id }}"
+              role="listitem"
+            >
               {{
-                media
-                | image_url: width: 1800
+                media.preview_image
+                | image_url: width: 180
                 | image_tag:
-                  loading: media_loading,
-                  widths: '500, 800, 1100, 1400, 1800',
-                  sizes: '(min-width: 900px) 56vw, 100vw',
-                  alt: media.alt | default: product.title
+                  loading: 'lazy',
+                  widths: '90, 140, 180',
+                  sizes: '84px',
+                  alt: ''
               }}
+            </button>
+          {%- endfor -%}
+        </div>
+
+        <div class="product-gallery__stage">
+          {%- for media in product.media -%}
+            {%- if forloop.first -%}
+              {%- assign media_loading = 'eager' -%}
             {%- else -%}
-              {{ media | media_tag }}
-          {%- endcase -%}
+              {%- assign media_loading = 'lazy' -%}
+            {%- endif -%}
+            <div
+              class="product-gallery__item media"
+              id="ProductMedia-{{ section.id }}-{{ media.id }}"
+              data-gallery-media="{{ media.id }}"
+              {% unless forloop.first %}hidden{% endunless %}
+            >
+              {%- case media.media_type -%}
+                {%- when 'image' -%}
+                  {{
+                    media
+                    | image_url: width: 1800
+                    | image_tag:
+                      loading: media_loading,
+                      widths: '500, 800, 1100, 1400, 1800',
+                      sizes: '(min-width: 1050px) 48vw, 100vw',
+                      alt: media.alt | default: product.title
+                  }}
+                {%- else -%}
+                  {{ media | media_tag }}
+              {%- endcase -%}
+            </div>
+          {%- endfor -%}
         </div>
       {%- else -%}
-        <div class="product-gallery__item media media-fallback">
-          {% render 'engraving', seed: product.id, label: product.title %}
+        <div class="product-gallery__stage">
+          <div class="product-gallery__item media media-fallback">
+            {% render 'engraving', seed: product.id, label: product.title %}
+          </div>
         </div>
-      {%- endfor -%}
+      {%- endif -%}
     </div>
 
     <div class="product-details">
@@ -94,7 +131,7 @@
       </div>
 
       {%- if product.description != blank -%}
-        <div class="rte product-description">{{ product.description }}</div>
+        <div class="product-description">{{ product.description | strip_html | truncatewords: 38 }}</div>
       {%- endif -%}
 
       {% form 'product', product, class: 'product-form', novalidate: 'novalidate' %}
@@ -230,6 +267,81 @@
       </ul>
     </div>
   </div>
+
+  <div class="product-information section--product">
+    <div class="product-tabs" data-product-tabs>
+      <div class="product-tabs__list" role="tablist" aria-label="{{ 'product.information' | t }}">
+        <button class="product-tabs__tab is-active" type="button" role="tab" aria-selected="true" aria-controls="ProductTabDetails-{{ section.id }}" id="ProductTabButtonDetails-{{ section.id }}" data-product-tab="details">
+          {{ 'product.details' | t }}
+        </button>
+        <button class="product-tabs__tab" type="button" role="tab" aria-selected="false" aria-controls="ProductTabMaterials-{{ section.id }}" id="ProductTabButtonMaterials-{{ section.id }}" data-product-tab="materials">
+          {{ 'product.materials' | t }}
+        </button>
+        <button class="product-tabs__tab" type="button" role="tab" aria-selected="false" aria-controls="ProductTabSizing-{{ section.id }}" id="ProductTabButtonSizing-{{ section.id }}" data-product-tab="sizing">
+          {{ 'product.sizing_installation' | t }}
+        </button>
+        <button class="product-tabs__tab" type="button" role="tab" aria-selected="false" aria-controls="ProductTabShipping-{{ section.id }}" id="ProductTabButtonShipping-{{ section.id }}" data-product-tab="shipping">
+          {{ 'product.shipping_returns' | t }}
+        </button>
+      </div>
+
+      <div class="product-tabs__panel rte" id="ProductTabDetails-{{ section.id }}" role="tabpanel" aria-labelledby="ProductTabButtonDetails-{{ section.id }}" data-product-panel="details">
+        {{ product.description }}
+      </div>
+      <div class="product-tabs__panel rte" id="ProductTabMaterials-{{ section.id }}" role="tabpanel" aria-labelledby="ProductTabButtonMaterials-{{ section.id }}" data-product-panel="materials" hidden>
+        {%- if product.metafields.custom.materials != blank -%}
+          {{ product.metafields.custom.materials | metafield_tag }}
+        {%- else -%}
+          {{ section.settings.materials_text }}
+        {%- endif -%}
+      </div>
+      <div class="product-tabs__panel rte" id="ProductTabSizing-{{ section.id }}" role="tabpanel" aria-labelledby="ProductTabButtonSizing-{{ section.id }}" data-product-panel="sizing" hidden>
+        <p>{{ 'product.standard_size_html' | t: width: base_width, height: base_height }}</p>
+        {{ section.settings.installation_text }}
+      </div>
+      <div class="product-tabs__panel rte" id="ProductTabShipping-{{ section.id }}" role="tabpanel" aria-labelledby="ProductTabButtonShipping-{{ section.id }}" data-product-panel="shipping" hidden>
+        {{ section.settings.shipping_text }}
+      </div>
+    </div>
+
+    <div class="product-information__media media">
+      {%- if detail_media != blank -%}
+        {{
+          detail_media.preview_image
+          | image_url: width: 1400
+          | image_tag:
+            loading: 'lazy',
+            widths: '500, 800, 1100, 1400',
+            sizes: '(min-width: 860px) 50vw, 100vw',
+            alt: detail_media.alt | default: product.title
+        }}
+      {%- else -%}
+        <span class="media-fallback">{% render 'engraving', seed: product.id %}</span>
+      {%- endif -%}
+    </div>
+  </div>
+
+  {%- if related_collection.products_count > 1 -%}
+    <section class="product-related section--product">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">{{ 'product.related_eyebrow' | t }}</p>
+          <h2>{{ 'product.related_title' | t }}</h2>
+        </div>
+        <a class="link" href="{{ related_collection.url }}">{{ 'product.related_view_all' | t }}</a>
+      </div>
+      <div class="product-grid">
+        {%- assign related_count = 0 -%}
+        {%- for related_product in related_collection.products limit: 5 -%}
+          {%- unless related_product.id == product.id -%}
+            {% render 'product-card', product: related_product, sizes: '(min-width: 1100px) 23vw, (min-width: 620px) 45vw, 50vw' %}
+            {%- assign related_count = related_count | plus: 1 -%}
+            {%- if related_count == 4 -%}{%- break -%}{%- endif -%}
+          {%- endunless -%}
+        {%- endfor -%}
+      </div>
+    </section>
+  {%- endif -%}
 </section>
 
 {% stylesheet %}
@@ -239,17 +351,64 @@
 
   .product-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.78fr);
+    grid-template-columns: minmax(0, 1.5fr) minmax(340px, 0.82fr);
     align-items: start;
     gap: clamp(28px, 5vw, 72px);
   }
 
   .product-gallery {
     display: grid;
-    gap: var(--sp-2);
+    grid-template-columns: 84px minmax(0, 1fr);
+    align-items: start;
+    gap: 16px;
+    min-width: 0;
+  }
+  .product-gallery__thumbs {
+    display: grid;
+    gap: 12px;
+    max-height: 720px;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .product-gallery__thumbs::-webkit-scrollbar {
+    display: none;
+  }
+  .product-gallery__thumb {
+    width: 100%;
+    aspect-ratio: 1;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+    cursor: pointer;
+    opacity: 0.62;
+    transition: border-color 0.2s var(--ease), opacity 0.2s var(--ease);
+  }
+  .product-gallery__thumb:hover,
+  .product-gallery__thumb.is-active {
+    border-color: var(--copper);
+    opacity: 1;
+  }
+  .product-gallery__thumb:focus-visible {
+    outline: 2px solid var(--copper);
+    outline-offset: 3px;
+  }
+  .product-gallery__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .product-gallery__stage {
+    min-width: 0;
+    overflow: hidden;
+    border-radius: 8px;
   }
   .product-gallery__item {
     aspect-ratio: 4 / 5;
+  }
+  .product-gallery__item[hidden] {
+    display: none;
   }
   .product-gallery__item img,
   .product-gallery__item video,
@@ -265,6 +424,7 @@
   .product-details {
     position: sticky;
     top: calc(var(--header-height) + var(--sp-6));
+    min-width: 0;
   }
   .product-title {
     margin: var(--sp-2) 0 var(--sp-4);
@@ -277,6 +437,7 @@
     margin-bottom: var(--sp-5);
     color: var(--muted);
     font-size: var(--fs-sm);
+    line-height: 1.65;
   }
 
   .product-form {
@@ -385,23 +546,106 @@
   }
 
   .product-assurances {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
     margin-top: var(--sp-5);
+    padding-top: var(--sp-4);
+    border-top: 1px solid var(--line);
   }
   .product-assurances li {
     display: grid;
-    grid-template-columns: 150px 1fr;
-    gap: var(--sp-3);
-    padding: var(--sp-3) 0;
-    border-bottom: 1px solid var(--line);
-    font-size: 0.76rem;
+    gap: 4px;
+    padding: 0;
+    border: 0;
+    font-size: 0.68rem;
   }
   .product-assurances span {
     color: var(--muted);
   }
 
+  .section--product {
+    margin-top: clamp(64px, 9vw, 112px);
+    padding-top: clamp(48px, 6vw, 72px);
+    border-top: 1px solid var(--line);
+  }
+  .product-information {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    align-items: start;
+    gap: clamp(32px, 6vw, 84px);
+  }
+  .product-tabs__list {
+    display: flex;
+    gap: 28px;
+    margin-bottom: 28px;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--line);
+    scrollbar-width: none;
+  }
+  .product-tabs__list::-webkit-scrollbar {
+    display: none;
+  }
+  .product-tabs__tab {
+    position: relative;
+    flex: 0 0 auto;
+    padding: 0 0 14px;
+    color: var(--muted);
+    font-size: 0.75rem;
+    white-space: nowrap;
+    transition: color 0.2s var(--ease);
+  }
+  .product-tabs__tab::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: -1px;
+    left: 0;
+    height: 2px;
+    background: var(--copper);
+    transform: scaleX(0);
+    transition: transform 0.2s var(--ease);
+  }
+  .product-tabs__tab:hover,
+  .product-tabs__tab.is-active {
+    color: var(--ink);
+  }
+  .product-tabs__tab.is-active::after {
+    transform: scaleX(1);
+  }
+  .product-tabs__panel {
+    min-height: 220px;
+    color: var(--muted);
+    font-size: var(--fs-sm);
+  }
+  .product-tabs__panel[hidden] {
+    display: none;
+  }
+  .product-information__media {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: 8px;
+  }
+  .product-information__media img,
+  .product-information__media .media-fallback {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .product-related {
+    margin-bottom: var(--section);
+  }
+
   @media (max-width: 1050px) {
     .product-layout {
-      grid-template-columns: 1fr minmax(320px, 400px);
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+      gap: 32px;
+    }
+    .product-gallery {
+      grid-template-columns: 68px minmax(0, 1fr);
+    }
+    .product-assurances {
+      grid-template-columns: 1fr;
     }
   }
   @media (max-width: 860px) {
@@ -412,17 +656,31 @@
       position: static;
     }
     .product-gallery {
-      display: flex;
+      grid-template-columns: 1fr;
+    }
+    .product-gallery__stage {
+      grid-row: 1;
+    }
+    .product-gallery__thumbs {
+      grid-row: 2;
+      grid-template-columns: repeat(auto-fit, 64px);
+      grid-auto-flow: column;
+      justify-content: start;
+      max-height: none;
       overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      scrollbar-width: none;
+      overflow-y: hidden;
     }
-    .product-gallery::-webkit-scrollbar {
-      display: none;
+    .product-information {
+      grid-template-columns: 1fr;
     }
-    .product-gallery__item {
-      flex: 0 0 88%;
-      scroll-snap-align: center;
+    .product-information__media {
+      grid-row: 1;
+    }
+    .product-tabs__panel {
+      min-height: 0;
+    }
+    .product-related .product-grid {
+      --cols: 2;
     }
   }
   @media (max-width: 480px) {
@@ -466,6 +724,28 @@
         { "value": "height", "label": "t:options.pricing.height" }
       ],
       "default": "area"
+    },
+    {
+      "type": "header",
+      "content": "Product information"
+    },
+    {
+      "type": "richtext",
+      "id": "materials_text",
+      "label": "Default materials",
+      "default": "<p>Precision-cut metal with a durable finished surface. Product-specific material details can be added through the custom.materials metafield.</p>"
+    },
+    {
+      "type": "richtext",
+      "id": "installation_text",
+      "label": "Installation guidance",
+      "default": "<p>Mounting requirements depend on the artwork size and wall construction. Installation guidance is included with your order.</p>"
+    },
+    {
+      "type": "richtext",
+      "id": "shipping_text",
+      "label": "Shipping and returns",
+      "default": "<p>Each piece is prepared and packed for secure delivery. Production and delivery estimates are confirmed with your order.</p>"
     }
   ],
   "disabled_on": { "groups": ["header", "footer"] }

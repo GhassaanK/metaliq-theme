@@ -10,7 +10,7 @@
         "floral": { "type": "category", "settings": { "fallback_title": "Floral" } }
       },
       "block_order": ["calligraphy", "islamic", "clocks", "anime", "floral"],
-      "settings": { "button_label": "Shop wall art", "featured_heading": "Objects with presence" }
+      "settings": { "button_label": "Shop wall art", "featured_heading": "Best sellers" }
     }
   },
   "order": ["main"]

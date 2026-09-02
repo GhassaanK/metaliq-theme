@@ -19,6 +19,121 @@
   const cartChangeUrl = routes.cartChange || '/cart/change';
   const cartUrl = routes.cart || '/cart';
 
+  document.querySelectorAll('[data-announcement-slider]').forEach((slider) => {
+    const slides = Array.from(slider.querySelectorAll('[data-announcement-slide]'));
+    const previous = slider.querySelector('[data-announcement-previous]');
+    const next = slider.querySelector('[data-announcement-next]');
+    if (slides.length < 2 || !previous || !next) return;
+
+    let activeIndex = Math.max(0, slides.findIndex((slide) => slide.classList.contains('is-active')));
+    let rotationTimer;
+
+    const showSlide = (index) => {
+      const current = slides[activeIndex];
+      const targetIndex = (index + slides.length) % slides.length;
+      if (targetIndex === activeIndex) return;
+
+      current.classList.remove('is-active');
+      current.classList.add('is-leaving');
+      current.setAttribute('aria-hidden', 'true');
+      activeIndex = targetIndex;
+      slides[activeIndex].classList.add('is-active');
+      slides[activeIndex].setAttribute('aria-hidden', 'false');
+      window.setTimeout(() => current.classList.remove('is-leaving'), 350);
+    };
+
+    const stopRotation = () => window.clearInterval(rotationTimer);
+    const startRotation = () => {
+      stopRotation();
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        rotationTimer = window.setInterval(() => showSlide(activeIndex + 1), 5000);
+      }
+    };
+
+    previous.addEventListener('click', () => {
+      showSlide(activeIndex - 1);
+      startRotation();
+    });
+    next.addEventListener('click', () => {
+      showSlide(activeIndex + 1);
+      startRotation();
+    });
+    slider.addEventListener('mouseenter', stopRotation);
+    slider.addEventListener('mouseleave', startRotation);
+    slider.addEventListener('focusin', stopRotation);
+    slider.addEventListener('focusout', startRotation);
+    startRotation();
+  });
+
+  document.querySelectorAll('[data-testimonial-slider]').forEach((slider) => {
+    const slides = Array.from(slider.querySelectorAll('[data-testimonial-slide]'));
+    const previous = slider.querySelector('[data-testimonial-previous]');
+    const next = slider.querySelector('[data-testimonial-next]');
+    const currentLabel = slider.querySelector('[data-testimonial-current]');
+    if (slides.length < 2 || !previous || !next) return;
+
+    let activeIndex = Math.max(0, slides.findIndex((slide) => slide.classList.contains('is-active')));
+
+    const fitQuotes = () => {
+      slides.forEach((slide) => {
+        const quote = slide.querySelector('blockquote');
+        if (!quote) return;
+
+        quote.style.removeProperty('--quote-fit-size');
+        let fontSize = parseFloat(window.getComputedStyle(quote).fontSize);
+        const minimumSize = 17;
+
+        while (slide.scrollHeight > slide.clientHeight && fontSize > minimumSize) {
+          fontSize -= 1;
+          quote.style.setProperty('--quote-fit-size', `${fontSize}px`);
+        }
+      });
+    };
+
+    const showTestimonial = (index) => {
+      const current = slides[activeIndex];
+      const targetIndex = (index + slides.length) % slides.length;
+      if (targetIndex === activeIndex) return;
+
+      current.classList.remove('is-active');
+      current.classList.add('is-leaving');
+      current.setAttribute('aria-hidden', 'true');
+      activeIndex = targetIndex;
+      slides[activeIndex].classList.add('is-active');
+      slides[activeIndex].setAttribute('aria-hidden', 'false');
+      if (currentLabel) currentLabel.textContent = String(activeIndex + 1).padStart(2, '0');
+      window.setTimeout(() => current.classList.remove('is-leaving'), 400);
+    };
+
+    previous.addEventListener('click', () => showTestimonial(activeIndex - 1));
+    next.addEventListener('click', () => showTestimonial(activeIndex + 1));
+
+    let fitTimer;
+    const scheduleFit = () => {
+      window.clearTimeout(fitTimer);
+      fitTimer = window.setTimeout(fitQuotes, 100);
+    };
+    window.addEventListener('resize', scheduleFit, { passive: true });
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(fitQuotes);
+    } else {
+      fitQuotes();
+    }
+  });
+
+  document.querySelectorAll('[data-faq-accordion]').forEach((accordion) => {
+    const items = Array.from(accordion.querySelectorAll('details'));
+
+    items.forEach((item) => {
+      item.addEventListener('toggle', () => {
+        if (!item.open) return;
+        items.forEach((otherItem) => {
+          if (otherItem !== item) otherItem.open = false;
+        });
+      });
+    });
+  });
+
   /* ----------------------------------------------------------------------
      Money
      ---------------------------------------------------------------------- */
@@ -70,6 +185,9 @@
       menuButton.setAttribute('aria-expanded', String(open));
       navigation.classList.toggle('is-open', open);
       document.body.classList.toggle('menu-open', open);
+      if (!open) {
+        navigation.querySelectorAll('details[open]').forEach((details) => details.removeAttribute('open'));
+      }
     };
 
     menuButton.addEventListener('click', () => {
@@ -101,13 +219,27 @@
   }
 
   document.querySelectorAll('.nav-dropdown').forEach((dropdown) => {
-    const hoverNavigation = window.matchMedia('(min-width: 861px) and (hover: hover)');
+    const isDesktopNavigation = () => window.innerWidth >= 861;
+    let closeTimer;
 
     dropdown.addEventListener('mouseenter', () => {
-      if (hoverNavigation.matches) dropdown.setAttribute('open', '');
+      window.clearTimeout(closeTimer);
+      if (isDesktopNavigation()) dropdown.setAttribute('open', '');
     });
     dropdown.addEventListener('mouseleave', () => {
-      if (hoverNavigation.matches) dropdown.removeAttribute('open');
+      if (isDesktopNavigation()) {
+        window.clearTimeout(closeTimer);
+        closeTimer = window.setTimeout(() => dropdown.removeAttribute('open'), 220);
+      }
+    });
+    dropdown.addEventListener('focusin', () => {
+      window.clearTimeout(closeTimer);
+      if (isDesktopNavigation()) dropdown.setAttribute('open', '');
+    });
+    dropdown.addEventListener('focusout', (event) => {
+      if (isDesktopNavigation() && !dropdown.contains(event.relatedTarget)) {
+        dropdown.removeAttribute('open');
+      }
     });
     document.addEventListener('click', (event) => {
       if (!dropdown.contains(event.target)) dropdown.removeAttribute('open');
@@ -133,6 +265,57 @@
       window.location.assign(url.toString());
     });
   }
+
+  document.querySelectorAll('[data-product-gallery]').forEach((gallery) => {
+    const thumbnails = Array.from(gallery.querySelectorAll('[data-gallery-thumbnail]'));
+    const mediaItems = Array.from(gallery.querySelectorAll('[data-gallery-media]'));
+
+    thumbnails.forEach((thumbnail) => {
+      thumbnail.addEventListener('click', () => {
+        const targetId = thumbnail.dataset.galleryThumbnail;
+        thumbnails.forEach((item) => {
+          const active = item === thumbnail;
+          item.classList.toggle('is-active', active);
+          item.setAttribute('aria-pressed', String(active));
+        });
+        mediaItems.forEach((item) => {
+          const active = item.dataset.galleryMedia === targetId;
+          item.hidden = !active;
+          if (!active) item.querySelector('video')?.pause();
+        });
+      });
+    });
+  });
+
+  document.querySelectorAll('[data-product-tabs]').forEach((tabsRoot) => {
+    const tabs = Array.from(tabsRoot.querySelectorAll('[data-product-tab]'));
+    const panels = Array.from(tabsRoot.querySelectorAll('[data-product-panel]'));
+
+    const activate = (tab) => {
+      const target = tab.dataset.productTab;
+      tabs.forEach((item) => {
+        const active = item === tab;
+        item.classList.toggle('is-active', active);
+        item.setAttribute('aria-selected', String(active));
+        item.tabIndex = active ? 0 : -1;
+      });
+      panels.forEach((panel) => {
+        panel.hidden = panel.dataset.productPanel !== target;
+      });
+    };
+
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => activate(tab));
+      tab.addEventListener('keydown', (event) => {
+        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+        event.preventDefault();
+        const direction = event.key === 'ArrowRight' ? 1 : -1;
+        const next = tabs[(index + direction + tabs.length) % tabs.length];
+        activate(next);
+        next.focus();
+      });
+    });
+  });
 
   /* ----------------------------------------------------------------------
      3. Made-to-order size calculator
@@ -394,6 +577,32 @@
   /* ----------------------------------------------------------------------
      6. Scroll reveal — armed via a class so content is visible without JS
      ---------------------------------------------------------------------- */
+
+  document.querySelectorAll('[data-product-carousel]').forEach((carousel) => {
+    const track = carousel.querySelector('[data-carousel-track]');
+    const previous = carousel.querySelector('[data-carousel-previous]');
+    const next = carousel.querySelector('[data-carousel-next]');
+    if (!track || !previous || !next) return;
+
+    const updateControls = () => {
+      const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
+      previous.disabled = track.scrollLeft <= 2;
+      next.disabled = track.scrollLeft >= maxScroll - 2;
+    };
+
+    const move = (direction) => {
+      const card = track.querySelector('.product-card');
+      const gap = parseFloat(window.getComputedStyle(track).columnGap) || 0;
+      const distance = card ? card.getBoundingClientRect().width + gap : track.clientWidth * 0.8;
+      track.scrollBy({ left: distance * direction, behavior: 'smooth' });
+    };
+
+    previous.addEventListener('click', () => move(-1));
+    next.addEventListener('click', () => move(1));
+    track.addEventListener('scroll', updateControls, { passive: true });
+    window.addEventListener('resize', updateControls, { passive: true });
+    updateControls();
+  });
 
   const reveals = document.querySelectorAll('.reveal');
   const motionOk = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;

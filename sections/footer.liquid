@@ -1,50 +1,99 @@
+{% liquid
+  assign custom_link = section.settings.custom_link
+  if custom_link == blank
+    assign custom_link = settings.quote_page.url
+  endif
+  if custom_link == blank
+    assign custom_link = pages.contact.url
+  endif
+  if custom_link == blank
+    assign custom_link = routes.root_url
+  endif
+%}
+
 <footer class="site-footer">
   <div class="container">
-    <div class="footer-top">
-      <div class="footer-brand">
-        <a class="footer-logo" href="{{ routes.root_url }}" aria-label="{{ 'general.brand_home' | t: shop_name: shop.name }}">
-          <img src="{{ 'metaliq-logo.png' | asset_url }}" width="1000" height="614" alt="">
-        </a>
-        {%- if section.settings.statement != blank -%}
-          <p>{{ section.settings.statement }}</p>
-        {%- endif -%}
-        <small>&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. {{ 'general.rights_reserved' | t }}</small>
+    <div class="footer-callout">
+      <div>
+        <p class="eyebrow">{{ section.settings.eyebrow }}</p>
+        <h2>{{ section.settings.headline }}</h2>
       </div>
-
-      {%- for i in (1..3) -%}
-        {%- liquid
-          assign menu_key = 'menu_' | append: i
-          assign heading_key = 'heading_' | append: i
-          assign menu = section.settings[menu_key]
-          assign heading = section.settings[heading_key]
-        -%}
-        {%- if menu != blank -%}
-          <div class="footer-col">
-            <h2>{{ heading | default: menu.title }}</h2>
-            <nav aria-label="{{ heading | default: menu.title | escape }}">
-              {%- for link in menu.links -%}
-                <a href="{{ link.url }}">{{ link.title }}</a>
-              {%- endfor -%}
-            </nav>
-          </div>
-        {%- endif -%}
-      {%- endfor -%}
+      <a class="footer-callout__link" href="{{ custom_link }}">
+        <span>{{ section.settings.custom_label }}</span>
+        {% render 'icon', name: 'arrow-right' %}
+      </a>
     </div>
 
-    <div class="footer-bottom">
-      {%- if section.settings.location != blank -%}
-        <span>{{ section.settings.location | escape }}</span>
-      {%- endif -%}
-      {%- if section.settings.email != blank -%}
-        <a class="link" href="mailto:{{ section.settings.email | escape }}">{{ section.settings.email | escape }}</a>
-      {%- endif -%}
-      {%- if section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
-        <div class="payment-icons">
-          {%- for type in shop.enabled_payment_types -%}
-            {{ type | payment_type_svg_tag }}
-          {%- endfor -%}
+    <div class="footer-main">
+      <div class="footer-brand">
+        {%- if section.settings.statement != blank -%}<p>{{ section.settings.statement }}</p>{%- endif -%}
+
+        <div class="footer-newsletter">
+          <h2>{{ 'general.footer_newsletter_heading' | t }}</h2>
+          <p>{{ 'general.footer_newsletter_body' | t }}</p>
+          {% form 'customer', class: 'footer-newsletter__form' %}
+            <input type="hidden" name="contact[tags]" value="newsletter">
+            <label class="visually-hidden" for="FooterEmail">{{ 'general.footer_email_label' | t }}</label>
+            <div class="footer-newsletter__field">
+              <input id="FooterEmail" type="email" name="contact[email]" value="{{ form.email }}" placeholder="{{ 'general.footer_email_placeholder' | t }}" autocomplete="email" required>
+              <button type="submit" aria-label="{{ 'general.footer_subscribe' | t }}">{% render 'icon', name: 'arrow-right' %}</button>
+            </div>
+            {%- if form.posted_successfully? -%}<p class="footer-newsletter__message">{{ 'general.footer_success' | t }}</p>{%- endif -%}
+            {{ form.errors | default_errors }}
+          {% endform %}
         </div>
-      {%- endif -%}
+      </div>
+
+      <div class="footer-navigation">
+        {%- for i in (1..3) -%}
+          {%- liquid
+            assign menu_key = 'menu_' | append: i
+            assign heading_key = 'heading_' | append: i
+            assign menu = section.settings[menu_key]
+            assign heading = section.settings[heading_key]
+          -%}
+          <div class="footer-col">
+            <h2>{{ heading }}</h2>
+            <nav aria-label="{{ heading | escape }}">
+              {%- if menu != blank -%}
+                {%- for link in menu.links -%}<a href="{{ link.url }}">{{ link.title }}</a>{%- endfor -%}
+              {%- elsif i == 1 -%}
+                <a href="{{ routes.all_products_collection_url }}">{{ 'general.shop_all' | t }}</a>
+                <a href="{{ routes.collections_url }}">{{ 'collections.title' | t }}</a>
+                {%- if collections['best-sellers'] != blank -%}<a href="{{ collections['best-sellers'].url }}">{{ collections['best-sellers'].title }}</a>{%- endif -%}
+                {%- if collections['new-arrivals'] != blank -%}<a href="{{ collections['new-arrivals'].url }}">{{ collections['new-arrivals'].title }}</a>{%- endif -%}
+              {%- elsif i == 2 -%}
+                <a href="{{ pages.about.url | default: routes.root_url }}">{{ 'general.about_us' | t }}</a>
+                <a href="{{ pages.contact.url | default: routes.root_url }}">{{ 'general.contact' | t }}</a>
+                <a href="{{ custom_link }}">{{ 'general.footer_custom_cta' | t }}</a>
+              {%- else -%}
+                {%- for policy in shop.policies -%}{%- if policy != blank -%}<a href="{{ policy.url }}">{{ policy.title }}</a>{%- endif -%}{%- endfor -%}
+              {%- endif -%}
+            </nav>
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+
+    <div class="footer-signature" aria-hidden="true">Metali<span>Q</span></div>
+
+    <div class="footer-bottom">
+      <div class="footer-meta">
+        <span>&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. {{ 'general.rights_reserved' | t }}</span>
+        {%- if section.settings.location != blank -%}<span>{{ section.settings.location | escape }}</span>{%- endif -%}
+        {%- if section.settings.email != blank -%}<a href="mailto:{{ section.settings.email | escape }}">{{ section.settings.email | escape }}</a>{%- endif -%}
+      </div>
+      <div class="footer-extras">
+        <div class="footer-socials">
+          {%- if section.settings.instagram_url != blank -%}<a href="{{ section.settings.instagram_url }}" aria-label="Instagram">{% render 'icon', name: 'instagram' %}</a>{%- endif -%}
+          {%- if section.settings.facebook_url != blank -%}<a href="{{ section.settings.facebook_url }}" aria-label="Facebook">{% render 'icon', name: 'facebook' %}</a>{%- endif -%}
+          {%- if section.settings.youtube_url != blank -%}<a href="{{ section.settings.youtube_url }}" aria-label="YouTube">{% render 'icon', name: 'youtube' %}</a>{%- endif -%}
+          {%- if section.settings.tiktok_url != blank -%}<a href="{{ section.settings.tiktok_url }}" aria-label="TikTok">{% render 'icon', name: 'tiktok' %}</a>{%- endif -%}
+        </div>
+        {%- if section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
+          <div class="payment-icons">{%- for type in shop.enabled_payment_types -%}{{ type | payment_type_svg_tag }}{%- endfor -%}</div>
+        {%- endif -%}
+      </div>
     </div>
   </div>
 </footer>
@@ -53,22 +102,26 @@
 {
   "name": "t:general.footer",
   "settings": [
-    {
-      "type": "textarea",
-      "id": "statement",
-      "label": "t:labels.text",
-      "default": "Precision metal art for modern spaces. Tactile, industrial, luxury."
-    },
+    { "type": "header", "content": "Footer callout" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Made for your space" },
+    { "type": "text", "id": "headline", "label": "Heading", "default": "Have a wall in mind? Let's make it impossible to ignore." },
+    { "type": "text", "id": "custom_label", "label": "Button label", "default": "Start a custom design" },
+    { "type": "url", "id": "custom_link", "label": "Button link" },
+    { "type": "textarea", "id": "statement", "label": "t:labels.text", "default": "Precision-cut metal art, designed to give modern spaces a point of view." },
     { "type": "header", "content": "t:general.explore" },
     { "type": "text", "id": "heading_1", "label": "t:labels.heading", "default": "Shop" },
     { "type": "link_list", "id": "menu_1", "label": "t:labels.menu" },
-    { "type": "text", "id": "heading_2", "label": "t:labels.heading", "default": "Support" },
+    { "type": "text", "id": "heading_2", "label": "t:labels.heading", "default": "MetaliQ" },
     { "type": "link_list", "id": "menu_2", "label": "t:labels.menu" },
-    { "type": "text", "id": "heading_3", "label": "t:labels.heading", "default": "Legal" },
+    { "type": "text", "id": "heading_3", "label": "t:labels.heading", "default": "Policies" },
     { "type": "link_list", "id": "menu_3", "label": "t:labels.menu" },
-    { "type": "header", "content": "t:general.visit" },
-    { "type": "text", "id": "location", "label": "t:labels.location", "default": "Made in Pakistan" },
+    { "type": "header", "content": "Contact and social" },
+    { "type": "text", "id": "location", "label": "t:labels.location", "default": "Made in Karachi, Pakistan" },
     { "type": "text", "id": "email", "label": "t:labels.email", "default": "hello@metaliq.com" },
+    { "type": "url", "id": "instagram_url", "label": "Instagram URL" },
+    { "type": "url", "id": "facebook_url", "label": "Facebook URL" },
+    { "type": "url", "id": "youtube_url", "label": "YouTube URL" },
+    { "type": "url", "id": "tiktok_url", "label": "TikTok URL" },
     { "type": "checkbox", "id": "show_payment_icons", "label": "t:labels.show_payment_icons", "default": true }
   ],
   "enabled_on": { "groups": ["footer"] }
