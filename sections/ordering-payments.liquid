@@ -1,0 +1,143 @@
+<section class="journey-page section">
+  <div class="container">
+    {% render 'breadcrumbs' %}
+
+    <header class="journey-page__hero">
+      <div>
+        <p class="eyebrow">{{ 'journey.eyebrow' | t }}</p>
+        <h1>{{ 'journey.title' | t }}</h1>
+      </div>
+      <p>{{ 'journey.intro' | t }}</p>
+    </header>
+
+    <div class="journey-page__status" role="status">
+      <span>{{ 'journey.current_methods' | t }}</span>
+      <strong>{{ 'journey.cod_active' | t }}</strong>
+      <span>
+        {%- if settings.online_payments_active -%}
+          {{ 'journey.online_active' | t: provider: settings.payment_provider_name }}
+        {%- else -%}
+          {{ 'journey.online_onboarding' | t: provider: settings.payment_provider_name }}
+        {%- endif -%}
+      </span>
+    </div>
+
+    <section class="journey-page__section" aria-labelledby="CatalogJourney">
+      <header>
+        <p class="eyebrow">{{ 'journey.catalog_eyebrow' | t }}</p>
+        <h2 id="CatalogJourney">{{ 'journey.catalog_title' | t }}</h2>
+      </header>
+      <ol class="journey-steps">
+        {%- for i in (1..8) -%}
+          {%- assign step_key = 'journey.step_' | append: i -%}
+          <li>
+            <span aria-hidden="true">{{ i | prepend: '0' }}</span>
+            <p>{{ step_key | t }}</p>
+          </li>
+        {%- endfor -%}
+      </ol>
+    </section>
+
+    <section class="journey-page__section journey-page__section--split" aria-labelledby="CustomJourney">
+      <div>
+        <p class="eyebrow">{{ 'journey.custom_eyebrow' | t }}</p>
+        <h2 id="CustomJourney">{{ 'journey.custom_title' | t }}</h2>
+        <p>{{ 'journey.custom_body' | t }}</p>
+        <a class="button button--primary" href="/pages/custom-design">{{ 'journey.custom_cta' | t }}</a>
+      </div>
+      <div class="journey-page__payment">
+        <p class="eyebrow">{{ 'journey.gateway_eyebrow' | t }}</p>
+        <h2>{{ 'journey.gateway_title' | t }}</h2>
+        <p>
+          {%- if settings.online_payments_active -%}
+            {{ 'journey.gateway_body_active' | t: provider: settings.payment_provider_name }}
+          {%- else -%}
+            {{ 'journey.gateway_body' | t: provider: settings.payment_provider_name }}
+          {%- endif -%}
+        </p>
+        <dl>
+          <div><dt>{{ 'journey.merchant_label' | t }}</dt><dd>{{ 'journey.merchant_value' | t }}</dd></div>
+          <div><dt>{{ 'journey.currency_label' | t }}</dt><dd>PKR</dd></div>
+          <div><dt>{{ 'journey.transaction_label' | t }}</dt><dd>{{ 'journey.transaction_value' | t }}</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="journey-page__delivery" aria-labelledby="DeliveryJourney">
+      <div>
+        <p class="eyebrow">{{ 'journey.delivery_eyebrow' | t }}</p>
+        <h2 id="DeliveryJourney">{{ 'journey.delivery_title' | t }}</h2>
+      </div>
+      <div><strong>{{ 'journey.karachi_title' | t }}</strong><span>{{ 'journey.karachi_body' | t }}</span></div>
+      <div><strong>{{ 'journey.pakistan_title' | t }}</strong><span>{{ 'journey.pakistan_body' | t }}</span></div>
+      <p>{{ 'journey.delivery_note' | t }}</p>
+    </section>
+  </div>
+</section>
+
+{% stylesheet %}
+  .journey-page { padding-top: 34px; }
+  .journey-page__hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+    align-items: end;
+    gap: clamp(36px, 8vw, 120px);
+    padding-block: clamp(64px, 9vw, 126px);
+    border-bottom: 1px solid var(--line);
+  }
+  .journey-page__hero h1 { max-width: 10ch; margin-top: 14px; font-size: clamp(3.2rem, 2.4rem + 4vw, 7rem); line-height: 0.94; }
+  .journey-page__hero > p { color: var(--muted); font-size: var(--fs-body-lg); line-height: 1.7; }
+  .journey-page__status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 18px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+    font-size: var(--fs-sm);
+  }
+  .journey-page__status strong { padding: 7px 10px; border-radius: 4px; background: var(--copper); color: var(--on-accent); }
+  .journey-page__section { padding-block: clamp(70px, 9vw, 120px); }
+  .journey-page__section > header { display: grid; grid-template-columns: 0.7fr 1.3fr; gap: 40px; margin-bottom: 54px; }
+  .journey-page__section h2 { max-width: 14ch; font-size: clamp(2.4rem, 1.8rem + 2vw, 4.4rem); line-height: 1; }
+  .journey-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+  .journey-steps li { min-height: 210px; padding: 24px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .journey-steps li > span { color: var(--copper); font-size: 0.68rem; }
+  .journey-steps p { margin-top: 54px; color: var(--muted); line-height: 1.6; }
+  .journey-page__section--split { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; padding: 0; background: var(--line); border: 1px solid var(--line); }
+  .journey-page__section--split > div { padding: clamp(30px, 5vw, 70px); background: var(--background); }
+  .journey-page__section--split h2 { margin: 14px 0 24px; }
+  .journey-page__section--split p:not(.eyebrow) { color: var(--muted); line-height: 1.7; }
+  .journey-page__section--split .button { margin-top: 30px; }
+  .journey-page__payment { background: var(--surface) !important; }
+  .journey-page__payment dl { display: grid; margin-top: 34px; border-top: 1px solid var(--line); }
+  .journey-page__payment dl div { display: flex; justify-content: space-between; gap: 20px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .journey-page__payment dt { color: var(--muted); }
+  .journey-page__delivery { display: grid; grid-template-columns: 1.2fr 0.8fr 0.8fr; gap: clamp(24px, 5vw, 70px); padding-block: clamp(70px, 9vw, 120px); }
+  .journey-page__delivery h2 { margin-top: 12px; font-size: clamp(2.2rem, 1.7rem + 1.8vw, 4rem); }
+  .journey-page__delivery > div:not(:first-child) { display: grid; align-content: start; gap: 10px; padding-top: 30px; border-top: 2px solid var(--copper); }
+  .journey-page__delivery span, .journey-page__delivery > p { color: var(--muted); line-height: 1.65; }
+  .journey-page__delivery > p { grid-column: 2 / -1; }
+  @media (max-width: 900px) {
+    .journey-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .journey-page__delivery { grid-template-columns: 1fr 1fr; }
+    .journey-page__delivery > div:first-child { grid-column: 1 / -1; }
+    .journey-page__delivery > p { grid-column: 1 / -1; }
+  }
+  @media (max-width: 680px) {
+    .journey-page__hero, .journey-page__section > header, .journey-page__section--split { grid-template-columns: 1fr; }
+    .journey-steps, .journey-page__delivery { grid-template-columns: 1fr; }
+    .journey-page__delivery > div:first-child, .journey-page__delivery > p { grid-column: 1; }
+    .journey-steps li { min-height: 170px; }
+    .journey-steps p { margin-top: 30px; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Ordering and payments",
+  "settings": [],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}

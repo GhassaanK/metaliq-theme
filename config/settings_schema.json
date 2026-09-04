@@ -161,5 +161,23 @@
         "default": 12
       }
     ]
+  },
+  {
+    "name": "Commerce compliance",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "online_payments_active",
+        "label": "Online payments are active",
+        "info": "Enable only after the payment gateway is approved, connected, and tested.",
+        "default": false
+      },
+      {
+        "type": "text",
+        "id": "payment_provider_name",
+        "label": "Online payment provider",
+        "default": "Rapid Gateway"
+      }
+    ]
   }
 ]

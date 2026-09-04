@@ -12,14 +12,32 @@
 <section class="container section contact-layout">
   <div class="contact-intro">
     <p class="eyebrow">{{ 'contact.eyebrow' | t }}</p>
-    <h1>{{ page.title | default: 'contact.title' | t }}</h1>
+    <h1>
+      {%- if page.title != blank -%}
+        {{ page.title }}
+      {%- else -%}
+        {{ 'contact.title' | t }}
+      {%- endif -%}
+    </h1>
     <p class="lede">{{ section.settings.lede | default: 'contact.lede' | t }}</p>
 
+    <p class="contact-operator">{{ 'contact.operated_by' | t }}</p>
+
     <dl class="contact-details">
+      <div>
+        <dt>{{ 'contact.legal_name' | t }}</dt>
+        <dd>{{ section.settings.legal_name | escape }}</dd>
+      </div>
       {%- if section.settings.email != blank -%}
         <div>
           <dt>{{ 'general.email' | t }}</dt>
           <dd><a class="link" href="mailto:{{ section.settings.email | escape }}">{{ section.settings.email | escape }}</a></dd>
+        </div>
+      {%- endif -%}
+      {%- if section.settings.phone != blank -%}
+        <div>
+          <dt>{{ 'contact.phone' | t }}</dt>
+          <dd><a class="link" href="tel:+923172920243">{{ section.settings.phone | escape }}</a></dd>
         </div>
       {%- endif -%}
       {%- if section.settings.location != blank -%}
@@ -29,6 +47,12 @@
         </div>
       {%- endif -%}
     </dl>
+
+    {%- liquid
+      assign contact_whatsapp_label = 'contact.whatsapp_cta' | t
+      assign contact_whatsapp_message = 'contact.whatsapp_message' | t
+    -%}
+    {% render 'whatsapp-link', label: contact_whatsapp_label, message: contact_whatsapp_message, css_class: 'contact-whatsapp' %}
   </div>
 
   <div class="contact-form">
@@ -95,6 +119,16 @@
     gap: 0;
     margin-top: var(--sp-6);
   }
+  .contact-operator {
+    max-width: 58ch;
+    margin-top: var(--sp-4);
+    color: var(--muted);
+    font-size: var(--fs-sm);
+    line-height: 1.65;
+  }
+  .contact-whatsapp {
+    margin-top: var(--sp-5);
+  }
   .contact-details div {
     display: grid;
     gap: 2px;
@@ -133,8 +167,10 @@
   "name": "t:general.contact",
   "settings": [
     { "type": "textarea", "id": "lede", "label": "t:labels.text" },
-    { "type": "text", "id": "email", "label": "t:labels.email", "default": "hello@metaliq.com" },
-    { "type": "text", "id": "location", "label": "t:labels.location", "default": "Pakistan" }
+    { "type": "text", "id": "legal_name", "label": "Legal business name", "default": "Steed Art" },
+    { "type": "text", "id": "email", "label": "t:labels.email", "default": "hello@metaliq.art" },
+    { "type": "text", "id": "phone", "label": "Phone", "default": "03172920243" },
+    { "type": "textarea", "id": "location", "label": "t:labels.location", "default": "Plot No 635, Gali No 15, Sector-F, Punjab Road, Manzoor Colony, Karachi, Sindh, Pakistan" }
   ],
   "presets": [{ "name": "t:general.contact" }],
   "disabled_on": { "groups": ["header", "footer"] }

@@ -25,7 +25,7 @@
     endif
   endif
 
-  assign quote_url = settings.quote_page.url | default: routes.root_url
+  assign quote_url = settings.quote_page.url | default: '/pages/custom-design'
   assign related_collection = product.collections.first | default: collections.all
   assign detail_media = product.media[1] | default: product.featured_media
 
@@ -45,7 +45,7 @@
     data-base-height="{{ base_height }}"
     data-min-height="{{ min_height }}"
     data-max-height="{{ settings.custom_size_max }}"
-    data-pricing-basis="{{ section.settings.pricing_basis }}"
+    data-pricing-basis="area"
     data-money-format="{{ shop.money_format | strip_html | escape }}"
     data-can-charge="{{ can_charge_custom }}"
     data-quote-url="{{ quote_url }}"
@@ -255,6 +255,12 @@
         <p class="form-errors" data-add-error hidden role="alert">{{ 'product.add_error' | t }}</p>
       {% endform %}
 
+      {%- liquid
+        assign product_whatsapp_label = 'product.whatsapp_cta' | t
+        assign product_whatsapp_message = 'product.whatsapp_message' | t: product_title: product.title
+      -%}
+      {% render 'whatsapp-link', label: product_whatsapp_label, message: product_whatsapp_message, css_class: 'product-whatsapp' %}
+
       <ul class="product-assurances">
         {%- for i in (1..3) -%}
           {%- assign t_key = 'product.assurance_' | append: i | append: '_title' -%}
@@ -265,6 +271,22 @@
           </li>
         {%- endfor -%}
       </ul>
+
+      <aside class="product-commerce-note" aria-label="{{ 'product.ordering_note_label' | t }}">
+        <p><strong>{{ 'product.cod_title' | t }}</strong>
+          {%- if settings.online_payments_active -%}
+            {{ 'product.payment_active_body' | t: provider: settings.payment_provider_name }}
+          {%- else -%}
+            {{ 'product.cod_body' | t: provider: settings.payment_provider_name }}
+          {%- endif -%}
+        </p>
+        <p>{{ 'product.delivery_body' | t }}</p>
+        <div>
+          <a href="/pages/ordering-and-payments">{{ 'general.ordering_payments' | t }}</a>
+          <a href="/policies/shipping-policy">{{ 'general.shipping_policy' | t }}</a>
+          <a href="/policies/refund-policy">{{ 'general.refund_policy' | t }}</a>
+        </div>
+      </aside>
     </div>
   </div>
 
@@ -301,6 +323,8 @@
       </div>
       <div class="product-tabs__panel rte" id="ProductTabShipping-{{ section.id }}" role="tabpanel" aria-labelledby="ProductTabButtonShipping-{{ section.id }}" data-product-panel="shipping" hidden>
         {{ section.settings.shipping_text }}
+        <p>{{ 'product.delivery_body' | t }}</p>
+        <p><a href="/policies/shipping-policy">{{ 'product.read_shipping_policy' | t }}</a></p>
       </div>
     </div>
 
@@ -544,6 +568,9 @@
   .purchase-row__quote {
     min-height: 56px;
   }
+  .product-whatsapp {
+    margin-top: var(--sp-4);
+  }
   .purchase-row__quote {
     grid-column: 2;
   }
@@ -563,6 +590,21 @@
     border: 0;
     font-size: 0.68rem;
   }
+  .product-commerce-note {
+    display: grid;
+    gap: 9px;
+    margin-top: var(--sp-5);
+    padding: var(--sp-4);
+    border: 1px solid var(--line);
+    border-left: 2px solid var(--copper);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.74rem;
+    line-height: 1.55;
+  }
+  .product-commerce-note strong { color: var(--ink); }
+  .product-commerce-note div { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 3px; }
+  .product-commerce-note a { color: var(--copper); text-decoration: underline; text-underline-offset: 3px; }
   .product-assurances span {
     color: var(--muted);
   }
@@ -717,16 +759,6 @@
       "step": 0.5,
       "unit": "ft",
       "default": 2
-    },
-    {
-      "type": "select",
-      "id": "pricing_basis",
-      "label": "t:labels.pricing_basis",
-      "options": [
-        { "value": "area", "label": "t:options.pricing.area" },
-        { "value": "height", "label": "t:options.pricing.height" }
-      ],
-      "default": "area"
     },
     {
       "type": "header",

@@ -1,5 +1,9 @@
 {% liquid
   assign collections_menu = section.settings.collections_menu
+  assign instagram_url = section.settings.instagram_url | default: 'https://www.instagram.com/metaliq.art/'
+  assign facebook_url = section.settings.facebook_url | default: 'https://www.facebook.com/metaliq.art/'
+  assign tiktok_url = section.settings.tiktok_url | default: 'https://www.tiktok.com/@metaliq.art'
+  assign youtube_url = section.settings.youtube_url | default: 'https://www.youtube.com/@metaliq.art'
 %}
 
 {%- if section.settings.announcement_1 != blank -%}
@@ -46,7 +50,7 @@
     </button>
 
     <a class="brand" href="{{ routes.root_url }}" aria-label="{{ 'general.brand_home' | t: shop_name: shop.name }}">
-      <img class="brand__logo brand__logo--mark" src="{{ 'metaliq-mark.png' | asset_url }}" width="512" height="494" alt="">
+      <img class="brand__logo brand__logo--mark" src="{{ 'metaliq-mark-light.png' | asset_url }}" width="512" height="514" alt="">
     </a>
 
     <nav class="header-nav" id="PrimaryNav" aria-label="{{ 'general.primary_navigation' | t }}" data-nav>
@@ -69,16 +73,31 @@
         </div>
       </details>
 
-      <a href="{{ pages.about.url | default: routes.root_url }}"{% if page.handle == 'about' %} aria-current="page"{% endif %}>{{ 'general.about_us' | t }}</a>
+      <a href="/pages/about"{% if page.handle == 'about' %} aria-current="page"{% endif %}>{{ 'general.about_us' | t }}</a>
+      <a href="/pages/custom-design"{% if page.handle == 'custom-design' %} aria-current="page"{% endif %}>{{ 'general.footer_custom_cta' | t }}</a>
       <a href="{{ pages.contact.url | default: routes.root_url }}"{% if page.handle == 'contact' %} aria-current="page"{% endif %}>{{ 'general.contact' | t }}</a>
 
       <div class="mobile-nav__footer">
-        <p>{{ 'general.mobile_nav_statement' | t }}</p>
-        <span>{{ 'general.mobile_nav_location' | t }}</span>
+        <div>
+          <p>{{ 'general.mobile_nav_statement' | t }}</p>
+          <span>{{ 'general.mobile_nav_location' | t }}</span>
+        </div>
+        <div class="mobile-nav__socials" aria-label="{{ 'general.social_media' | t }}">
+          <a href="{{ instagram_url }}" target="_blank" rel="noopener" aria-label="Instagram">{% render 'icon', name: 'instagram' %}</a>
+          <a href="{{ facebook_url }}" target="_blank" rel="noopener" aria-label="Facebook">{% render 'icon', name: 'facebook' %}</a>
+          <a href="{{ tiktok_url }}" target="_blank" rel="noopener" aria-label="TikTok">{% render 'icon', name: 'tiktok' %}</a>
+          <a href="{{ youtube_url }}" target="_blank" rel="noopener" aria-label="YouTube">{% render 'icon', name: 'youtube' %}</a>
+        </div>
       </div>
     </nav>
 
     <div class="header-actions">
+      <div class="header-socials" aria-label="{{ 'general.social_media' | t }}">
+        <a href="{{ instagram_url }}" target="_blank" rel="noopener" aria-label="Instagram">{% render 'icon', name: 'instagram' %}</a>
+        <a href="{{ facebook_url }}" target="_blank" rel="noopener" aria-label="Facebook">{% render 'icon', name: 'facebook' %}</a>
+        <a href="{{ tiktok_url }}" target="_blank" rel="noopener" aria-label="TikTok">{% render 'icon', name: 'tiktok' %}</a>
+        <a href="{{ youtube_url }}" target="_blank" rel="noopener" aria-label="YouTube">{% render 'icon', name: 'youtube' %}</a>
+      </div>
       <a class="icon-button" href="{{ routes.search_url }}" aria-label="{{ 'general.search' | t }}">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
       </a>
@@ -103,6 +122,11 @@
     { "type": "text", "id": "announcement_2", "label": "Promotion 2", "default": "Karachi delivery in 5-7 working days" },
     { "type": "text", "id": "announcement_3", "label": "Promotion 3", "default": "Custom metal designs, made for your space" },
     { "type": "link_list", "id": "collections_menu", "label": "t:labels.collections_menu" },
+    { "type": "header", "content": "Social media" },
+    { "type": "url", "id": "instagram_url", "label": "Instagram URL" },
+    { "type": "url", "id": "facebook_url", "label": "Facebook URL" },
+    { "type": "url", "id": "tiktok_url", "label": "TikTok URL" },
+    { "type": "url", "id": "youtube_url", "label": "YouTube URL" },
     { "type": "paragraph", "content": "MetaliQ brand assets are loaded from the theme." }
   ],
   "enabled_on": { "groups": ["header"] }

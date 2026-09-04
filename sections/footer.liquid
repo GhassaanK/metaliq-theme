@@ -4,11 +4,17 @@
     assign custom_link = settings.quote_page.url
   endif
   if custom_link == blank
-    assign custom_link = pages.contact.url
+    assign custom_link = '/pages/custom-design'
   endif
-  if custom_link == blank
-    assign custom_link = routes.root_url
-  endif
+  assign instagram_url = section.settings.instagram_url | default: 'https://www.instagram.com/metaliq.art/'
+  assign facebook_url = section.settings.facebook_url | default: 'https://www.facebook.com/metaliq.art/'
+  assign tiktok_url = section.settings.tiktok_url | default: 'https://www.tiktok.com/@metaliq.art'
+  assign youtube_url = section.settings.youtube_url | default: 'https://www.youtube.com/@metaliq.art'
+  assign legal_name = section.settings.legal_name | default: 'Steed Art'
+  assign phone = section.settings.phone | default: '03172920243'
+  assign phone_link = phone | remove: '+' | remove: ' ' | remove: '-' | remove: '(' | remove: ')'
+  assign email = section.settings.email | default: 'hello@metaliq.art'
+  assign business_address = section.settings.business_address | default: 'Plot No 635, Gali No 15, Sector-F, Punjab Road, Manzoor Colony, Karachi, Sindh, Pakistan'
 %}
 
 <footer class="site-footer">
@@ -63,11 +69,15 @@
                 {%- if collections['best-sellers'] != blank -%}<a href="{{ collections['best-sellers'].url }}">{{ collections['best-sellers'].title }}</a>{%- endif -%}
                 {%- if collections['new-arrivals'] != blank -%}<a href="{{ collections['new-arrivals'].url }}">{{ collections['new-arrivals'].title }}</a>{%- endif -%}
               {%- elsif i == 2 -%}
-                <a href="{{ pages.about.url | default: routes.root_url }}">{{ 'general.about_us' | t }}</a>
+                <a href="/pages/about">{{ 'general.about_us' | t }}</a>
                 <a href="{{ pages.contact.url | default: routes.root_url }}">{{ 'general.contact' | t }}</a>
+                <a href="/pages/ordering-and-payments">{{ 'general.ordering_payments' | t }}</a>
                 <a href="{{ custom_link }}">{{ 'general.footer_custom_cta' | t }}</a>
               {%- else -%}
-                {%- for policy in shop.policies -%}{%- if policy != blank -%}<a href="{{ policy.url }}">{{ policy.title }}</a>{%- endif -%}{%- endfor -%}
+                <a href="/policies/refund-policy">{{ 'general.refund_policy' | t }}</a>
+                <a href="/policies/privacy-policy">{{ 'general.privacy_policy' | t }}</a>
+                <a href="/policies/terms-of-service">{{ 'general.terms_conditions' | t }}</a>
+                <a href="/policies/shipping-policy">{{ 'general.shipping_policy' | t }}</a>
               {%- endif -%}
             </nav>
           </div>
@@ -75,28 +85,65 @@
       </div>
     </div>
 
-    <div class="footer-signature" aria-hidden="true">Metali<span>Q</span></div>
+    <a class="footer-signature" href="{{ routes.root_url }}" aria-label="{{ 'general.brand_home' | t: shop_name: shop.name }}">
+      <img src="{{ 'metaliq-wordmark-light.png' | asset_url }}" width="1400" height="356" alt="MetaliQ">
+    </a>
 
     <div class="footer-bottom">
       <div class="footer-meta">
         <span>&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. {{ 'general.rights_reserved' | t }}</span>
-        {%- if section.settings.location != blank -%}<span>{{ section.settings.location | escape }}</span>{%- endif -%}
-        {%- if section.settings.email != blank -%}<a href="mailto:{{ section.settings.email | escape }}">{{ section.settings.email | escape }}</a>{%- endif -%}
       </div>
+
+      <div class="footer-details">
+        <span>{{ legal_name | escape }}</span>
+        <a href="tel:{{ phone_link }}">{{ phone | escape }}</a>
+        <a href="mailto:{{ email | escape }}">{{ email | escape }}</a>
+      </div>
+
       <div class="footer-extras">
-        <div class="footer-socials">
-          {%- if section.settings.instagram_url != blank -%}<a href="{{ section.settings.instagram_url }}" aria-label="Instagram">{% render 'icon', name: 'instagram' %}</a>{%- endif -%}
-          {%- if section.settings.facebook_url != blank -%}<a href="{{ section.settings.facebook_url }}" aria-label="Facebook">{% render 'icon', name: 'facebook' %}</a>{%- endif -%}
-          {%- if section.settings.youtube_url != blank -%}<a href="{{ section.settings.youtube_url }}" aria-label="YouTube">{% render 'icon', name: 'youtube' %}</a>{%- endif -%}
-          {%- if section.settings.tiktok_url != blank -%}<a href="{{ section.settings.tiktok_url }}" aria-label="TikTok">{% render 'icon', name: 'tiktok' %}</a>{%- endif -%}
+        <div class="footer-socials" aria-label="{{ 'general.social_media' | t }}">
+          <span class="footer-socials__label">{{ 'general.follow_us' | t }}</span>
+          <a href="{{ instagram_url }}" target="_blank" rel="noopener" aria-label="Instagram">{% render 'icon', name: 'instagram' %}</a>
+          <a href="{{ facebook_url }}" target="_blank" rel="noopener" aria-label="Facebook">{% render 'icon', name: 'facebook' %}</a>
+          <a href="{{ youtube_url }}" target="_blank" rel="noopener" aria-label="YouTube">{% render 'icon', name: 'youtube' %}</a>
+          <a href="{{ tiktok_url }}" target="_blank" rel="noopener" aria-label="TikTok">{% render 'icon', name: 'tiktok' %}</a>
         </div>
         {%- if section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
           <div class="payment-icons">{%- for type in shop.enabled_payment_types -%}{{ type | payment_type_svg_tag }}{%- endfor -%}</div>
         {%- endif -%}
       </div>
     </div>
+
+    <address class="footer-address">{{ business_address | escape }}</address>
   </div>
 </footer>
+
+{%- if section.settings.show_whatsapp -%}
+  {%- liquid
+    assign whatsapp_number = section.settings.whatsapp_number | remove: '+' | remove: ' ' | remove: '-' | remove: '(' | remove: ')'
+    assign whatsapp_text = section.settings.whatsapp_prefill | url_encode
+  -%}
+  <aside class="whatsapp-widget" data-whatsapp-widget aria-label="{{ 'general.whatsapp_label' | t }}">
+    {%- if section.settings.show_whatsapp_prompt -%}
+      <div class="whatsapp-widget__prompt" data-whatsapp-prompt>
+        <p>{{ section.settings.whatsapp_prompt | escape }}</p>
+        <button type="button" aria-label="{{ 'general.whatsapp_close' | t }}" data-whatsapp-close>
+          {% render 'icon', name: 'close' %}
+        </button>
+      </div>
+    {%- endif -%}
+    <a
+      class="whatsapp-widget__button"
+      href="https://wa.me/{{ whatsapp_number }}?text={{ whatsapp_text }}"
+      target="_blank"
+      rel="noopener"
+      aria-label="{{ 'general.whatsapp_label' | t }}"
+    >
+      {% render 'icon', name: 'whatsapp' %}
+      <span class="whatsapp-widget__count" aria-hidden="true">1</span>
+    </a>
+  </aside>
+{%- endif -%}
 
 {% schema %}
 {
@@ -116,13 +163,21 @@
     { "type": "text", "id": "heading_3", "label": "t:labels.heading", "default": "Policies" },
     { "type": "link_list", "id": "menu_3", "label": "t:labels.menu" },
     { "type": "header", "content": "Contact and social" },
-    { "type": "text", "id": "location", "label": "t:labels.location", "default": "Made in Karachi, Pakistan" },
-    { "type": "text", "id": "email", "label": "t:labels.email", "default": "hello@metaliq.com" },
+    { "type": "text", "id": "legal_name", "label": "Legal business name", "default": "Steed Art" },
+    { "type": "text", "id": "phone", "label": "Public phone number", "default": "03172920243" },
+    { "type": "text", "id": "email", "label": "t:labels.email", "default": "hello@metaliq.art" },
+    { "type": "textarea", "id": "business_address", "label": "Complete business address", "default": "Plot No 635, Gali No 15, Sector-F, Punjab Road, Manzoor Colony, Karachi, Sindh, Pakistan" },
     { "type": "url", "id": "instagram_url", "label": "Instagram URL" },
     { "type": "url", "id": "facebook_url", "label": "Facebook URL" },
     { "type": "url", "id": "youtube_url", "label": "YouTube URL" },
     { "type": "url", "id": "tiktok_url", "label": "TikTok URL" },
-    { "type": "checkbox", "id": "show_payment_icons", "label": "t:labels.show_payment_icons", "default": true }
+    { "type": "checkbox", "id": "show_payment_icons", "label": "t:labels.show_payment_icons", "default": true },
+    { "type": "header", "content": "WhatsApp" },
+    { "type": "checkbox", "id": "show_whatsapp", "label": "Show WhatsApp button", "default": true },
+    { "type": "text", "id": "whatsapp_number", "label": "WhatsApp number", "default": "+923172920243" },
+    { "type": "text", "id": "whatsapp_prompt", "label": "Popup message", "default": "Have a custom design in mind? Let's make it happen." },
+    { "type": "textarea", "id": "whatsapp_prefill", "label": "Prefilled WhatsApp message", "default": "Hi MetaliQ Art, I have a custom design in mind and would like to discuss it." },
+    { "type": "checkbox", "id": "show_whatsapp_prompt", "label": "Show popup message", "default": true }
   ],
   "enabled_on": { "groups": ["footer"] }
 }

@@ -1,0 +1,23 @@
+{% doc %}
+  Renders a contextual WhatsApp call to action for MetaliQ Art.
+
+  @param {string} label - Visible link label.
+  @param {string} message - Prefilled WhatsApp message.
+  @param {string} [css_class] - Optional additional CSS class.
+{% enddoc %}
+
+{%- liquid
+  assign whatsapp_number = '923172920243'
+  assign whatsapp_message = message | url_encode
+-%}
+
+<a
+  class="whatsapp-link{% if css_class != blank %} {{ css_class }}{% endif %}"
+  href="https://wa.me/{{ whatsapp_number }}?text={{ whatsapp_message }}"
+  target="_blank"
+  rel="noopener"
+>
+  <span class="whatsapp-link__icon" aria-hidden="true">{% render 'icon', name: 'whatsapp' %}</span>
+  <span>{{ label | escape }}</span>
+  <span class="whatsapp-link__arrow" aria-hidden="true">&nearr;</span>
+</a>

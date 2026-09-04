@@ -1,0 +1,90 @@
+<section class="custom-request section">
+  <div class="container">
+    {% render 'breadcrumbs' %}
+
+    <div class="custom-request__layout">
+      <div class="custom-request__intro">
+        <p class="eyebrow">{{ 'custom_request.eyebrow' | t }}</p>
+        <h1>{{ 'custom_request.title' | t }}</h1>
+        <p class="lede">{{ 'custom_request.intro' | t }}</p>
+
+        <ol class="custom-request__steps">
+          {%- for i in (1..4) -%}
+            {%- assign step_key = 'custom_request.step_' | append: i -%}
+            <li><span aria-hidden="true">{{ i | prepend: '0' }}</span><p>{{ step_key | t }}</p></li>
+          {%- endfor -%}
+        </ol>
+
+        <p class="custom-request__price">{{ 'custom_request.price_note' | t }}</p>
+      </div>
+
+      <div class="custom-request__form">
+        {%- if section.blocks.size > 0 -%}
+          {% content_for 'blocks' %}
+        {%- else -%}
+          <div class="custom-request__form-head">
+            <p class="eyebrow">{{ 'custom_request.form_eyebrow' | t }}</p>
+            <h2>{{ 'custom_request.form_title' | t }}</h2>
+            <p>{{ 'custom_request.upload_fallback' | t }}</p>
+          </div>
+
+          {% form 'contact' %}
+            <input type="hidden" name="contact[Request type]" value="Custom design quote">
+            {%- if form.posted_successfully? -%}<p class="form-success" tabindex="-1" autofocus>{{ 'custom_request.success' | t }}</p>{%- endif -%}
+            {%- if form.errors -%}<div class="form-errors">{{ form.errors | default_errors }}</div>{%- endif -%}
+
+            <div class="field-grid">
+              <label class="field">{{ 'contact.name' | t }}<input type="text" name="contact[name]" autocomplete="name" required></label>
+              <label class="field">{{ 'contact.email' | t }}<input type="email" name="contact[email]" autocomplete="email" required></label>
+            </div>
+            <div class="field-grid">
+              <label class="field">{{ 'contact.phone' | t }}<input type="tel" name="contact[phone]" autocomplete="tel" required></label>
+              <label class="field">{{ 'custom_request.city' | t }}<input type="text" name="contact[Delivery city]" autocomplete="address-level2" required></label>
+            </div>
+            <label class="field">{{ 'custom_request.address' | t }}<textarea name="contact[Delivery address]" rows="3" autocomplete="street-address" required></textarea></label>
+            <div class="field-grid">
+              <label class="field">{{ 'custom_request.dimensions' | t }}<input type="text" name="contact[Desired dimensions]" placeholder="{{ 'custom_request.dimensions_placeholder' | t }}" required></label>
+              <label class="field">{{ 'custom_request.finish' | t }}<select name="contact[Preferred finish]" required><option value="">{{ 'custom_request.choose_finish' | t }}</option><option>{{ 'custom_request.finish_black' | t }}</option><option>{{ 'custom_request.finish_gold' | t }}</option><option>{{ 'custom_request.finish_silver' | t }}</option><option>{{ 'custom_request.finish_other' | t }}</option></select></label>
+            </div>
+            <label class="field">{{ 'custom_request.reference_url' | t }} <span>{{ 'contact.optional' | t }}</span><input type="url" name="contact[Reference file URL]" placeholder="https://"></label>
+            <label class="field">{{ 'custom_request.description' | t }}<textarea name="contact[body]" rows="6" required></textarea></label>
+            <label class="custom-request__consent"><input type="checkbox" required><span>{{ 'custom_request.consent_html' | t }}</span></label>
+            <button class="button button--primary button--block" type="submit">{{ 'custom_request.submit' | t }}</button>
+          {% endform %}
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .custom-request { padding-top: 34px; }
+  .custom-request__layout { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(420px, 1.15fr); gap: clamp(48px, 8vw, 120px); padding-block: clamp(64px, 9vw, 120px); }
+  .custom-request__intro h1 { max-width: 10ch; margin: 14px 0 28px; font-size: clamp(3.2rem, 2.5rem + 3.4vw, 6.5rem); line-height: 0.94; }
+  .custom-request__intro .lede { max-width: 52ch; color: var(--muted); line-height: 1.7; }
+  .custom-request__steps { display: grid; margin-top: 46px; border-top: 1px solid var(--line); }
+  .custom-request__steps li { display: grid; grid-template-columns: 34px 1fr; gap: 18px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+  .custom-request__steps span { color: var(--copper); font-size: 0.68rem; }
+  .custom-request__steps p { color: var(--muted); line-height: 1.55; }
+  .custom-request__price { margin-top: 30px; padding-left: 16px; border-left: 2px solid var(--copper); color: var(--muted); font-size: var(--fs-sm); line-height: 1.6; }
+  .custom-request__form { padding: clamp(24px, 4vw, 48px); border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+  .custom-request__form-head { margin-bottom: 30px; }
+  .custom-request__form-head h2 { margin: 10px 0 12px; font-size: var(--fs-h1); }
+  .custom-request__form-head > p:last-child { color: var(--muted); font-size: var(--fs-sm); line-height: 1.6; }
+  .custom-request__form form { display: grid; gap: var(--sp-4); }
+  .custom-request__consent { display: grid; grid-template-columns: 18px 1fr; align-items: start; gap: 10px; color: var(--muted); font-size: var(--fs-sm); line-height: 1.5; }
+  .custom-request__consent input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--copper); }
+  .custom-request__consent a { color: var(--copper); text-decoration: underline; text-underline-offset: 3px; }
+  @media (max-width: 900px) { .custom-request__layout { grid-template-columns: 1fr; } }
+  @media (max-width: 560px) { .custom-request__form { padding: 20px; } }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Custom design request",
+  "settings": [],
+  "blocks": [{ "type": "@app" }],
+  "max_blocks": 1,
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}

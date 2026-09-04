@@ -134,6 +134,36 @@
     });
   });
 
+  document.querySelectorAll('[data-whatsapp-widget]').forEach((widget) => {
+    const prompt = widget.querySelector('[data-whatsapp-prompt]');
+    const close = widget.querySelector('[data-whatsapp-close]');
+    const storageKey = 'metaliq-whatsapp-prompt-hidden';
+    if (!prompt) return;
+
+    try {
+      if (window.sessionStorage.getItem(storageKey) === 'true') prompt.hidden = true;
+    } catch (error) {
+      // Storage can be unavailable in privacy-restricted browsing contexts.
+    }
+
+    window.requestAnimationFrame(() => {
+      widget.classList.add('is-ready');
+      widget.classList.toggle('has-open-prompt', !prompt.hidden);
+    });
+
+    if (close) {
+      close.addEventListener('click', () => {
+        prompt.hidden = true;
+        widget.classList.remove('has-open-prompt');
+        try {
+          window.sessionStorage.setItem(storageKey, 'true');
+        } catch (error) {
+          // The prompt still closes for this render when storage is unavailable.
+        }
+      });
+    }
+  });
+
   document.querySelectorAll('[data-hero-reel]').forEach((reel) => {
     const track = reel.querySelector('.home-hero__track');
     const firstGroup = track && track.querySelector('.home-hero__group');
@@ -243,7 +273,15 @@
   const navigation = document.querySelector('[data-nav]');
 
   if (menuButton && navigation) {
+    const sizeMobileMenu = () => {
+      const siteHeader = navigation.closest('[data-site-header]');
+      if (!siteHeader) return;
+      const availableHeight = Math.max(240, window.innerHeight - siteHeader.getBoundingClientRect().bottom);
+      navigation.style.setProperty('--mobile-menu-height', `${availableHeight}px`);
+    };
+
     const setMenu = (open) => {
+      if (open) sizeMobileMenu();
       menuButton.setAttribute('aria-expanded', String(open));
       navigation.classList.toggle('is-open', open);
       document.body.classList.toggle('menu-open', open);
@@ -254,6 +292,10 @@
 
     menuButton.addEventListener('click', () => {
       setMenu(menuButton.getAttribute('aria-expanded') !== 'true');
+    });
+
+    window.addEventListener('resize', () => {
+      if (menuButton.getAttribute('aria-expanded') === 'true') sizeMobileMenu();
     });
 
     document.addEventListener('keydown', (event) => {

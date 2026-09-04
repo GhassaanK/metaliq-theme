@@ -140,12 +140,29 @@
           <strong>{{ cart.total_price | money }}</strong>
         </div>
         <p class="field-note">{{ 'cart.tax_note' | t }}</p>
+        <div class="cart-summary__disclosure">
+          <p><strong>{{ 'cart.payment_title' | t }}</strong>
+            {%- if settings.online_payments_active -%}
+              {{ 'cart.payment_active_body' | t: provider: settings.payment_provider_name }}
+            {%- else -%}
+              {{ 'cart.payment_body' | t: provider: settings.payment_provider_name }}
+            {%- endif -%}
+          </p>
+          <p>{{ 'cart.delivery_body' | t }}</p>
+          <a href="/pages/ordering-and-payments">{{ 'general.ordering_payments' | t }}</a>
+          <a href="/policies/shipping-policy">{{ 'general.shipping_policy' | t }}</a>
+        </div>
         <button class="button button--primary button--block" type="submit" name="checkout">
           {{- 'cart.checkout' | t -}}
         </button>
         <a class="link cart-summary__continue" href="{{ routes.all_products_collection_url }}">
           {{- 'cart.continue' | t -}}
         </a>
+        {%- liquid
+          assign cart_whatsapp_label = 'cart.whatsapp_cta' | t
+          assign cart_whatsapp_message = 'cart.whatsapp_message' | t
+        -%}
+        {% render 'whatsapp-link', label: cart_whatsapp_label, message: cart_whatsapp_message, css_class: 'cart-summary__whatsapp' %}
       </aside>
     </form>
   {%- endif -%}
@@ -239,11 +256,26 @@
   .cart-summary .button {
     margin-top: var(--sp-4);
   }
+  .cart-summary__disclosure {
+    display: grid;
+    gap: 8px;
+    margin-top: var(--sp-4);
+    padding: var(--sp-4) 0;
+    border-block: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 0.74rem;
+    line-height: 1.55;
+  }
+  .cart-summary__disclosure strong { color: var(--ink); }
+  .cart-summary__disclosure a { width: fit-content; color: var(--copper); text-decoration: underline; text-underline-offset: 3px; }
   .cart-summary__continue {
     display: block;
     margin-top: var(--sp-4);
     text-align: center;
     font-size: var(--fs-sm);
+  }
+  .cart-summary__whatsapp {
+    margin: var(--sp-5) auto 0;
   }
   @media (max-width: 860px) {
     .cart-layout {

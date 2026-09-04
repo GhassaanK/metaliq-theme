@@ -18,7 +18,7 @@
     assign hero_label_2 = 'home.hero_cta2' | t
   endif
   assign hero_link_1 = section.settings.button_link | default: routes.all_products_collection_url
-  assign hero_link_2 = section.settings.button2_link | default: settings.quote_page.url | default: routes.root_url
+  assign hero_link_2 = section.settings.button2_link | default: settings.quote_page.url | default: '/pages/custom-design'
   assign featured_heading = section.settings.featured_heading
   if featured_heading == blank
     assign featured_heading = 'home.featured_heading' | t
@@ -59,7 +59,7 @@
     assign custom_link = settings.quote_page.url
   endif
   if custom_link == blank
-    assign custom_link = routes.root_url
+    assign custom_link = '/pages/custom-design'
   endif
   assign recent_collection = section.settings.recent_collection
   if recent_collection == blank
@@ -357,6 +357,11 @@
         {{ custom_button }}
         <span aria-hidden="true">&rarr;</span>
       </a>
+      {%- liquid
+        assign custom_whatsapp_label = 'general.whatsapp_custom_cta' | t
+        assign custom_whatsapp_message = 'general.whatsapp_custom_message' | t
+      -%}
+      {% render 'whatsapp-link', label: custom_whatsapp_label, message: custom_whatsapp_message, css_class: 'home-custom__whatsapp' %}
       <p class="home-custom__note">{{ 'home.custom_note' | t }}</p>
     </div>
 
@@ -1400,6 +1405,9 @@
   }
   .home-custom__button:hover {
     background: #ff9255;
+  }
+  .home-custom__whatsapp {
+    margin-top: var(--sp-4);
   }
   .home-custom__note {
     margin-top: 14px;
