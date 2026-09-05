@@ -19,10 +19,7 @@
     "line_color": "#383833",
     "accent_color": "#FF7A2F",
     "dark_color": "#1C1C1A",
-    "footer_color": "#0E0E0D",
-    "custom_size_enabled": true,
-    "custom_size_min": 1,
-    "custom_size_max": 12
+    "footer_color": "#0E0E0D"
   },
   "presets": {
     "MetaliQ": {
@@ -36,10 +33,7 @@
       "line_color": "#383833",
       "accent_color": "#FF7A2F",
       "dark_color": "#1C1C1A",
-      "footer_color": "#0E0E0D",
-      "custom_size_enabled": true,
-      "custom_size_min": 1,
-      "custom_size_max": 12
+      "footer_color": "#0E0E0D"
     }
   }
 }

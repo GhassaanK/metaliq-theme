@@ -53,7 +53,7 @@
                 endfor
               endif
               assign line_total = item.final_line_price | plus: extra_price
-              assign decreased_quantity = item.quantity | minus: 1
+              assign decreased_quantity = item.quantity | minus: 1 | at_least: 1
               assign increased_quantity = item.quantity | plus: 1
             -%}
 
@@ -64,7 +64,7 @@
                     item.image
                     | image_url: width: 320
                     | image_tag:
-                      loading: 'lazy',
+                      loading: 'eager',
                       widths: '120, 200, 320',
                       sizes: '92px',
                       alt: item.image.alt | default: item.product.title
@@ -85,12 +85,13 @@
                 <div class="cart-drawer__quantity" aria-label="{{ 'general.quantity' | t }}">
                   <button
                     type="button"
-                    aria-label="{% if item.quantity == 1 %}{{ 'cart.remove' | t }}{% else %}{{ 'cart.decrease_quantity' | t }}{% endif %}: {{ item.product.title | escape }}"
+                    aria-label="{{ 'cart.decrease_quantity' | t }}: {{ item.product.title | escape }}"
                     data-cart-drawer-quantity
                     data-key="{{ item.key }}"
                     data-quantity="{{ decreased_quantity }}"
                     data-linked-key="{{ linked_key }}"
                     data-linked-ratio="{{ linked_ratio }}"
+                    {% if item.quantity <= 1 %}disabled{% endif %}
                   >-</button>
                   <span aria-live="polite">{{ item.quantity }}</span>
                   <button
@@ -110,6 +111,7 @@
                 type="button"
                 aria-label="{{ 'cart.remove' | t }}: {{ item.product.title | escape }}"
                 data-cart-drawer-quantity
+                data-cart-drawer-remove
                 data-key="{{ item.key }}"
                 data-quantity="0"
                 data-linked-key="{{ linked_key }}"
@@ -217,7 +219,8 @@
     border-radius: 4px;
   }
   .cart-drawer__quantity button { width: 32px; height: 32px; border: 0; background: transparent; color: var(--ink); font-size: 1rem; }
-  .cart-drawer__quantity button:hover { color: var(--copper); }
+  .cart-drawer__quantity button:not(:disabled):hover { color: var(--copper); }
+  .cart-drawer__quantity button:disabled { opacity: 0.3; cursor: not-allowed; }
   .cart-drawer[aria-busy='true'] .cart-drawer__quantity button,
   .cart-drawer[aria-busy='true'] .cart-drawer__remove { pointer-events: none; }
   .cart-drawer__quantity span { text-align: center; font-size: 0.76rem; font-variant-numeric: tabular-nums; }

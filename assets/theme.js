@@ -3,13 +3,7 @@
  * Three independent enhancements, each a no-op when its markup is absent:
  *   1. the mobile navigation toggle
  *   2. the collection sort control
- *   3. the made-to-order size calculator on the product page
- *
- * The calculator is the delicate one. A displayed price must always equal the
- * price Shopify will charge, so the scaled figure is only ever shown when the
- * store has a surcharge product configured that lets us add the difference as a
- * real line item. Without one we show the standard price plus a clearly
- * labelled estimate, and send the customer to a quote request instead.
+ *   3. the product purchase form and cart drawer handoff
  */
 (() => {
   'use strict';
@@ -134,7 +128,8 @@
   const updateCartDrawerQuantity = (button) => {
     const drawer = getCartDrawer();
     const key = button.dataset.key;
-    const quantity = Math.max(0, Number(button.dataset.quantity) || 0);
+    const requestedQuantity = Number(button.dataset.quantity) || 0;
+    const quantity = button.hasAttribute('data-cart-drawer-remove') ? 0 : Math.max(1, requestedQuantity);
     if (!drawer || !key || drawer.getAttribute('aria-busy') === 'true') return;
 
     const updates = { [key]: quantity };
@@ -624,44 +619,19 @@
   });
 
   /* ----------------------------------------------------------------------
-     3. Made-to-order size calculator
+     3. Product purchase form
      ---------------------------------------------------------------------- */
 
-  document.querySelectorAll('[data-product-calculator]').forEach((root) => {
+  document.querySelectorAll('[data-product-purchase]').forEach((root) => {
     const form = root.querySelector('.product-form');
     const priceOutput = root.querySelector('[data-product-price]');
     if (!form || !priceOutput) return;
 
-    const modes = root.querySelectorAll('[data-size-mode]');
-    const customPanel = root.querySelector('[data-custom-size]');
-    const heightInput = root.querySelector('[data-custom-height]');
-    const widthOutput = root.querySelector('[data-calculated-width]');
     const variantSelect = root.querySelector('[data-variant-select]');
     const variantIdInput = root.querySelector('[data-variant-id]');
-    const dimensionsProperty = root.querySelector('[data-dimensions-property]');
-    const groupProperty = root.querySelector('[data-group-property]');
-    const pricingNote = root.querySelector('[data-pricing-note]');
-    const estimateLine = root.querySelector('[data-estimate]');
-    const estimateValue = root.querySelector('[data-estimate-value]');
-    const sizeError = root.querySelector('[data-size-error]');
     const addButton = root.querySelector('[data-add-button]');
-    const quoteButton = root.querySelector('[data-quote-button]');
     const addError = root.querySelector('[data-add-error]');
     const quantityInput = form.querySelector('input[name="quantity"]');
-
-    const data = root.dataset;
-    const moneyFormat = data.moneyFormat;
-    const baseWidth = Number(data.baseWidth) || 2;
-    const baseHeight = Number(data.baseHeight) || 2;
-    const minHeight = Number(data.minHeight) || baseHeight;
-    const maxHeight = Number(data.maxHeight) || 12;
-    const byArea = data.pricingBasis !== 'height';
-    const canCharge = data.canCharge === 'true';
-    const surchargeId = data.surchargeId;
-    const surchargeUnit = Number(data.surchargeUnit) || 0;
-
-    const round1 = (n) => Number(n.toFixed(1));
-    const trim = (n) => String(round1(n)).replace(/\.0$/, '');
 
     const variantId = () => (variantSelect ? variantSelect.value : variantIdInput && variantIdInput.value);
     const variantPrice = () => {
@@ -670,95 +640,9 @@
       }
       return Number(priceOutput.dataset.basePrice) || 0;
     };
-    const isCustom = () => {
-      const checked = root.querySelector('[data-size-mode]:checked');
-      return Boolean(checked) && checked.value === 'Custom';
-    };
-
-    /** Current state of the size controls, priced two ways. */
-    const measure = () => {
-      const raw = Number(heightInput && heightInput.value);
-      const height = Number.isFinite(raw) && raw > 0 ? raw : baseHeight;
-      const valid = Number.isFinite(raw) && raw >= minHeight && raw <= maxHeight;
-      const clamped = Math.min(Math.max(height, minHeight), maxHeight);
-      const ratio = clamped / baseHeight;
-      const scale = byArea ? ratio * ratio : ratio;
-      const base = variantPrice();
-
-      // What the piece is worth at this size...
-      const scaled = Math.round(base * scale);
-      // ...and what we can actually charge, in whole units of the surcharge
-      // product. Never less than the variant price: a line item can add money
-      // to a cart but cannot take it away.
-      const units = canCharge && surchargeUnit > 0 ? Math.max(0, Math.round((scaled - base) / surchargeUnit)) : 0;
-
-      return {
-        height: clamped,
-        width: baseWidth * ratio,
-        valid,
-        base,
-        scaled,
-        units,
-        charged: base + units * surchargeUnit,
-      };
-    };
-
-    const dimensionLabel = (state) => `${trim(state.width)} × ${trim(state.height)} ft`;
 
     const update = () => {
-      const custom = isCustom();
-
-      if (heightInput) {
-        heightInput.disabled = !custom;
-        heightInput.required = custom;
-        if (!custom) heightInput.value = '';
-      }
-
-      const state = measure();
-
-      if (customPanel) customPanel.hidden = !custom;
-      if (pricingNote) pricingNote.hidden = !custom;
-      if (widthOutput) widthOutput.textContent = trim(state.width);
-
-      if (sizeError) {
-        sizeError.hidden = !custom || state.valid;
-        if (custom && !state.valid) sizeError.textContent = sizeError.dataset.message || '';
-      }
-
-      // The headline price only ever shows money we will actually take.
-      priceOutput.textContent = formatMoney(custom && canCharge ? state.charged : state.base, moneyFormat);
-
-      if (estimateLine) {
-        const showEstimate = custom && !canCharge;
-        estimateLine.hidden = !showEstimate;
-        if (showEstimate && estimateValue) {
-          estimateValue.textContent = formatMoney(state.scaled, moneyFormat);
-        }
-      }
-
-      if (quoteButton && addButton) {
-        const quoteOnly = custom && !canCharge;
-        quoteButton.hidden = !quoteOnly;
-        addButton.hidden = quoteOnly;
-        if (quoteOnly) {
-          const url = new URL(quoteButton.dataset.baseHref || quoteButton.href, window.location.origin);
-          if (!quoteButton.dataset.baseHref) quoteButton.dataset.baseHref = quoteButton.href;
-          url.searchParams.set('piece', document.title);
-          url.searchParams.set('size', dimensionLabel(state));
-          quoteButton.href = url.toString();
-        }
-      }
-
-      // Only submit sizing properties when a custom size is actually chosen.
-      if (dimensionsProperty) {
-        dimensionsProperty.disabled = !custom;
-        dimensionsProperty.value = custom ? dimensionLabel(state) : '';
-      }
-      if (groupProperty) {
-        groupProperty.disabled = true; // set explicitly by the AJAX path below
-        groupProperty.value = custom ? `${variantId()}-${dimensionLabel(state)}` : '';
-      }
-
+      priceOutput.textContent = formatMoney(variantPrice(), root.dataset.moneyFormat);
       if (addError) addError.hidden = true;
     };
 
@@ -768,28 +652,10 @@
       });
     }
 
-    modes.forEach((mode) => mode.addEventListener('change', update));
-    if (heightInput) {
-      heightInput.addEventListener('input', update);
-      heightInput.addEventListener('change', update);
-    }
     if (variantSelect) variantSelect.addEventListener('change', update);
 
-    /* Add every product through the AJAX API so the customer stays on the
-       product page. Custom sizes include a linked surcharge line that remains
-       hidden from the customer-facing cart UI. */
+    /* Add through the AJAX API so the customer stays on the product page. */
     form.addEventListener('submit', (event) => {
-      const custom = isCustom();
-      if (custom && !canCharge) return;
-
-      const state = measure();
-      if (custom && !state.valid) {
-        event.preventDefault();
-        if (heightInput) heightInput.focus();
-        update();
-        return;
-      }
-
       event.preventDefault();
 
       const quantity = Math.max(1, Number(quantityInput && quantityInput.value) || 1);
@@ -799,23 +665,6 @@
           quantity,
         },
       ];
-
-      if (custom) {
-        const group = `${variantId()}-${dimensionLabel(state)}`;
-        items[0].properties = {
-          '_Size type': 'Custom',
-          Dimensions: dimensionLabel(state),
-          _size_group: group,
-        };
-
-        if (state.units > 0 && surchargeId) {
-          items.push({
-            id: surchargeId,
-            quantity: state.units * quantity,
-            properties: { _surcharge_for: group },
-          });
-        }
-      }
 
       const label = addButton ? addButton.textContent : '';
       if (addButton) {

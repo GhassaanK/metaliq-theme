@@ -1,38 +1,14 @@
 {% liquid
   assign current_variant = product.selected_or_first_available_variant
 
-  assign base_width = product.metafields.custom.default_width.value | default: section.settings.default_width
-  assign base_height = product.metafields.custom.default_height.value | default: section.settings.default_height
-
-  assign surcharge_product = settings.surcharge_product
-  assign surcharge_variant = surcharge_product.variants.first
-  assign surcharge_unit = surcharge_variant.price
-
-  comment
-    Custom sizing only charges correctly when a surcharge product is configured
-    and priced above zero — the theme adds N units of it alongside the piece to
-    make up the difference. Without one we never show a scaled price: an
-    estimate plus a quote request instead.
-  endcomment
-  assign can_charge_custom = false
-  if settings.custom_size_enabled
-    if surcharge_variant != blank
-      if surcharge_variant.available
-        if surcharge_unit > 0
-          assign can_charge_custom = true
-        endif
-      endif
-    endif
-  endif
-
   assign quote_url = settings.quote_page.url | default: '/pages/custom-design'
   assign related_collection = product.collections.first | default: collections.all
   assign detail_media = product.media[1] | default: product.featured_media
 
-  assign min_height = settings.custom_size_min
-  if min_height < base_height
-    assign min_height = base_height
-  endif
+  assign factual_description = product.description
+  assign factual_description = factual_description | replace: ' without fading or chipping', ''
+  assign factual_description = factual_description | replace: 'Ready to hang out of the box.', 'Contact us if you need mounting guidance for your wall.'
+  assign factual_description = factual_description | replace: 'Locked this format in for all upcoming listings.', ''
 %}
 
 <section class="container section product-section">
@@ -40,19 +16,8 @@
 
   <div
     class="product-layout"
-    data-product-calculator
-    data-base-width="{{ base_width }}"
-    data-base-height="{{ base_height }}"
-    data-min-height="{{ min_height }}"
-    data-max-height="{{ settings.custom_size_max }}"
-    data-pricing-basis="area"
+    data-product-purchase
     data-money-format="{{ shop.money_format | strip_html | escape }}"
-    data-can-charge="{{ can_charge_custom }}"
-    data-quote-url="{{ quote_url }}"
-    {% if can_charge_custom %}
-      data-surcharge-id="{{ surcharge_variant.id }}"
-      data-surcharge-unit="{{ surcharge_unit }}"
-    {% endif %}
   >
     <div class="product-gallery" data-product-gallery>
       {%- if product.media.size > 0 -%}
@@ -130,8 +95,8 @@
         {{ current_variant.price | money }}
       </div>
 
-      {%- if product.description != blank -%}
-        <div class="product-description">{{ product.description | strip_html | truncatewords: 38 }}</div>
+      {%- if factual_description != blank -%}
+        <div class="product-description rte">{{ factual_description }}</div>
       {%- endif -%}
 
       {% form 'product', product, class: 'product-form', novalidate: 'novalidate' %}
@@ -156,64 +121,6 @@
           </label>
         {%- endunless -%}
 
-        {%- if settings.custom_size_enabled -%}
-          <fieldset class="size-options">
-            <legend>{{ 'product.size' | t }}</legend>
-
-            <div class="segmented">
-              <label>
-                <input type="radio" name="properties[_Size type]" value="Standard" checked data-size-mode>
-                <span>{{ 'product.size_standard' | t }}</span>
-              </label>
-              <label>
-                <input type="radio" name="properties[_Size type]" value="Custom" data-size-mode>
-                <span>{{ 'product.size_custom' | t }}</span>
-              </label>
-            </div>
-
-            <p class="standard-size">
-              {{- 'product.standard_size_html' | t: width: base_width, height: base_height -}}
-            </p>
-
-            <div class="custom-size" data-custom-size hidden>
-              <label class="field" for="CustomHeight-{{ section.id }}">
-                {{ 'product.height' | t }}
-                <input
-                  id="CustomHeight-{{ section.id }}"
-                  type="number"
-                  inputmode="decimal"
-                  min="{{ min_height }}"
-                  max="{{ settings.custom_size_max }}"
-                  step="0.1"
-                  value="{{ base_height }}"
-                  data-custom-height
-                >
-              </label>
-              <p class="custom-size__readout">
-                {{ 'product.width_readout' | t }}:
-                <strong data-calculated-width>{{ base_width }}</strong>
-                {{ 'product.feet' | t }}
-              </p>
-              <p class="field-note">{{ 'product.proportional_note' | t }}</p>
-              <p
-                class="field-note field-note--error"
-                data-size-error
-                data-message="{{ 'product.size_range_error' | t: min: min_height, max: settings.custom_size_max }}"
-                hidden
-              ></p>
-            </div>
-          </fieldset>
-
-          <input
-            type="hidden"
-            name="properties[{{ 'product.dimensions' | t }}]"
-            value="{{ base_width }} × {{ base_height }} ft"
-            data-dimensions-property
-            disabled
-          >
-          <input type="hidden" name="properties[_size_group]" value="" data-group-property disabled>
-        {%- endif -%}
-
         <div class="purchase-row">
           <label class="field quantity-label" for="Quantity-{{ section.id }}">
             {{ 'general.quantity' | t }}
@@ -234,23 +141,11 @@
             {%- endif -%}
           </button>
 
-          <a class="button button--secondary purchase-row__quote" href="{{ quote_url }}" data-quote-button hidden>
-            {{- 'product.request_size' | t -}}
-          </a>
         </div>
 
-        <p class="estimate-line" data-estimate hidden>
-          <span>{{ 'product.estimate' | t }}</span>
-          <strong data-estimate-value></strong>
-        </p>
-
-        <p class="pricing-note" data-pricing-note hidden>
-          {%- if can_charge_custom -%}
-            {{ 'product.custom_priced_note' | t }}
-          {%- else -%}
-            {{ 'product.estimate_note' | t }}
-          {%- endif -%}
-        </p>
+        <a class="product-custom-size-link" href="{{ quote_url }}?piece={{ product.title | url_encode }}">
+          {{- 'product.custom_size_request' | t -}}
+        </a>
 
         <p class="form-errors" data-add-error hidden role="alert">{{ 'product.add_error' | t }}</p>
       {% endform %}
@@ -308,7 +203,7 @@
       </div>
 
       <div class="product-tabs__panel rte" id="ProductTabDetails-{{ section.id }}" role="tabpanel" aria-labelledby="ProductTabButtonDetails-{{ section.id }}" data-product-panel="details">
-        {{ product.description }}
+        {{ factual_description }}
       </div>
       <div class="product-tabs__panel rte" id="ProductTabMaterials-{{ section.id }}" role="tabpanel" aria-labelledby="ProductTabButtonMaterials-{{ section.id }}" data-product-panel="materials" hidden>
         {%- if product.metafields.custom.materials != blank -%}
@@ -318,7 +213,6 @@
         {%- endif -%}
       </div>
       <div class="product-tabs__panel rte" id="ProductTabSizing-{{ section.id }}" role="tabpanel" aria-labelledby="ProductTabButtonSizing-{{ section.id }}" data-product-panel="sizing" hidden>
-        <p>{{ 'product.standard_size_html' | t: width: base_width, height: base_height }}</p>
         {{ section.settings.installation_text }}
       </div>
       <div class="product-tabs__panel rte" id="ProductTabShipping-{{ section.id }}" role="tabpanel" aria-labelledby="ProductTabButtonShipping-{{ section.id }}" data-product-panel="shipping" hidden>
@@ -471,90 +365,6 @@
     border-block: 1px solid var(--line);
   }
 
-  .size-options {
-    display: grid;
-    gap: var(--sp-2);
-    padding: 0;
-    border: 0;
-  }
-  .size-options legend {
-    font-size: var(--fs-sm);
-    font-weight: 500;
-  }
-  .segmented {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--sp-2);
-  }
-  .segmented input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-  }
-  .segmented span {
-    display: grid;
-    place-items: center;
-    min-height: 46px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    font-size: var(--fs-sm);
-    cursor: pointer;
-    transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease), color 0.15s var(--ease);
-  }
-  .segmented input:checked + span {
-    border-color: var(--copper);
-    box-shadow: inset 0 0 0 1px var(--copper);
-    color: var(--copper);
-  }
-  .segmented input:focus-visible + span {
-    outline: 2px solid var(--copper);
-    outline-offset: 3px;
-  }
-
-  .standard-size {
-    color: var(--muted);
-    font-size: var(--fs-sm);
-  }
-  .custom-size {
-    display: grid;
-    gap: var(--sp-2);
-    margin-top: var(--sp-2);
-    padding: var(--sp-4);
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-  }
-  .custom-size[hidden] {
-    display: none;
-  }
-  .custom-size__readout {
-    color: var(--muted);
-    font-size: var(--fs-sm);
-  }
-
-  .estimate-line {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--sp-3);
-  }
-  .estimate-line span {
-    color: var(--muted);
-    font-size: 0.72rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-  .estimate-line strong {
-    color: var(--copper);
-    font-size: var(--fs-h4);
-  }
-  .pricing-note {
-    padding: var(--sp-3) var(--sp-4);
-    border-left: 2px solid var(--copper);
-    background: color-mix(in srgb, var(--copper) 8%, var(--surface));
-    font-size: 0.74rem;
-  }
-
   .purchase-row {
     display: grid;
     grid-template-columns: 88px 1fr;
@@ -564,15 +374,19 @@
   .quantity-label input {
     margin-top: 6px;
   }
-  .purchase-row__add,
-  .purchase-row__quote {
+  .purchase-row__add {
     min-height: 56px;
+  }
+  .product-custom-size-link {
+    width: fit-content;
+    color: var(--copper);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 4px;
   }
   .product-whatsapp {
     margin-top: var(--sp-4);
-  }
-  .purchase-row__quote {
-    grid-column: 2;
   }
 
   .product-assurances {
@@ -741,26 +555,6 @@
   "name": "t:general.product",
   "settings": [
     {
-      "type": "range",
-      "id": "default_width",
-      "label": "t:labels.default_width",
-      "min": 0.5,
-      "max": 12,
-      "step": 0.5,
-      "unit": "ft",
-      "default": 2
-    },
-    {
-      "type": "range",
-      "id": "default_height",
-      "label": "t:labels.default_height",
-      "min": 0.5,
-      "max": 12,
-      "step": 0.5,
-      "unit": "ft",
-      "default": 2
-    },
-    {
       "type": "header",
       "content": "Product information"
     },
@@ -768,19 +562,19 @@
       "type": "richtext",
       "id": "materials_text",
       "label": "Default materials",
-      "default": "<p>Precision-cut metal with a durable finished surface. Product-specific material details can be added through the custom.materials metafield.</p>"
+      "default": "<p>Powder-coated mild steel with a matte black finish.</p>"
     },
     {
       "type": "richtext",
       "id": "installation_text",
       "label": "Installation guidance",
-      "default": "<p>Mounting requirements depend on the artwork size and wall construction. Installation guidance is included with your order.</p>"
+      "default": "<p>Mounting requirements depend on the artwork dimensions and wall construction. Review the product description and contact us before ordering if you need mounting guidance.</p>"
     },
     {
       "type": "richtext",
       "id": "shipping_text",
       "label": "Shipping and returns",
-      "default": "<p>Each piece is prepared and packed for secure delivery. Production and delivery estimates are confirmed with your order.</p>"
+      "default": "<p>Each piece is made to order and packed for delivery. See the estimates below and review the Shipping and Refund Policies before ordering.</p>"
     }
   ],
   "disabled_on": { "groups": ["header", "footer"] }

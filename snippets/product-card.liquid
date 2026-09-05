@@ -19,9 +19,6 @@
     assign on_sale = true
   endif
   assign show_from = false
-  if settings.custom_size_enabled
-    assign show_from = true
-  endif
   if product.price_varies
     assign show_from = true
   endif
@@ -62,8 +59,6 @@
 
     {%- if on_sale -%}
       <span class="product-card__badge tag">{{ 'product.on_sale' | t }}</span>
-    {%- elsif settings.custom_size_enabled -%}
-      <span class="product-card__badge tag">{{ 'product.size_custom' | t }}</span>
     {%- endif -%}
   </a>
 
