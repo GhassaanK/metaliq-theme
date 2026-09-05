@@ -901,12 +901,11 @@ select {
   background: #1c1c19;
   box-shadow: 0 22px 55px rgb(0 0 0 / 0.46);
   transform: translateX(-50%);
-  counter-reset: collection-link;
   overflow-y: auto;
 }
 .nav-dropdown__menu a {
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
   min-height: 44px;
@@ -917,12 +916,6 @@ select {
   font-weight: 500;
   text-transform: none;
   transition: color 0.2s var(--ease), background 0.2s var(--ease);
-}
-.nav-dropdown__menu a::before {
-  color: #77736c;
-  font-size: 0.64rem;
-  counter-increment: collection-link;
-  content: counter(collection-link, decimal-leading-zero);
 }
 .nav-dropdown__menu a::after {
   color: #77736c;
@@ -1641,7 +1634,7 @@ html.reveal-on .reveal.is-in {
   .header-nav > a,
   .nav-dropdown > summary {
     display: grid;
-    grid-template-columns: 34px minmax(0, 1fr) 24px;
+    grid-template-columns: minmax(0, 1fr) 24px;
     align-items: center;
     gap: 12px;
     min-height: 68px;
@@ -1653,16 +1646,6 @@ html.reveal-on .reveal.is-in {
     font-size: clamp(1.45rem, 6vw, 1.9rem);
     font-weight: 600;
     line-height: 1.05;
-    counter-increment: mobile-navigation;
-  }
-  .header-nav > a::before,
-  .nav-dropdown > summary::before {
-    align-self: center;
-    color: #77736c;
-    font-family: var(--sans);
-    font-size: 0.62rem;
-    font-weight: 500;
-    content: counter(mobile-navigation, decimal-leading-zero);
   }
   .header-nav > a::after {
     justify-self: end;

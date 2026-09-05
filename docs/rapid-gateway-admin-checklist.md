@@ -72,7 +72,7 @@ Install **Hulk Contact Form Builder**, then add its app block to the Custom Desi
 
 - Name, email, and phone
 - Delivery city and full address
-- Desired dimensions and finish
+- Desired dimensions; display matte black powder-coated as the fixed finish
 - Project description
 - Reference images or documents (JPG, JPEG, PNG, and PDF)
 - Required consent linking to the Privacy Policy
@@ -84,7 +84,7 @@ Send a test of every allowed file type and verify Steed Art receives both the su
 For every active product, confirm:
 
 - At least two clear, accurate images
-- Description covering material, finish, dimensions, care, installation, made-to-order status, and delivery estimate
+- Description covering material, matte black powder-coated finish, dimensions, care, installation, made-to-order status, and delivery estimate
 - Accurate PKR price and SKU
 - Correct availability and inventory behaviour
 - Custom-size area calculation, where offered
@@ -98,4 +98,3 @@ For every active product, confirm:
 - Confirm no `Translation missing` text or 404 links appear.
 - Run `shopify theme check --fail-level error`.
 - Submit exactly `https://metaliq.art` to Rapid Gateway.
-

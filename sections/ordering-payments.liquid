@@ -31,7 +31,6 @@
         {%- for i in (1..8) -%}
           {%- assign step_key = 'journey.step_' | append: i -%}
           <li>
-            <span aria-hidden="true">{{ i | prepend: '0' }}</span>
             <p>{{ step_key | t }}</p>
           </li>
         {%- endfor -%}
@@ -103,8 +102,7 @@
   .journey-page__section h2 { max-width: 14ch; font-size: clamp(2.4rem, 1.8rem + 2vw, 4.4rem); line-height: 1; }
   .journey-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
   .journey-steps li { min-height: 210px; padding: 24px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-  .journey-steps li > span { color: var(--copper); font-size: 0.68rem; }
-  .journey-steps p { margin-top: 54px; color: var(--muted); line-height: 1.6; }
+  .journey-steps p { color: var(--muted); line-height: 1.6; }
   .journey-page__section--split { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; padding: 0; background: var(--line); border: 1px solid var(--line); }
   .journey-page__section--split > div { padding: clamp(30px, 5vw, 70px); background: var(--background); }
   .journey-page__section--split h2 { margin: 14px 0 24px; }
@@ -130,7 +128,6 @@
     .journey-steps, .journey-page__delivery { grid-template-columns: 1fr; }
     .journey-page__delivery > div:first-child, .journey-page__delivery > p { grid-column: 1; }
     .journey-steps li { min-height: 170px; }
-    .journey-steps p { margin-top: 30px; }
   }
 {% endstylesheet %}
 

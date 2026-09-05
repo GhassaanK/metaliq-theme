@@ -5,10 +5,23 @@
   `cart.total_price` already counts both, so the summary needs no adjustment.
 {% endcomment %}
 
+{%- liquid
+  assign visible_item_count = 0
+  for cart_item in cart.items
+    if cart_item.properties['_surcharge_for'] == blank
+      assign visible_item_count = visible_item_count | plus: cart_item.quantity
+    endif
+  endfor
+-%}
+
 <section class="container section cart-section">
   <header class="cart-head">
     <p class="eyebrow">{{ 'cart.eyebrow' | t }}</p>
     <h1>{{ 'cart.title' | t }}</h1>
+    <div class="cart-head__meta">
+      <p>{{ 'cart.intro' | t }}</p>
+      <span>{{ 'cart.item_count' | t: count: visible_item_count }}</span>
+    </div>
   </header>
 
   {%- if cart.item_count == 0 -%}
@@ -64,11 +77,11 @@
               {%- if item.image -%}
                 {{
                   item.image
-                  | image_url: width: 320
+                  | image_url: width: 600
                   | image_tag:
                     loading: 'lazy',
-                    widths: '120, 200, 320',
-                    sizes: '110px',
+                    widths: '180, 320, 480, 600',
+                    sizes: '(max-width: 520px) calc(100vw - 64px), 180px',
                     alt: item.image.alt | default: item.product.title
                 }}
               {%- else -%}
@@ -82,35 +95,25 @@
               {%- endif -%}
               <h2><a href="{{ item.url }}">{{ item.product.title }}</a></h2>
 
-              {%- unless item.product.has_only_default_variant -%}
-                <p class="cart-line__meta">{{ item.variant.title }}</p>
-              {%- endunless -%}
-
-              {%- for property in item.properties -%}
-                {%- assign first_char = property.first | slice: 0 -%}
-                {%- unless property.last == blank or first_char == '_' -%}
-                  <p class="cart-line__meta"><span>{{ property.first }}:</span> {{ property.last }}</p>
-                {%- endunless -%}
-              {%- endfor -%}
-
-              {%- if surcharge_for != blank -%}
-                <p class="cart-line__meta"><span>{{ 'cart.sizing_line' | t }}</span></p>
+              {%- if item.product.description != blank -%}
+                <div class="cart-line__description rte">{{ item.product.description }}</div>
               {%- endif -%}
 
               <div class="cart-line__controls">
                 {%- if is_grouped -%}
-                  <span class="cart-line__qty">{{ 'general.quantity' | t }}: {{ item.quantity }}</span>
+                  <span class="cart-line__qty"><span>{{ 'general.quantity' | t }}</span> {{ item.quantity }}</span>
                 {%- else -%}
-                  <label class="visually-hidden" for="Updates-{{ item.key }}">
+                  <label class="cart-line__quantity" for="Updates-{{ item.key }}">
                     {{ 'general.quantity' | t }}
+                    <input
+                      id="Updates-{{ item.key }}"
+                      type="number"
+                      name="updates[]"
+                      value="{{ item.quantity }}"
+                      min="0"
+                      aria-label="{{ 'general.quantity' | t }}: {{ item.product.title | escape }}"
+                    >
                   </label>
-                  <input
-                    id="Updates-{{ item.key }}"
-                    type="number"
-                    name="updates[]"
-                    value="{{ item.quantity }}"
-                    min="0"
-                  >
                 {%- endif -%}
                 <a
                   href="{{ item.url_to_remove }}"
@@ -121,12 +124,12 @@
                 </a>
               </div>
 
-              {%- if is_grouped -%}
-                <p class="field-note">{{ 'cart.made_to_order_qty' | t }}</p>
-              {%- endif -%}
             </div>
 
-            <strong class="cart-line__price price">{{ line_total | money }}</strong>
+            <div class="cart-line__aside">
+              <span>{{ 'cart.line_total' | t }}</span>
+              <strong class="cart-line__price price">{{ line_total | money }}</strong>
+            </div>
           </article>
         {%- endfor -%}
 
@@ -134,7 +137,11 @@
       </div>
 
       <aside class="cart-summary">
+        <p class="eyebrow">{{ 'cart.summary_eyebrow' | t }}</p>
         <h2>{{ 'cart.summary' | t }}</h2>
+        <div class="cart-summary__row cart-summary__row--items">
+          <span>{{ 'cart.item_count' | t: count: visible_item_count }}</span>
+        </div>
         <div class="cart-summary__row">
           <span>{{ 'cart.subtotal' | t }}</span>
           <strong>{{ cart.total_price | money }}</strong>
@@ -170,77 +177,181 @@
 
 {% stylesheet %}
   .cart-section {
-    padding-top: var(--sp-6);
+    padding-top: clamp(34px, 5vw, 72px);
   }
   .cart-head {
-    margin-bottom: var(--sp-7);
+    margin-bottom: clamp(34px, 5vw, 64px);
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+  }
+  .cart-head h1 {
+    margin-top: 12px;
+    font-size: clamp(3rem, 2.3rem + 3vw, 6rem);
+    line-height: 0.95;
+  }
+  .cart-head__meta {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-top: 22px;
+    color: var(--muted);
+  }
+  .cart-head__meta p {
+    max-width: 52ch;
+    line-height: 1.65;
+  }
+  .cart-head__meta span {
+    flex: 0 0 auto;
+    color: var(--copper);
+    font-size: var(--fs-label-sm);
+    font-weight: 600;
+    text-transform: uppercase;
   }
   .cart-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.6fr);
+    grid-template-columns: minmax(0, 1.65fr) minmax(300px, 0.68fr);
     align-items: start;
     gap: clamp(24px, 5vw, 56px);
   }
+  .cart-lines {
+    display: grid;
+    gap: 16px;
+  }
   .cart-line {
     display: grid;
-    grid-template-columns: 110px 1fr auto;
-    gap: var(--sp-5);
-    padding: var(--sp-5) 0;
-    border-top: 1px solid var(--line);
+    grid-template-columns: 180px minmax(0, 1fr) auto;
+    align-items: start;
+    gap: clamp(20px, 3vw, 34px);
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
   }
   .cart-line__media {
     display: block;
-    aspect-ratio: 1;
+    width: 100%;
+    min-width: 0;
+    align-self: start;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    border-radius: 5px;
+    background: var(--background);
   }
   .cart-line__media img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    padding: 8px;
+    object-fit: contain;
   }
   .cart-line__media .engraving {
     width: 66%;
   }
+  .cart-line__info {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+  }
   .cart-line__info h2 {
-    margin: 2px 0;
-    font-size: var(--fs-h4);
+    margin: 5px 0 14px;
+    font-size: clamp(1.35rem, 1.15rem + 0.45vw, 1.75rem);
+    line-height: 1.15;
+    overflow-wrap: anywhere;
   }
   .cart-line__kicker {
-    color: var(--muted);
+    color: var(--copper);
     font-size: 0.64rem;
-    letter-spacing: 0.1em;
     text-transform: uppercase;
   }
-  .cart-line__meta {
+  .cart-line__description {
+    max-width: 68ch;
     color: var(--muted);
     font-size: var(--fs-sm);
+    line-height: 1.6;
+    overflow-wrap: anywhere;
   }
-  .cart-line__meta span {
-    color: var(--ink);
+  .cart-line__description > * + * {
+    margin-top: 10px;
+  }
+  .cart-line__description img,
+  .cart-line__description video,
+  .cart-line__description iframe {
+    max-width: 100%;
+    height: auto;
   }
   .cart-line__controls {
     display: flex;
     align-items: center;
     gap: var(--sp-4);
-    margin-top: var(--sp-3);
+    margin-top: auto;
+    padding-top: 22px;
+  }
+  .cart-line__quantity {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--muted);
+    font-size: var(--fs-label-sm);
   }
   .cart-line__controls input {
-    width: 72px;
-    padding: 8px;
+    width: 64px;
+    min-height: 38px;
+    padding: 7px 9px;
+    text-align: center;
   }
   .cart-line__qty {
-    font-size: var(--fs-sm);
+    display: flex;
+    gap: 10px;
+    font-size: var(--fs-label-sm);
     font-weight: 500;
   }
+  .cart-line__qty span {
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .cart-line__remove {
+    color: var(--muted);
+    font-size: var(--fs-label-sm);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  .cart-line__remove:hover {
+    color: var(--copper);
+  }
+  .cart-line__aside {
+    display: flex;
+    min-width: 100px;
+    align-items: flex-end;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 12px;
+    padding-left: 18px;
+    border-left: 1px solid var(--line);
+  }
+  .cart-line__aside > span {
+    color: var(--muted);
+    font-size: 0.64rem;
+    text-transform: uppercase;
+  }
   .cart-line__price {
-    font-size: var(--fs-sm);
+    font-size: clamp(1rem, 0.9rem + 0.3vw, 1.25rem);
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .cart-lines > .button {
+    justify-self: end;
+    margin-top: 4px;
   }
   .cart-summary {
     position: sticky;
     top: calc(var(--header-height) + var(--sp-5));
-    padding: var(--sp-6);
-    background: var(--surface);
+    padding: clamp(24px, 3vw, 34px);
     border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+  }
+  .cart-summary > .eyebrow {
+    margin-bottom: 10px;
   }
   .cart-summary h2 {
     font-size: var(--fs-h3);
@@ -252,6 +363,18 @@
     padding: var(--sp-4) 0;
     border-block: 1px solid var(--line);
     font-variant-numeric: tabular-nums;
+  }
+  .cart-summary__row--items {
+    margin-top: 24px;
+    padding: 12px 0 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 0;
+    color: var(--muted);
+    font-size: var(--fs-label-sm);
+  }
+  .cart-summary__row--items + .cart-summary__row {
+    margin-top: 0;
+    border-top: 0;
   }
   .cart-summary .button {
     margin-top: var(--sp-4);
@@ -285,12 +408,50 @@
       position: static;
     }
   }
-  @media (max-width: 520px) {
-    .cart-line {
-      grid-template-columns: 84px 1fr;
+  @media (max-width: 680px) {
+    .cart-head__meta {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 12px;
     }
-    .cart-line__price {
+    .cart-line {
+      grid-template-columns: 118px minmax(0, 1fr);
+      gap: 18px;
+      padding: 14px;
+    }
+    .cart-line__aside {
       grid-column: 2;
+      min-width: 0;
+      align-items: center;
+      flex-direction: row;
+      padding: 14px 0 0;
+      border-top: 1px solid var(--line);
+      border-left: 0;
+    }
+  }
+  @media (max-width: 520px) {
+    .cart-section {
+      padding-top: 28px;
+    }
+    .cart-line {
+      grid-template-columns: 1fr;
+    }
+    .cart-line__media {
+      aspect-ratio: 16 / 10;
+      max-height: 240px;
+    }
+    .cart-line__aside {
+      grid-column: 1;
+    }
+    .cart-line__controls {
+      justify-content: space-between;
+    }
+    .cart-lines > .button {
+      width: 100%;
+      justify-self: stretch;
+    }
+    .cart-summary {
+      padding: 22px 18px;
     }
   }
 {% endstylesheet %}

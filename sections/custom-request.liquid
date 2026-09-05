@@ -11,7 +11,7 @@
         <ol class="custom-request__steps">
           {%- for i in (1..4) -%}
             {%- assign step_key = 'custom_request.step_' | append: i -%}
-            <li><span aria-hidden="true">{{ i | prepend: '0' }}</span><p>{{ step_key | t }}</p></li>
+            <li><p>{{ step_key | t }}</p></li>
           {%- endfor -%}
         </ol>
 
@@ -44,7 +44,7 @@
             <label class="field">{{ 'custom_request.address' | t }}<textarea name="contact[Delivery address]" rows="3" autocomplete="street-address" required></textarea></label>
             <div class="field-grid">
               <label class="field">{{ 'custom_request.dimensions' | t }}<input type="text" name="contact[Desired dimensions]" placeholder="{{ 'custom_request.dimensions_placeholder' | t }}" required></label>
-              <label class="field">{{ 'custom_request.finish' | t }}<select name="contact[Preferred finish]" required><option value="">{{ 'custom_request.choose_finish' | t }}</option><option>{{ 'custom_request.finish_black' | t }}</option><option>{{ 'custom_request.finish_gold' | t }}</option><option>{{ 'custom_request.finish_silver' | t }}</option><option>{{ 'custom_request.finish_other' | t }}</option></select></label>
+              <label class="field">{{ 'custom_request.finish' | t }}<input type="text" name="contact[Finish]" value="{{ 'custom_request.finish_black' | t }}" readonly></label>
             </div>
             <label class="field">{{ 'custom_request.reference_url' | t }} <span>{{ 'contact.optional' | t }}</span><input type="url" name="contact[Reference file URL]" placeholder="https://"></label>
             <label class="field">{{ 'custom_request.description' | t }}<textarea name="contact[body]" rows="6" required></textarea></label>
@@ -63,8 +63,7 @@
   .custom-request__intro h1 { max-width: 10ch; margin: 14px 0 28px; font-size: clamp(3.2rem, 2.5rem + 3.4vw, 6.5rem); line-height: 0.94; }
   .custom-request__intro .lede { max-width: 52ch; color: var(--muted); line-height: 1.7; }
   .custom-request__steps { display: grid; margin-top: 46px; border-top: 1px solid var(--line); }
-  .custom-request__steps li { display: grid; grid-template-columns: 34px 1fr; gap: 18px; padding: 18px 0; border-bottom: 1px solid var(--line); }
-  .custom-request__steps span { color: var(--copper); font-size: 0.68rem; }
+  .custom-request__steps li { padding: 18px 0; border-bottom: 1px solid var(--line); }
   .custom-request__steps p { color: var(--muted); line-height: 1.55; }
   .custom-request__price { margin-top: 30px; padding-left: 16px; border-left: 2px solid var(--copper); color: var(--muted); font-size: var(--fs-sm); line-height: 1.6; }
   .custom-request__form { padding: clamp(24px, 4vw, 48px); border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }

@@ -24,7 +24,7 @@ The public catalog contains nine products. Every product has a positive PKR pric
 Expand each product description with product-specific, accurate information for:
 
 - Material and material thickness
-- Available finish and colour
+- Matte black powder-coated finish
 - Exact listed dimensions and approximate weight
 - What is included in the package
 - Suitable wall types and installation method
@@ -42,4 +42,3 @@ Do not publish generic specifications that are not true for the individual item.
 - Product pages link to Ordering & Payments, Shipping Policy, and Refund Policy.
 - Catalog custom-size pricing is locked to area-based calculation.
 - Custom-size inputs are hidden and cleared unless the custom-size option is selected.
-

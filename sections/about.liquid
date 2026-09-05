@@ -45,7 +45,6 @@
     <div class="about-page__principles">
       {%- for block in section.blocks -%}
         <article class="about-page__principle" {{ block.shopify_attributes }}>
-          <span aria-hidden="true">{{ forloop.index | prepend: '0' }}</span>
           <h2>{{ block.settings.heading }}</h2>
           <p>{{ block.settings.text }}</p>
         </article>
@@ -59,9 +58,9 @@
         <p>{{ 'about.operations_body' | t }}</p>
       </div>
       <div class="about-page__model">
-        <article><span>01</span><h3>{{ 'about.catalog_title' | t }}</h3><p>{{ 'about.catalog_body' | t }}</p></article>
-        <article><span>02</span><h3>{{ 'about.bespoke_title' | t }}</h3><p>{{ 'about.bespoke_body' | t }}</p></article>
-        <article><span>03</span><h3>{{ 'about.fulfilment_title' | t }}</h3><p>{{ 'about.fulfilment_body' | t }}</p></article>
+        <article><h3>{{ 'about.catalog_title' | t }}</h3><p>{{ 'about.catalog_body' | t }}</p></article>
+        <article><h3>{{ 'about.bespoke_title' | t }}</h3><p>{{ 'about.bespoke_body' | t }}</p></article>
+        <article><h3>{{ 'about.fulfilment_title' | t }}</h3><p>{{ 'about.fulfilment_body' | t }}</p></article>
       </div>
       <div class="about-page__legal">
         <p>{{ 'about.legal_body' | t }}</p>
@@ -158,12 +157,8 @@
     border-right: 1px solid var(--line);
   }
   .about-page__principle:last-child { border-right: 0; }
-  .about-page__principle > span {
-    color: var(--copper);
-    font-size: 0.7rem;
-  }
   .about-page__principle h2 {
-    margin: 70px 0 16px;
+    margin: 0 0 16px;
     font-size: clamp(1.7rem, 1.4rem + 0.8vw, 2.4rem);
   }
   .about-page__principle p {
@@ -180,8 +175,7 @@
   .about-page__operations-intro > p:last-child { grid-column: 2; max-width: 62ch; color: var(--muted); line-height: 1.7; }
   .about-page__model { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 70px; border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
   .about-page__model article { min-height: 260px; padding: clamp(24px, 4vw, 44px); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-  .about-page__model article > span { color: var(--copper); font-size: 0.68rem; }
-  .about-page__model h3 { margin: 52px 0 14px; font-family: var(--serif); font-size: var(--fs-h3); }
+  .about-page__model h3 { margin: 0 0 14px; font-family: var(--serif); font-size: var(--fs-h3); }
   .about-page__model p { color: var(--muted); line-height: 1.65; }
   .about-page__legal { display: flex; align-items: center; justify-content: space-between; gap: 40px; margin-top: 36px; }
   .about-page__legal p { max-width: 68ch; color: var(--muted); font-size: var(--fs-sm); line-height: 1.65; }
@@ -217,7 +211,6 @@
     .about-page__principles { grid-template-columns: 1fr; }
     .about-page__principle { min-height: 0; border-right: 0; border-bottom: 1px solid var(--line); }
     .about-page__principle:last-child { border-bottom: 0; }
-    .about-page__principle h2 { margin-top: 38px; }
     .about-page__operations-intro, .about-page__model { grid-template-columns: 1fr; }
     .about-page__operations-intro > p:last-child { grid-column: 1; }
     .about-page__legal { align-items: flex-start; flex-direction: column; }

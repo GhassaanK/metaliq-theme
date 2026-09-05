@@ -4,6 +4,12 @@
   assign facebook_url = section.settings.facebook_url | default: 'https://www.facebook.com/metaliq.art/'
   assign tiktok_url = section.settings.tiktok_url | default: 'https://www.tiktok.com/@metaliq.art'
   assign youtube_url = section.settings.youtube_url | default: 'https://www.youtube.com/@metaliq.art'
+  assign visible_cart_count = 0
+  for cart_item in cart.items
+    if cart_item.properties['_surcharge_for'] == blank
+      assign visible_cart_count = visible_cart_count | plus: cart_item.quantity
+    endif
+  endfor
 %}
 
 {%- if section.settings.announcement_1 != blank -%}
@@ -101,9 +107,17 @@
       <a class="icon-button" href="{{ routes.search_url }}" aria-label="{{ 'general.search' | t }}">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
       </a>
-      <a class="icon-button cart-link" href="{{ routes.cart_url }}" aria-label="{{ 'general.cart_label' | t: count: cart.item_count }}">
+      <a
+        class="icon-button cart-link"
+        href="{{ routes.cart_url }}"
+        aria-label="{{ 'general.cart_label' | t: count: visible_cart_count }}"
+        data-cart-label="{{ 'general.cart_label' | t: count: '__COUNT__' }}"
+        aria-controls="CartDrawer"
+        aria-expanded="false"
+        data-cart-drawer-trigger
+      >
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
-        {%- if cart.item_count > 0 -%}<span class="cart-count">{{ cart.item_count }}</span>{%- endif -%}
+        {%- if visible_cart_count > 0 -%}<span class="cart-count" data-cart-count>{{ visible_cart_count }}</span>{%- endif -%}
       </a>
     </div>
   </div>

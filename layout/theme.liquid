@@ -19,12 +19,15 @@
 
     {% sections 'footer-group' %}
 
+    {% section 'cart-drawer' %}
+
     <script>
       window.MetaliQ = {
         routes: {
           cart: '{{ routes.cart_url }}',
           cartAdd: '{{ routes.cart_add_url }}',
-          cartChange: '{{ routes.cart_change_url }}'
+          cartChange: '{{ routes.cart_change_url }}',
+          cartUpdate: '{{ routes.cart_update_url }}'
         }
       };
     </script>

@@ -105,7 +105,7 @@ You must be legally capable of entering into a binding contract to place an orde
 
 ### 3. Product information
 
-We try to describe products, dimensions, finishes, colours, and images accurately. Screen settings, lighting, handmade or production variations, and the characteristics of metal and finishing processes can cause reasonable differences between photographs and the delivered piece.
+We try to describe products, dimensions, the matte black powder-coated finish, and images accurately. Screen settings, lighting, production variations, and the characteristics of metal and powder coating can cause reasonable differences between photographs and the delivered piece.
 
 Measurements should be checked before ordering. Product images may not show an item at exact scale. Installation requirements depend on the size and weight of the artwork and the wall material.
 
@@ -200,7 +200,7 @@ Every MetaliQ Art piece is made to order. Please review the product, dimensions,
 
 Contact us immediately if you need to cancel. A catalog order may be cancelled only before production begins. Once material has been allocated, cutting has started, or finishing is underway, the order cannot be cancelled for change of mind.
 
-For bespoke work, the design proof, dimensions, finish, price, payment schedule, and estimated timeline are confirmed before payment. An advance becomes non-refundable once the customer approves the design or production begins. Changes requested after approval may require a revised quote and timeline.
+For bespoke work, the design proof, dimensions, matte black powder-coated finish, price, payment schedule, and estimated timeline are confirmed before payment. An advance becomes non-refundable once the customer approves the design or production begins. Changes requested after approval may require a revised quote and timeline.
 
 ### Damage, defects, and incorrect items
 

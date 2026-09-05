@@ -1,0 +1,267 @@
+{%- liquid
+  assign visible_item_count = 0
+  for cart_item in cart.items
+    if cart_item.properties['_surcharge_for'] == blank
+      assign visible_item_count = visible_item_count | plus: cart_item.quantity
+    endif
+  endfor
+-%}
+
+<div class="cart-drawer" data-cart-drawer data-cart-count="{{ visible_item_count }}" aria-hidden="true">
+  <button class="cart-drawer__overlay" type="button" aria-label="{{ 'cart.drawer_close' | t }}" data-cart-drawer-close></button>
+
+  <aside id="CartDrawer" class="cart-drawer__panel" role="dialog" aria-modal="true" aria-labelledby="CartDrawerTitle" tabindex="-1">
+    <header class="cart-drawer__header">
+      <div>
+        <p class="eyebrow">{{ 'cart.drawer_eyebrow' | t }}</p>
+        <h2 id="CartDrawerTitle">{{ 'cart.title' | t }}</h2>
+      </div>
+      <button class="icon-button cart-drawer__close" type="button" aria-label="{{ 'cart.drawer_close' | t }}" data-cart-drawer-close>
+        {% render 'icon', name: 'close' %}
+      </button>
+    </header>
+
+    {%- if visible_item_count == 0 -%}
+      <div class="cart-drawer__empty">
+        <span aria-hidden="true">{% render 'icon', name: 'sparkle' %}</span>
+        <h3>{{ 'cart.empty_title' | t }}</h3>
+        <p>{{ 'cart.empty_body' | t }}</p>
+        <a class="button button--primary button--block" href="{{ routes.all_products_collection_url }}">{{ 'cart.empty_action' | t }}</a>
+      </div>
+    {%- else -%}
+      <div class="cart-drawer__body">
+        <p class="cart-drawer__count">{{ 'cart.item_count' | t: count: visible_item_count }}</p>
+        <div class="cart-drawer__items">
+          {%- for item in cart.items -%}
+            {%- assign surcharge_for = item.properties['_surcharge_for'] -%}
+            {%- if surcharge_for != blank -%}{% continue %}{%- endif -%}
+
+            {%- liquid
+              assign group = item.properties['_size_group']
+              assign extra_price = 0
+              assign linked_key = blank
+              assign linked_ratio = 0
+              if group != blank
+                for other in cart.items
+                  if other.properties['_surcharge_for'] == group
+                    assign extra_price = extra_price | plus: other.final_line_price
+                    assign linked_key = other.key
+                    if item.quantity > 0
+                      assign linked_ratio = other.quantity | divided_by: item.quantity
+                    endif
+                  endif
+                endfor
+              endif
+              assign line_total = item.final_line_price | plus: extra_price
+              assign decreased_quantity = item.quantity | minus: 1
+              assign increased_quantity = item.quantity | plus: 1
+            -%}
+
+            <article class="cart-drawer__item" data-cart-drawer-item>
+              <a class="cart-drawer__media media" href="{{ item.url }}">
+                {%- if item.image -%}
+                  {{
+                    item.image
+                    | image_url: width: 320
+                    | image_tag:
+                      loading: 'lazy',
+                      widths: '120, 200, 320',
+                      sizes: '92px',
+                      alt: item.image.alt | default: item.product.title
+                  }}
+                {%- else -%}
+                  <span class="media-fallback">{% render 'engraving', seed: item.product.id %}</span>
+                {%- endif -%}
+              </a>
+
+              <div class="cart-drawer__item-info">
+                {%- if item.product.type != blank -%}<p>{{ item.product.type }}</p>{%- endif -%}
+                <h3><a href="{{ item.url }}">{{ item.product.title }}</a></h3>
+                {%- if item.product.description != blank -%}
+                  <div class="cart-drawer__description">{{ item.product.description | strip_html | truncatewords: 24 }}</div>
+                {%- endif -%}
+                <strong>{{ line_total | money }}</strong>
+
+                <div class="cart-drawer__quantity" aria-label="{{ 'general.quantity' | t }}">
+                  <button
+                    type="button"
+                    aria-label="{% if item.quantity == 1 %}{{ 'cart.remove' | t }}{% else %}{{ 'cart.decrease_quantity' | t }}{% endif %}: {{ item.product.title | escape }}"
+                    data-cart-drawer-quantity
+                    data-key="{{ item.key }}"
+                    data-quantity="{{ decreased_quantity }}"
+                    data-linked-key="{{ linked_key }}"
+                    data-linked-ratio="{{ linked_ratio }}"
+                  >-</button>
+                  <span aria-live="polite">{{ item.quantity }}</span>
+                  <button
+                    type="button"
+                    aria-label="{{ 'cart.increase_quantity' | t }}: {{ item.product.title | escape }}"
+                    data-cart-drawer-quantity
+                    data-key="{{ item.key }}"
+                    data-quantity="{{ increased_quantity }}"
+                    data-linked-key="{{ linked_key }}"
+                    data-linked-ratio="{{ linked_ratio }}"
+                  >+</button>
+                </div>
+              </div>
+
+              <button
+                class="cart-drawer__remove"
+                type="button"
+                aria-label="{{ 'cart.remove' | t }}: {{ item.product.title | escape }}"
+                data-cart-drawer-quantity
+                data-key="{{ item.key }}"
+                data-quantity="0"
+                data-linked-key="{{ linked_key }}"
+                data-linked-ratio="{{ linked_ratio }}"
+              >{% render 'icon', name: 'close' %}</button>
+            </article>
+          {%- endfor -%}
+        </div>
+      </div>
+
+      <footer class="cart-drawer__footer">
+        <div class="cart-drawer__subtotal">
+          <span>{{ 'cart.subtotal' | t }}</span>
+          <strong>{{ cart.total_price | money }}</strong>
+        </div>
+        <p>{{ 'cart.tax_note' | t }}</p>
+        <form action="{{ routes.cart_url }}" method="post">
+          <button class="button button--primary button--block" type="submit" name="checkout">{{ 'cart.checkout' | t }}</button>
+        </form>
+        <a class="cart-drawer__view-cart" href="{{ routes.cart_url }}">{{ 'cart.view_cart' | t }}</a>
+      </footer>
+    {%- endif -%}
+  </aside>
+</div>
+
+{% stylesheet %}
+  body.cart-drawer-open { overflow: hidden; }
+  .cart-drawer {
+    position: fixed;
+    z-index: 120;
+    inset: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .cart-drawer[aria-hidden='false'] {
+    visibility: visible;
+    pointer-events: auto;
+  }
+  .cart-drawer__overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    border: 0;
+    border-radius: 0;
+    background: rgb(0 0 0 / 0.68);
+    opacity: 0;
+    transition: opacity 0.24s var(--ease);
+  }
+  .cart-drawer[aria-hidden='false'] .cart-drawer__overlay { opacity: 1; }
+  .cart-drawer__panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    width: min(100%, 500px);
+    height: 100%;
+    overflow: hidden;
+    border-left: 1px solid var(--line);
+    background: var(--background);
+    color: var(--ink);
+    box-shadow: -24px 0 70px rgb(0 0 0 / 0.4);
+    transform: translateX(100%);
+    transition: transform 0.28s var(--ease);
+  }
+  .cart-drawer[aria-hidden='false'] .cart-drawer__panel { transform: translateX(0); }
+  .cart-drawer__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    min-height: 104px;
+    padding: 22px 26px;
+    border-bottom: 1px solid var(--line);
+  }
+  .cart-drawer__header h2 { margin-top: 5px; font-size: clamp(2rem, 1.7rem + 1vw, 2.8rem); }
+  .cart-drawer__close { flex: 0 0 42px; border: 1px solid var(--line); border-radius: 50%; }
+  .cart-drawer__close:hover { border-color: var(--copper); color: var(--copper); transform: rotate(6deg); }
+  .cart-drawer__body { min-height: 0; overflow-y: auto; padding: 0 26px 24px; overscroll-behavior: contain; }
+  .cart-drawer__count { padding: 16px 0; color: var(--muted); font-size: var(--fs-label-sm); }
+  .cart-drawer__items { display: grid; }
+  .cart-drawer__item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 18px;
+    padding: 20px 30px 20px 0;
+    border-top: 1px solid var(--line);
+  }
+  .cart-drawer__item:last-child { border-bottom: 1px solid var(--line); }
+  .cart-drawer__item.is-removing { opacity: 0.35; }
+  .cart-drawer__media { width: 92px; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 5px; background: var(--surface); }
+  .cart-drawer__media img { width: 100%; height: 100%; padding: 5px; object-fit: contain; }
+  .cart-drawer__item-info { display: flex; min-width: 0; align-items: flex-start; flex-direction: column; }
+  .cart-drawer__item-info > p { color: var(--copper); font-size: 0.62rem; text-transform: uppercase; }
+  .cart-drawer__item-info h3 { margin: 4px 0 8px; font-size: 1.05rem; line-height: 1.2; overflow-wrap: anywhere; }
+  .cart-drawer__description { color: var(--muted); font-size: 0.75rem; line-height: 1.5; }
+  .cart-drawer__item-info > strong { margin-top: 10px; font-size: 0.86rem; }
+  .cart-drawer__quantity {
+    display: grid;
+    grid-template-columns: 32px 38px 32px;
+    align-items: center;
+    margin-top: 14px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+  }
+  .cart-drawer__quantity button { width: 32px; height: 32px; border: 0; background: transparent; color: var(--ink); font-size: 1rem; }
+  .cart-drawer__quantity button:hover { color: var(--copper); }
+  .cart-drawer[aria-busy='true'] .cart-drawer__quantity button,
+  .cart-drawer[aria-busy='true'] .cart-drawer__remove { pointer-events: none; }
+  .cart-drawer__quantity span { text-align: center; font-size: 0.76rem; font-variant-numeric: tabular-nums; }
+  .cart-drawer__remove {
+    position: absolute;
+    top: 18px;
+    right: 0;
+    width: 28px;
+    height: 28px;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+  }
+  .cart-drawer__remove .icon { width: 16px; height: 16px; }
+  .cart-drawer__remove:hover { color: var(--copper); }
+  .cart-drawer__footer { padding: 22px 26px 26px; border-top: 1px solid var(--line); background: var(--surface); }
+  .cart-drawer__subtotal { display: flex; justify-content: space-between; gap: 20px; font-size: 1rem; }
+  .cart-drawer__subtotal strong { font-variant-numeric: tabular-nums; }
+  .cart-drawer__footer > p { margin: 8px 0 18px; color: var(--muted); font-size: 0.7rem; }
+  .cart-drawer__footer form { margin: 0; }
+  .cart-drawer__view-cart { display: block; width: fit-content; margin: 14px auto 0; color: var(--muted); font-size: var(--fs-label-sm); text-decoration: underline; text-underline-offset: 4px; }
+  .cart-drawer__view-cart:hover { color: var(--copper); }
+  .cart-drawer__empty { display: grid; place-items: center; align-content: center; gap: 14px; min-height: 0; padding: 40px 26px; text-align: center; }
+  .cart-drawer__empty > span { display: grid; place-items: center; width: 54px; height: 54px; border: 1px solid var(--line); border-radius: 50%; color: var(--copper); }
+  .cart-drawer__empty > span .icon { width: 24px; height: 24px; }
+  .cart-drawer__empty h3 { margin-top: 8px; font-size: var(--fs-h2); }
+  .cart-drawer__empty p { max-width: 32ch; color: var(--muted); line-height: 1.6; }
+  .cart-drawer__empty .button { margin-top: 12px; }
+  @media (max-width: 520px) {
+    .cart-drawer__header { min-height: 90px; padding: 18px 20px; }
+    .cart-drawer__body { padding-inline: 20px; }
+    .cart-drawer__item { grid-template-columns: 82px minmax(0, 1fr); gap: 14px; padding-right: 26px; }
+    .cart-drawer__media { width: 82px; }
+    .cart-drawer__description { display: none; }
+    .cart-drawer__footer { padding: 18px 20px calc(20px + env(safe-area-inset-bottom)); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cart-drawer__overlay, .cart-drawer__panel { transition: none; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.cart_drawer",
+  "settings": []
+}
+{% endschema %}

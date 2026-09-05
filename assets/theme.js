@@ -17,7 +17,211 @@
   const routes = (window.MetaliQ && window.MetaliQ.routes) || {};
   const cartAddUrl = routes.cartAdd || '/cart/add';
   const cartChangeUrl = routes.cartChange || '/cart/change';
+  const cartUpdateUrl = routes.cartUpdate || '/cart/update';
   const cartUrl = routes.cart || '/cart';
+
+  /* ----------------------------------------------------------------------
+     Cart drawer
+     ---------------------------------------------------------------------- */
+
+  let cartDrawerTrigger = null;
+
+  const getCartDrawer = () => document.querySelector('[data-cart-drawer]');
+
+  const renderCartDrawer = (html) => {
+    const section = document.querySelector('#shopify-section-cart-drawer');
+    if (!section || !html) return false;
+
+    section.innerHTML = html;
+    syncCartCount();
+    return true;
+  };
+
+  const cartSectionRequest = () => ({
+    sections: ['cart-drawer'],
+    sections_url: window.location.pathname,
+  });
+
+  const syncCartCount = () => {
+    const drawer = getCartDrawer();
+    const count = Math.max(0, Number(drawer && drawer.dataset.cartCount) || 0);
+
+    document.querySelectorAll('[data-cart-drawer-trigger]').forEach((trigger) => {
+      const label = trigger.dataset.cartLabel;
+      if (label) trigger.setAttribute('aria-label', label.replace('__COUNT__', String(count)));
+
+      let badge = trigger.querySelector('[data-cart-count]');
+      if (count > 0) {
+        if (!badge) {
+          badge = document.createElement('span');
+          badge.className = 'cart-count';
+          badge.dataset.cartCount = '';
+          trigger.appendChild(badge);
+        }
+        badge.textContent = String(count);
+      } else if (badge) {
+        badge.remove();
+      }
+    });
+  };
+
+  const refreshCartDrawer = () => {
+    const section = document.querySelector('#shopify-section-cart-drawer');
+    if (!section) return Promise.reject(new Error('Cart drawer section is unavailable'));
+
+    const separator = cartUrl.includes('?') ? '&' : '?';
+    return fetch(`${cartUrl}${separator}section_id=cart-drawer`, {
+      headers: { Accept: 'text/html' },
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error('Cart drawer refresh failed');
+        return response.text();
+      })
+      .then((html) => {
+        if (!renderCartDrawer(html)) throw new Error('Cart drawer render failed');
+      });
+  };
+
+  const revealCartDrawer = ({ focus = true } = {}) => {
+    const drawer = getCartDrawer();
+    if (!drawer) return false;
+
+    drawer.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('cart-drawer-open');
+    document.querySelectorAll('[data-cart-drawer-trigger]').forEach((trigger) => {
+      trigger.setAttribute('aria-expanded', 'true');
+    });
+
+    if (focus) {
+      window.requestAnimationFrame(() => {
+        const panel = drawer.querySelector('.cart-drawer__panel');
+        const close = drawer.querySelector('[data-cart-drawer-close]');
+        (close || panel)?.focus();
+      });
+    }
+    return true;
+  };
+
+  const openCartDrawer = ({ refresh = false, focus = true } = {}) => {
+    if (!cartDrawerTrigger) cartDrawerTrigger = document.activeElement;
+    if (!revealCartDrawer({ focus })) {
+      window.location.assign(cartUrl);
+      return Promise.resolve();
+    }
+
+    if (!refresh) return Promise.resolve();
+    return refreshCartDrawer()
+      .then(() => revealCartDrawer({ focus: false }))
+      .catch(() => {
+        // Keep the already-rendered drawer usable if a background refresh fails.
+      });
+  };
+
+  const closeCartDrawer = () => {
+    const drawer = getCartDrawer();
+    if (!drawer) return;
+
+    drawer.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('cart-drawer-open');
+    document.querySelectorAll('[data-cart-drawer-trigger]').forEach((trigger) => {
+      trigger.setAttribute('aria-expanded', 'false');
+    });
+
+    if (cartDrawerTrigger instanceof HTMLElement) cartDrawerTrigger.focus();
+    cartDrawerTrigger = null;
+  };
+
+  const updateCartDrawerQuantity = (button) => {
+    const drawer = getCartDrawer();
+    const key = button.dataset.key;
+    const quantity = Math.max(0, Number(button.dataset.quantity) || 0);
+    if (!drawer || !key || drawer.getAttribute('aria-busy') === 'true') return;
+
+    const updates = { [key]: quantity };
+    const linkedKey = button.dataset.linkedKey;
+    const linkedRatio = Math.max(0, Number(button.dataset.linkedRatio) || 0);
+    if (linkedKey) updates[linkedKey] = quantity * linkedRatio;
+
+    drawer.setAttribute('aria-busy', 'true');
+    const item = button.closest('[data-cart-drawer-item]');
+    const quantityOutput = item && item.querySelector('.cart-drawer__quantity span');
+    const previousQuantity = Math.max(0, Number(quantityOutput && quantityOutput.textContent) || 0);
+    drawer.dataset.cartCount = String(Math.max(0, Number(drawer.dataset.cartCount) + quantity - previousQuantity));
+    if (quantityOutput && quantity > 0) quantityOutput.textContent = String(quantity);
+    if (item && quantity === 0) item.classList.add('is-removing');
+    syncCartCount();
+
+    fetch(cartUpdateUrl + '.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ updates, ...cartSectionRequest() }),
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error('Cart update failed');
+        return response.json();
+      })
+      .then((cart) => {
+        const html = cart.sections && cart.sections['cart-drawer'];
+        if (renderCartDrawer(html)) return undefined;
+        return refreshCartDrawer();
+      })
+      .then(() => revealCartDrawer({ focus: false }))
+      .catch(() => window.location.assign(cartUrl));
+  };
+
+  window.MetaliQCartDrawer = {
+    open: openCartDrawer,
+    refresh: refreshCartDrawer,
+  };
+
+  document.addEventListener('click', (event) => {
+    const trigger = event.target.closest('[data-cart-drawer-trigger]');
+    if (trigger) {
+      event.preventDefault();
+      cartDrawerTrigger = trigger;
+      openCartDrawer();
+      return;
+    }
+
+    if (event.target.closest('[data-cart-drawer-close]')) {
+      closeCartDrawer();
+      return;
+    }
+
+    const quantityButton = event.target.closest('[data-cart-drawer-quantity]');
+    if (quantityButton) {
+      event.preventDefault();
+      updateCartDrawerQuantity(quantityButton);
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    const drawer = getCartDrawer();
+    if (!drawer || drawer.getAttribute('aria-hidden') !== 'false') return;
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeCartDrawer();
+      return;
+    }
+
+    if (event.key !== 'Tab') return;
+    const panel = drawer.querySelector('.cart-drawer__panel');
+    const focusable = Array.from(
+      panel.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')
+    ).filter((element) => element.getClientRects().length > 0);
+    if (focusable.length === 0) return;
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
 
   document.querySelectorAll('[data-announcement-slider]').forEach((slider) => {
     const slides = Array.from(slider.querySelectorAll('[data-announcement-slide]'));
@@ -69,7 +273,6 @@
     const slides = Array.from(slider.querySelectorAll('[data-testimonial-slide]'));
     const previous = slider.querySelector('[data-testimonial-previous]');
     const next = slider.querySelector('[data-testimonial-next]');
-    const currentLabel = slider.querySelector('[data-testimonial-current]');
     if (slides.length < 2 || !previous || !next) return;
 
     let activeIndex = Math.max(0, slides.findIndex((slide) => slide.classList.contains('is-active')));
@@ -101,7 +304,6 @@
       activeIndex = targetIndex;
       slides[activeIndex].classList.add('is-active');
       slides[activeIndex].setAttribute('aria-hidden', 'false');
-      if (currentLabel) currentLabel.textContent = String(activeIndex + 1).padStart(2, '0');
       window.setTimeout(() => current.classList.remove('is-leaving'), 400);
     };
 
@@ -573,15 +775,15 @@
     }
     if (variantSelect) variantSelect.addEventListener('change', update);
 
-    /* A custom size is two linked line items: the piece, plus the surcharge
-       units that make up the difference. That needs the AJAX API — a plain form
-       post can only ever add one. Standard sizes fall through to the native
-       submit. */
+    /* Add every product through the AJAX API so the customer stays on the
+       product page. Custom sizes include a linked surcharge line that remains
+       hidden from the customer-facing cart UI. */
     form.addEventListener('submit', (event) => {
-      if (!isCustom() || !canCharge) return;
+      const custom = isCustom();
+      if (custom && !canCharge) return;
 
       const state = measure();
-      if (!state.valid) {
+      if (custom && !state.valid) {
         event.preventDefault();
         if (heightInput) heightInput.focus();
         update();
@@ -591,25 +793,28 @@
       event.preventDefault();
 
       const quantity = Math.max(1, Number(quantityInput && quantityInput.value) || 1);
-      const group = `${variantId()}-${dimensionLabel(state)}`;
       const items = [
         {
           id: variantId(),
           quantity,
-          properties: {
-            '_Size type': 'Custom',
-            Dimensions: dimensionLabel(state),
-            _size_group: group,
-          },
         },
       ];
 
-      if (state.units > 0 && surchargeId) {
-        items.push({
-          id: surchargeId,
-          quantity: state.units * quantity,
-          properties: { _surcharge_for: group },
-        });
+      if (custom) {
+        const group = `${variantId()}-${dimensionLabel(state)}`;
+        items[0].properties = {
+          '_Size type': 'Custom',
+          Dimensions: dimensionLabel(state),
+          _size_group: group,
+        };
+
+        if (state.units > 0 && surchargeId) {
+          items.push({
+            id: surchargeId,
+            quantity: state.units * quantity,
+            properties: { _surcharge_for: group },
+          });
+        }
       }
 
       const label = addButton ? addButton.textContent : '';
@@ -621,11 +826,20 @@
       fetch(cartAddUrl + '.js', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ items }),
+        body: JSON.stringify({ items, ...cartSectionRequest() }),
       })
         .then((response) => {
           if (!response.ok) throw new Error('Add to cart failed');
-          window.location.assign(cartUrl);
+          return response.json();
+        })
+        .then((cart) => {
+          if (addButton) {
+            addButton.disabled = false;
+            addButton.textContent = label;
+          }
+          const html = cart.sections && cart.sections['cart-drawer'];
+          if (renderCartDrawer(html)) return openCartDrawer();
+          return refreshCartDrawer().then(() => openCartDrawer());
         })
         .catch(() => {
           if (addButton) {
