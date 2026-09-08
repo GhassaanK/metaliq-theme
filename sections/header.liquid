@@ -4,6 +4,8 @@
   assign facebook_url = section.settings.facebook_url | default: 'https://www.facebook.com/metaliq.art/'
   assign tiktok_url = section.settings.tiktok_url | default: 'https://www.tiktok.com/@metaliq.art'
   assign youtube_url = section.settings.youtube_url | default: 'https://www.youtube.com/@metaliq.art'
+  assign custom_whatsapp_message = 'general.whatsapp_custom_message' | t | url_encode
+  assign custom_whatsapp_url = 'https://wa.me/923172920243?text=' | append: custom_whatsapp_message
   assign visible_cart_count = 0
   for cart_item in cart.items
     if cart_item.properties['_surcharge_for'] == blank
@@ -68,7 +70,21 @@
         <div class="nav-dropdown__menu">
           {%- if collections_menu != blank -%}
             {%- for link in collections_menu.links -%}
-              <a href="{{ link.url }}"{% if link.current %} aria-current="page"{% endif %}>{{ link.title }}</a>
+              {%- liquid
+                assign menu_link_url = link.url
+                assign menu_link_is_custom = false
+                assign menu_link_title = link.title | downcase
+                if link.url contains '/pages/custom-design'
+                  assign menu_link_is_custom = true
+                endif
+                if menu_link_title contains 'custom design'
+                  assign menu_link_is_custom = true
+                endif
+                if menu_link_is_custom
+                  assign menu_link_url = custom_whatsapp_url
+                endif
+              -%}
+              <a href="{{ menu_link_url }}"{% if menu_link_is_custom %} target="_blank" rel="noopener"{% endif %}{% if link.current %} aria-current="page"{% endif %}>{{ link.title }}</a>
             {%- endfor -%}
           {%- else -%}
             {%- for collection_item in collections -%}
@@ -80,7 +96,7 @@
       </details>
 
       <a href="/pages/about"{% if page.handle == 'about' %} aria-current="page"{% endif %}>{{ 'general.about_us' | t }}</a>
-      <a href="/pages/custom-design"{% if page.handle == 'custom-design' %} aria-current="page"{% endif %}>{{ 'general.footer_custom_cta' | t }}</a>
+      <a href="{{ custom_whatsapp_url }}" target="_blank" rel="noopener">{{ 'general.footer_custom_cta' | t }}</a>
       <a href="{{ pages.contact.url | default: routes.root_url }}"{% if page.handle == 'contact' %} aria-current="page"{% endif %}>{{ 'general.contact' | t }}</a>
 
       <div class="mobile-nav__footer">

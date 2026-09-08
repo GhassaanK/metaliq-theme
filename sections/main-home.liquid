@@ -18,7 +18,9 @@
     assign hero_label_2 = 'home.hero_cta2' | t
   endif
   assign hero_link_1 = section.settings.button_link | default: routes.all_products_collection_url
-  assign hero_link_2 = section.settings.button2_link | default: settings.quote_page.url | default: '/pages/custom-design'
+  assign custom_whatsapp_message = 'general.whatsapp_custom_message' | t | url_encode
+  assign custom_whatsapp_url = 'https://wa.me/923172920243?text=' | append: custom_whatsapp_message
+  assign hero_link_2 = custom_whatsapp_url
   assign featured_heading = section.settings.featured_heading
   if featured_heading == blank
     assign featured_heading = 'home.featured_heading' | t
@@ -54,13 +56,7 @@
   if custom_image_alt == blank
     assign custom_image_alt = 'home.custom_image_alt' | t
   endif
-  assign custom_link = section.settings.custom_link
-  if custom_link == blank
-    assign custom_link = settings.quote_page.url
-  endif
-  if custom_link == blank
-    assign custom_link = '/pages/custom-design'
-  endif
+  assign custom_link = custom_whatsapp_url
   assign recent_collection = section.settings.recent_collection
   if recent_collection == blank
     assign recent_collection = collections['new-arrivals']
@@ -128,7 +124,7 @@
       <div class="home-hero__actions">
         <a class="button" href="{{ hero_link_1 }}">{{ hero_label_1 }}</a>
         {%- if hero_label_2 != blank -%}
-          <a class="home-hero__text-link" href="{{ hero_link_2 }}">{{ hero_label_2 }} <span aria-hidden="true">&rarr;</span></a>
+          <a class="home-hero__text-link" href="{{ hero_link_2 }}" target="_blank" rel="noopener">{{ hero_label_2 }} <span aria-hidden="true">&rarr;</span></a>
         {%- endif -%}
       </div>
     </div>
@@ -345,15 +341,10 @@
         {%- endfor -%}
       </ol>
 
-      <a class="button home-custom__button" href="{{ custom_link }}">
+      <a class="button home-custom__button" href="{{ custom_link }}" target="_blank" rel="noopener">
         {{ custom_button }}
         <span aria-hidden="true">&rarr;</span>
       </a>
-      {%- liquid
-        assign custom_whatsapp_label = 'general.whatsapp_custom_cta' | t
-        assign custom_whatsapp_message = 'general.whatsapp_custom_message' | t
-      -%}
-      {% render 'whatsapp-link', label: custom_whatsapp_label, message: custom_whatsapp_message, css_class: 'home-custom__whatsapp' %}
       <p class="home-custom__note">{{ 'home.custom_note' | t }}</p>
     </div>
 
@@ -1695,7 +1686,6 @@
     { "type": "text", "id": "button_label", "label": "t:labels.button_label", "default": "Shop wall art" },
     { "type": "url", "id": "button_link", "label": "t:labels.button_link" },
     { "type": "text", "id": "button2_label", "label": "t:labels.button_label", "default": "Create something custom" },
-    { "type": "url", "id": "button2_link", "label": "t:labels.button_link" },
 
     { "type": "header", "content": "Testimonials" },
     {
@@ -1751,7 +1741,6 @@
       "default": "Bring us a name, reference, sketch, or empty wall. We will shape it into a considered metal artwork made for your dimensions."
     },
     { "type": "text", "id": "custom_button", "label": "Button label", "default": "Start a custom design" },
-    { "type": "url", "id": "custom_link", "label": "Button link" },
 
     { "type": "header", "content": "Recently added" },
     { "type": "collection", "id": "recent_collection", "label": "Collection" },

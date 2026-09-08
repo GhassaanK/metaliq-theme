@@ -54,7 +54,7 @@ matches the preload URL exactly, which a relative path inside `critical.css` wou
 
 Each catalog product has one listed size, recorded in its Shopify product description. The product
 page does not calculate alternate sizes or label any size as standard. Customers who need different
-dimensions are sent to the configured custom-design request page for a separate quote.
+dimensions open a prefilled WhatsApp conversation for a separate quote.
 
 ## Schemas
 

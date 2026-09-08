@@ -117,17 +117,6 @@
     ]
   },
   {
-    "name": "Custom design requests",
-    "settings": [
-      {
-        "type": "page",
-        "id": "quote_page",
-        "label": "t:labels.quote_page",
-        "info": "t:info.quote_page"
-      }
-    ]
-  },
-  {
     "name": "Commerce compliance",
     "settings": [
       {

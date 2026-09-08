@@ -40,5 +40,5 @@ Do not publish generic specifications that are not true for the individual item.
 - Prices render through Shopify money filters in the store's PKR currency.
 - Product pages disclose current payment status and delivery estimates.
 - Product pages link to Ordering & Payments, Shipping Policy, and Refund Policy.
-- Catalog custom-size pricing is locked to area-based calculation.
-- Custom-size inputs are hidden and cleared unless the custom-size option is selected.
+- Catalog products display their listed Shopify price and dimensions.
+- Custom-dimension enquiries open a prefilled WhatsApp conversation and are quoted separately.

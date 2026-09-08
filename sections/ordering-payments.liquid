@@ -1,3 +1,8 @@
+{%- liquid
+  assign custom_whatsapp_message = 'general.whatsapp_custom_message' | t | url_encode
+  assign custom_whatsapp_url = 'https://wa.me/923172920243?text=' | append: custom_whatsapp_message
+-%}
+
 <section class="journey-page section">
   <div class="container">
     {% render 'breadcrumbs' %}
@@ -42,7 +47,7 @@
         <p class="eyebrow">{{ 'journey.custom_eyebrow' | t }}</p>
         <h2 id="CustomJourney">{{ 'journey.custom_title' | t }}</h2>
         <p>{{ 'journey.custom_body' | t }}</p>
-        <a class="button button--primary" href="/pages/custom-design">{{ 'journey.custom_cta' | t }}</a>
+        <a class="button button--primary" href="{{ custom_whatsapp_url }}" target="_blank" rel="noopener">{{ 'journey.custom_cta' | t }}</a>
       </div>
       <div class="journey-page__payment">
         <p class="eyebrow">{{ 'journey.gateway_eyebrow' | t }}</p>

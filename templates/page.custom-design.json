@@ -1,9 +1,0 @@
-{
-  "sections": {
-    "main": {
-      "type": "custom-request",
-      "settings": {}
-    }
-  },
-  "order": ["main"]
-}

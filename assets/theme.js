@@ -14,6 +14,32 @@
   const cartUpdateUrl = routes.cartUpdate || '/cart/update';
   const cartUrl = routes.cart || '/cart';
 
+  const customDesignWhatsAppUrl =
+    'https://wa.me/923172920243?text=' +
+    encodeURIComponent('Hi MetaliQ Art, I have a custom design in mind and would like to discuss it.');
+
+  const routeCustomDesignLinksToWhatsApp = (root = document) => {
+    root.querySelectorAll('a[href]').forEach((link) => {
+      const href = link.getAttribute('href') || '';
+      if (href.includes('wa.me/')) return;
+
+      const label = (link.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
+      const isLegacyPage = href.includes('/pages/custom-design');
+      const isCustomDesignAction =
+        label.includes('custom design') ||
+        label.includes('something custom') ||
+        label.includes('different size');
+
+      if (!isLegacyPage && !isCustomDesignAction) return;
+
+      link.href = customDesignWhatsAppUrl;
+      link.target = '_blank';
+      link.rel = 'noopener';
+    });
+  };
+
+  routeCustomDesignLinksToWhatsApp();
+
   /* ----------------------------------------------------------------------
      Cart drawer
      ---------------------------------------------------------------------- */
@@ -27,6 +53,7 @@
     if (!section || !html) return false;
 
     section.innerHTML = html;
+    routeCustomDesignLinksToWhatsApp(section);
     syncCartCount();
     return true;
   };

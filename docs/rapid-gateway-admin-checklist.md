@@ -28,9 +28,6 @@ Under **Online Store > Pages**, create and publish:
 | --- | --- | --- |
 | About Us | `about` | `about` |
 | Ordering & Payments | `ordering-and-payments` | `ordering-and-payments` |
-| Custom Design | `custom-design` | `custom-design` |
-
-Set the Custom Design page in **Theme settings > Custom sizing > Quote page**.
 
 ## 3. Confirm legal and store identity
 
@@ -66,18 +63,11 @@ Do not add a payment-receipt upload to checkout. Basic Shopify does not permit a
 - Confirm shipping charges are visible before order submission.
 - Keep storefront estimates at 4-7 working days for Karachi and 10-12 working days elsewhere in Pakistan, measured from confirmation.
 
-## 6. Custom request uploads
+## 6. Custom requests
 
-Install **Hulk Contact Form Builder**, then add its app block to the Custom Design page in the theme editor. Configure fields for:
+All custom-design calls to action open a prefilled WhatsApp conversation with **+92 317 2920243**. Test the header, home hero, custom-design section, product page, Ordering & Payments page, and footer. Customers can send reference images or documents directly in WhatsApp after starting the conversation.
 
-- Name, email, and phone
-- Delivery city and full address
-- Desired dimensions; display matte black powder-coated as the fixed finish
-- Project description
-- Reference images or documents (JPG, JPEG, PNG, and PDF)
-- Required consent linking to the Privacy Policy
-
-Send a test of every allowed file type and verify Steed Art receives both the submission and attachment. The native theme form remains a non-upload fallback and asks for a public reference link. It does not collect payment information.
+Do not ask customers to send payment credentials in WhatsApp. Once the design, dimensions, price, and timeline are approved, issue a secure Shopify invoice or payment link.
 
 ## 7. Product and order readiness
 
@@ -87,13 +77,13 @@ For every active product, confirm:
 - Description covering material, matte black powder-coated finish, dimensions, care, installation, made-to-order status, and delivery estimate
 - Accurate PKR price and SKU
 - Correct availability and inventory behaviour
-- Custom-size area calculation, where offered
+- Custom-dimension enquiries open WhatsApp for a separate written quote
 - Product, cart, checkout, confirmation, cancellation, and refund paths
 
 ## 8. Final public audit
 
 - Keep the storefront public and password-free.
-- Test the header, footer, policies, About, Ordering & Payments, Custom Design, product, cart, and checkout pages on desktop and mobile.
+- Test the header, footer, policies, About, Ordering & Payments, custom-design WhatsApp calls to action, product, cart, and checkout pages on desktop and mobile.
 - Confirm phone and email links work.
 - Confirm no `Translation missing` text or 404 links appear.
 - Run `shopify theme check --fail-level error`.

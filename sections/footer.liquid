@@ -1,11 +1,6 @@
 {% liquid
-  assign custom_link = section.settings.custom_link
-  if custom_link == blank
-    assign custom_link = settings.quote_page.url
-  endif
-  if custom_link == blank
-    assign custom_link = '/pages/custom-design'
-  endif
+  assign custom_whatsapp_message = 'general.whatsapp_custom_message' | t | url_encode
+  assign custom_link = 'https://wa.me/923172920243?text=' | append: custom_whatsapp_message
   assign instagram_url = section.settings.instagram_url | default: 'https://www.instagram.com/metaliq.art/'
   assign facebook_url = section.settings.facebook_url | default: 'https://www.facebook.com/metaliq.art/'
   assign tiktok_url = section.settings.tiktok_url | default: 'https://www.tiktok.com/@metaliq.art'
@@ -24,7 +19,7 @@
         <p class="eyebrow">{{ section.settings.eyebrow }}</p>
         <h2>{{ section.settings.headline }}</h2>
       </div>
-      <a class="footer-callout__link" href="{{ custom_link }}">
+      <a class="footer-callout__link" href="{{ custom_link }}" target="_blank" rel="noopener">
         <span>{{ section.settings.custom_label }}</span>
         {% render 'icon', name: 'arrow-right' %}
       </a>
@@ -62,7 +57,23 @@
             <h2>{{ heading }}</h2>
             <nav aria-label="{{ heading | escape }}">
               {%- if menu != blank -%}
-                {%- for link in menu.links -%}<a href="{{ link.url }}">{{ link.title }}</a>{%- endfor -%}
+                {%- for link in menu.links -%}
+                  {%- liquid
+                    assign menu_link_url = link.url
+                    assign menu_link_is_custom = false
+                    assign menu_link_title = link.title | downcase
+                    if link.url contains '/pages/custom-design'
+                      assign menu_link_is_custom = true
+                    endif
+                    if menu_link_title contains 'custom design'
+                      assign menu_link_is_custom = true
+                    endif
+                    if menu_link_is_custom
+                      assign menu_link_url = custom_link
+                    endif
+                  -%}
+                  <a href="{{ menu_link_url }}"{% if menu_link_is_custom %} target="_blank" rel="noopener"{% endif %}>{{ link.title }}</a>
+                {%- endfor -%}
               {%- elsif i == 1 -%}
                 <a href="{{ routes.all_products_collection_url }}">{{ 'general.shop_all' | t }}</a>
                 <a href="{{ routes.collections_url }}">{{ 'collections.title' | t }}</a>
@@ -72,7 +83,7 @@
                 <a href="/pages/about">{{ 'general.about_us' | t }}</a>
                 <a href="{{ pages.contact.url | default: routes.root_url }}">{{ 'general.contact' | t }}</a>
                 <a href="/pages/ordering-and-payments">{{ 'general.ordering_payments' | t }}</a>
-                <a href="{{ custom_link }}">{{ 'general.footer_custom_cta' | t }}</a>
+                <a href="{{ custom_link }}" target="_blank" rel="noopener">{{ 'general.footer_custom_cta' | t }}</a>
               {%- else -%}
                 <a href="/policies/refund-policy">{{ 'general.refund_policy' | t }}</a>
                 <a href="/policies/privacy-policy">{{ 'general.privacy_policy' | t }}</a>
@@ -153,7 +164,6 @@
     { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Made for your space" },
     { "type": "text", "id": "headline", "label": "Heading", "default": "Have a wall in mind? Let's make it impossible to ignore." },
     { "type": "text", "id": "custom_label", "label": "Button label", "default": "Start a custom design" },
-    { "type": "url", "id": "custom_link", "label": "Button link" },
     { "type": "textarea", "id": "statement", "label": "t:labels.text", "default": "Precision-cut metal art, designed to give modern spaces a point of view." },
     { "type": "header", "content": "t:general.explore" },
     { "type": "text", "id": "heading_1", "label": "t:labels.heading", "default": "Shop" },

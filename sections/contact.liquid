@@ -1,14 +1,3 @@
-{% comment %}
-  The product page sends customers here with `piece` and `size` query params
-  when a store has no surcharge product configured, so a custom-size request
-  arrives with the details already filled in.
-{% endcomment %}
-
-{% liquid
-  assign requested_piece = request.get.piece
-  assign requested_size = request.get.size
-%}
-
 <section class="container section contact-layout">
   <div class="contact-intro">
     <p class="eyebrow">{{ 'contact.eyebrow' | t }}</p>
@@ -80,19 +69,6 @@
         {{ 'contact.phone' | t }} <span>{{ 'contact.optional' | t }}</span>
         <input type="tel" name="contact[phone]" autocomplete="tel">
       </label>
-
-      {%- if requested_piece != blank or requested_size != blank -%}
-        <div class="field-grid">
-          <label class="field">
-            {{ 'product.eyebrow' | t }}
-            <input type="text" name="contact[Piece]" value="{{ requested_piece | escape }}" readonly>
-          </label>
-          <label class="field">
-            {{ 'product.size' | t }}
-            <input type="text" name="contact[Requested size]" value="{{ requested_size | escape }}" readonly>
-          </label>
-        </div>
-      {%- endif -%}
 
       <label class="field">
         {{ 'contact.message' | t }}

@@ -86,14 +86,12 @@
     "page_width": "Page width",
     "posts_per_page": "Entries per page",
     "products_per_page": "Products per page",
-    "quote_page": "Quote request page",
     "show_payment_icons": "Show payment icons",
     "story_image": "Process image",
     "text": "Text",
     "text_style": "Text style"
   },
   "info": {
-    "quote_page": "Used for custom-dimension and custom-design requests from product pages.",
     "body_font": "Body text is set in Inter, bundled with the theme."
   },
   "options": {
