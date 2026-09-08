@@ -14,23 +14,14 @@
   const cartUpdateUrl = routes.cartUpdate || '/cart/update';
   const cartUrl = routes.cart || '/cart';
 
-  const customDesignWhatsAppUrl =
-    'https://wa.me/923172920243?text=' +
-    encodeURIComponent('Hi MetaliQ Art, I have a custom design in mind and would like to discuss it.');
+  const customDesignWhatsAppUrl = document.body.dataset.customDesignUrl || '';
 
   const routeCustomDesignLinksToWhatsApp = (root = document) => {
-    root.querySelectorAll('a[href]').forEach((link) => {
+    if (!customDesignWhatsAppUrl) return;
+
+    root.querySelectorAll('[data-whatsapp-cta], a[href*="/pages/custom-design"]').forEach((link) => {
       const href = link.getAttribute('href') || '';
       if (href.includes('wa.me/')) return;
-
-      const label = (link.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
-      const isLegacyPage = href.includes('/pages/custom-design');
-      const isCustomDesignAction =
-        label.includes('custom design') ||
-        label.includes('something custom') ||
-        label.includes('different size');
-
-      if (!isLegacyPage && !isCustomDesignAction) return;
 
       link.href = customDesignWhatsAppUrl;
       link.target = '_blank';
@@ -656,6 +647,8 @@
 
     const variantSelect = root.querySelector('[data-variant-select]');
     const variantIdInput = root.querySelector('[data-variant-id]');
+    const currentPriceOutput = priceOutput.querySelector('[data-current-price]');
+    const comparePriceOutput = priceOutput.querySelector('[data-compare-price]');
     const addButton = root.querySelector('[data-add-button]');
     const addError = root.querySelector('[data-add-error]');
     const quantityInput = form.querySelector('input[name="quantity"]');
@@ -667,15 +660,30 @@
       }
       return Number(priceOutput.dataset.basePrice) || 0;
     };
+    const variantComparePrice = () => {
+      if (variantSelect && variantSelect.selectedOptions[0]) {
+        return Number(variantSelect.selectedOptions[0].dataset.comparePrice) || 0;
+      }
+      return Number(priceOutput.dataset.baseComparePrice) || 0;
+    };
 
     const update = () => {
-      priceOutput.textContent = formatMoney(variantPrice(), root.dataset.moneyFormat);
+      const price = variantPrice();
+      const comparePrice = variantComparePrice();
+      if (currentPriceOutput) currentPriceOutput.textContent = formatMoney(price, root.dataset.moneyFormat);
+      if (comparePriceOutput) {
+        comparePriceOutput.textContent = formatMoney(comparePrice, root.dataset.moneyFormat);
+        comparePriceOutput.hidden = comparePrice <= price;
+      }
       if (addError) addError.hidden = true;
     };
 
     if (variantSelect && variantIdInput) {
       variantSelect.addEventListener('change', () => {
         variantIdInput.value = variantSelect.value;
+        const url = new URL(root.dataset.productUrl || window.location.pathname, window.location.origin);
+        url.searchParams.set('variant', variantSelect.value);
+        window.history.replaceState({}, '', `${url.pathname}${url.search}`);
       });
     }
 

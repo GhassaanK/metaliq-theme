@@ -1,6 +1,11 @@
 {%- liquid
-  assign custom_whatsapp_message = 'general.whatsapp_custom_message' | t | url_encode
-  assign custom_whatsapp_url = 'https://wa.me/923172920243?text=' | append: custom_whatsapp_message
+  assign whatsapp_number = settings.whatsapp_number | default: '+923172920243' | remove: '+' | remove: ' ' | remove: '-' | remove: '(' | remove: ')'
+  assign custom_whatsapp_message = settings.whatsapp_custom_message
+  if custom_whatsapp_message == blank
+    assign custom_whatsapp_message = 'general.whatsapp_custom_message' | t
+  endif
+  assign custom_whatsapp_message = custom_whatsapp_message | url_encode
+  assign custom_whatsapp_url = 'https://wa.me/' | append: whatsapp_number | append: '?text=' | append: custom_whatsapp_message
 -%}
 
 <section class="journey-page section">
@@ -19,11 +24,7 @@
       <span>{{ 'journey.current_methods' | t }}</span>
       <strong>{{ 'journey.cod_active' | t }}</strong>
       <span>
-        {%- if settings.online_payments_active -%}
-          {{ 'journey.online_active' | t: provider: settings.payment_provider_name }}
-        {%- else -%}
-          {{ 'journey.online_onboarding' | t: provider: settings.payment_provider_name }}
-        {%- endif -%}
+        {% render 'payment-status', active_key: 'journey.online_active', inactive_key: 'journey.online_onboarding' %}
       </span>
     </div>
 
@@ -47,17 +48,13 @@
         <p class="eyebrow">{{ 'journey.custom_eyebrow' | t }}</p>
         <h2 id="CustomJourney">{{ 'journey.custom_title' | t }}</h2>
         <p>{{ 'journey.custom_body' | t }}</p>
-        <a class="button button--primary" href="{{ custom_whatsapp_url }}" target="_blank" rel="noopener">{{ 'journey.custom_cta' | t }}</a>
+        <a class="button button--primary" href="{{ custom_whatsapp_url }}" data-whatsapp-cta target="_blank" rel="noopener">{{ 'journey.custom_cta' | t }}</a>
       </div>
       <div class="journey-page__payment">
         <p class="eyebrow">{{ 'journey.gateway_eyebrow' | t }}</p>
         <h2>{{ 'journey.gateway_title' | t }}</h2>
         <p>
-          {%- if settings.online_payments_active -%}
-            {{ 'journey.gateway_body_active' | t: provider: settings.payment_provider_name }}
-          {%- else -%}
-            {{ 'journey.gateway_body' | t: provider: settings.payment_provider_name }}
-          {%- endif -%}
+          {% render 'payment-status', active_key: 'journey.gateway_body_active', inactive_key: 'journey.gateway_body' %}
         </p>
         <dl>
           <div><dt>{{ 'journey.merchant_label' | t }}</dt><dd>{{ 'journey.merchant_value' | t }}</dd></div>

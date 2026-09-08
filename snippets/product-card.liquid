@@ -4,6 +4,7 @@
   @param {product} product - The product to display
   @param {string} [sizes] - Optional sizes attribute for the card image
   @param {string} [loading] - 'eager' for above-the-fold rows, otherwise 'lazy'
+  @param {number} [heading_level] - Heading level for the product title
 
   @example
   {% render 'product-card', product: product %}
@@ -12,22 +13,30 @@
 {% liquid
   assign card_sizes = sizes | default: '(min-width: 1100px) 22vw, (min-width: 620px) 33vw, 50vw'
   assign card_loading = loading | default: 'lazy'
+  assign card_heading_level = heading_level | default: 3
+  assign card_heading_tag = 'h' | append: card_heading_level
   assign card_kicker = product.type | default: product.vendor
   assign secondary_image = product.images[1]
+  assign card_variant = blank
+  for variant in product.variants
+    assign variant_title_normalized = variant.title | downcase
+    if variant_title_normalized contains 'medium'
+      assign card_variant = variant
+      break
+    endif
+  endfor
+  assign card_variant = card_variant | default: product.selected_or_first_available_variant
+  assign card_url = product.url | append: '?variant=' | append: card_variant.id
   assign on_sale = false
-  if product.compare_at_price > product.price
+  if card_variant.compare_at_price > card_variant.price
     assign on_sale = true
-  endif
-  assign show_from = false
-  if product.price_varies
-    assign show_from = true
   endif
 %}
 
 <article class="product-card{% if secondary_image %} product-card--has-secondary{% endif %}">
   <a
     class="product-card__media media"
-    href="{{ product.url }}"
+    href="{{ card_url }}"
     aria-label="{{ 'product.view' | t: title: product.title }}"
   >
     {%- if product.featured_image -%}
@@ -66,12 +75,12 @@
     {%- if card_kicker != blank -%}
       <p class="product-card__kicker">{{ card_kicker }}</p>
     {%- endif -%}
-    <h3 class="product-card__title"><a href="{{ product.url }}">{{ product.title }}</a></h3>
+    <{{ card_heading_tag }} class="product-card__title"><a href="{{ card_url }}">{{ product.title }}</a></{{ card_heading_tag }}>
+    <p class="product-card__variant">{{ card_variant.title | escape }}</p>
 
     <div class="product-card__price price {% if on_sale %}price--sale{% endif %}">
-      {%- if show_from -%}<span class="price__from">{{ 'product.price_from' | t }}</span>{%- endif -%}
-      {%- if on_sale -%}<s>{{ product.compare_at_price | money }}</s>{%- endif -%}
-      <strong>{{ product.price | money }}</strong>
+      {%- if on_sale -%}<s>{{ card_variant.compare_at_price | money }}</s>{%- endif -%}
+      <strong>{{ card_variant.price | money }}</strong>
     </div>
   </div>
 </article>

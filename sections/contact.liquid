@@ -1,3 +1,11 @@
+{%- liquid
+  assign legal_name = settings.business_legal_name | default: 'Steed Art'
+  assign email = settings.business_email | default: 'hello@metaliq.art'
+  assign phone = settings.business_phone | default: '03172920243'
+  assign phone_link = phone | remove: '+' | remove: ' ' | remove: '-' | remove: '(' | remove: ')'
+  assign location = settings.business_address | default: 'Plot No 635, Gali No 15, Sector-F, Punjab Road, Manzoor Colony, Karachi, Sindh, Pakistan'
+-%}
+
 <section class="container section contact-layout">
   <div class="contact-intro">
     <p class="eyebrow">{{ 'contact.eyebrow' | t }}</p>
@@ -15,24 +23,24 @@
     <dl class="contact-details">
       <div>
         <dt>{{ 'contact.legal_name' | t }}</dt>
-        <dd>{{ section.settings.legal_name | escape }}</dd>
+        <dd>{{ legal_name | escape }}</dd>
       </div>
-      {%- if section.settings.email != blank -%}
+      {%- if email != blank -%}
         <div>
           <dt>{{ 'general.email' | t }}</dt>
-          <dd><a class="link" href="mailto:{{ section.settings.email | escape }}">{{ section.settings.email | escape }}</a></dd>
+          <dd><a class="link" href="mailto:{{ email | escape }}">{{ email | escape }}</a></dd>
         </div>
       {%- endif -%}
-      {%- if section.settings.phone != blank -%}
+      {%- if phone != blank -%}
         <div>
           <dt>{{ 'contact.phone' | t }}</dt>
-          <dd><a class="link" href="tel:+923172920243">{{ section.settings.phone | escape }}</a></dd>
+          <dd><a class="link" href="tel:{{ phone_link }}">{{ phone | escape }}</a></dd>
         </div>
       {%- endif -%}
-      {%- if section.settings.location != blank -%}
+      {%- if location != blank -%}
         <div>
           <dt>{{ 'general.studio' | t }}</dt>
-          <dd>{{ section.settings.location | escape }}</dd>
+          <dd>{{ location | escape }}</dd>
         </div>
       {%- endif -%}
     </dl>
@@ -143,10 +151,7 @@
   "name": "t:general.contact",
   "settings": [
     { "type": "textarea", "id": "lede", "label": "t:labels.text" },
-    { "type": "text", "id": "legal_name", "label": "Legal business name", "default": "Steed Art" },
-    { "type": "text", "id": "email", "label": "t:labels.email", "default": "hello@metaliq.art" },
-    { "type": "text", "id": "phone", "label": "Phone", "default": "03172920243" },
-    { "type": "textarea", "id": "location", "label": "t:labels.location", "default": "Plot No 635, Gali No 15, Sector-F, Punjab Road, Manzoor Colony, Karachi, Sindh, Pakistan" }
+    { "type": "paragraph", "content": "Business details are managed in Theme settings." }
   ],
   "presets": [{ "name": "t:general.contact" }],
   "disabled_on": { "groups": ["header", "footer"] }

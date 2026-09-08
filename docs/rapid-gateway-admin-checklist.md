@@ -65,7 +65,7 @@ Do not add a payment-receipt upload to checkout. Basic Shopify does not permit a
 
 ## 6. Custom requests
 
-All custom-design calls to action open a prefilled WhatsApp conversation with **+92 317 2920243**. Test the header, home hero, custom-design section, product page, Ordering & Payments page, and footer. Customers can send reference images or documents directly in WhatsApp after starting the conversation.
+All custom-design calls to action open a prefilled WhatsApp conversation with **+92 317 2920243**. Test the header, home hero, homepage custom-design callout, product page, Ordering & Payments page, and footer. Customers can send reference images or documents directly in WhatsApp after starting the conversation.
 
 Do not ask customers to send payment credentials in WhatsApp. Once the design, dimensions, price, and timeline are approved, issue a secure Shopify invoice or payment link.
 

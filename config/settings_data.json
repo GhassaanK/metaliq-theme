@@ -19,7 +19,17 @@
     "line_color": "#383833",
     "accent_color": "#FF7A2F",
     "dark_color": "#1C1C1A",
-    "footer_color": "#0E0E0D"
+    "footer_color": "#0E0E0D",
+    "business_legal_name": "Steed Art",
+    "business_phone": "03172920243",
+    "business_email": "hello@metaliq.art",
+    "business_address": "Plot No 635, Gali No 15, Sector-F, Punjab Road, Manzoor Colony, Karachi, Sindh, Pakistan",
+    "whatsapp_number": "+923172920243",
+    "whatsapp_custom_message": "Hi MetaliQ Art, I have a custom design in mind and would like to discuss it.",
+    "instagram_url": "https://www.instagram.com/metaliq.art/",
+    "facebook_url": "https://www.facebook.com/metaliq.art/",
+    "tiktok_url": "https://www.tiktok.com/@metaliq.art",
+    "youtube_url": "https://www.youtube.com/@metaliq.art"
   },
   "presets": {
     "MetaliQ": {
@@ -33,7 +43,17 @@
       "line_color": "#383833",
       "accent_color": "#FF7A2F",
       "dark_color": "#1C1C1A",
-      "footer_color": "#0E0E0D"
+      "footer_color": "#0E0E0D",
+      "business_legal_name": "Steed Art",
+      "business_phone": "03172920243",
+      "business_email": "hello@metaliq.art",
+      "business_address": "Plot No 635, Gali No 15, Sector-F, Punjab Road, Manzoor Colony, Karachi, Sindh, Pakistan",
+      "whatsapp_number": "+923172920243",
+      "whatsapp_custom_message": "Hi MetaliQ Art, I have a custom design in mind and would like to discuss it.",
+      "instagram_url": "https://www.instagram.com/metaliq.art/",
+      "facebook_url": "https://www.facebook.com/metaliq.art/",
+      "tiktok_url": "https://www.tiktok.com/@metaliq.art",
+      "youtube_url": "https://www.youtube.com/@metaliq.art"
     }
   }
 }

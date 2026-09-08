@@ -117,6 +117,75 @@
     ]
   },
   {
+    "name": "t:general.business_details",
+    "settings": [
+      {
+        "type": "text",
+        "id": "business_legal_name",
+        "label": "t:labels.legal_name",
+        "default": "Steed Art"
+      },
+      {
+        "type": "text",
+        "id": "business_phone",
+        "label": "t:labels.phone",
+        "default": "03172920243"
+      },
+      {
+        "type": "text",
+        "id": "business_email",
+        "label": "t:labels.email",
+        "default": "hello@metaliq.art"
+      },
+      {
+        "type": "textarea",
+        "id": "business_address",
+        "label": "t:labels.business_address",
+        "default": "Plot No 635, Gali No 15, Sector-F, Punjab Road, Manzoor Colony, Karachi, Sindh, Pakistan"
+      },
+      {
+        "type": "header",
+        "content": "t:general.whatsapp"
+      },
+      {
+        "type": "text",
+        "id": "whatsapp_number",
+        "label": "t:labels.whatsapp_number",
+        "default": "+923172920243"
+      },
+      {
+        "type": "textarea",
+        "id": "whatsapp_custom_message",
+        "label": "t:labels.whatsapp_message",
+        "default": "Hi MetaliQ Art, I have a custom design in mind and would like to discuss it."
+      },
+      {
+        "type": "header",
+        "content": "t:general.social_media"
+      },
+      {
+        "type": "url",
+        "id": "instagram_url",
+        "label": "Instagram"
+      },
+      {
+        "type": "url",
+        "id": "facebook_url",
+        "label": "Facebook"
+      },
+      {
+        "type": "url",
+        "id": "tiktok_url",
+        "label": "TikTok"
+      },
+      {
+        "type": "url",
+        "id": "youtube_url",
+        "label": "YouTube"
+      }
+    ]
+  },
+  {
     "name": "Commerce compliance",
     "settings": [
       {

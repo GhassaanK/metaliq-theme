@@ -19,12 +19,55 @@ jobs:
       - name: Validate JSON
         run: |
           python3 - <<'PY'
-          import json, re, glob, sys
+          import glob
+          import json
+          import sys
+
+          def strip_json_comments(source):
+              result = []
+              index = 0
+              in_string = False
+              escaped = False
+
+              while index < len(source):
+                  character = source[index]
+                  following = source[index + 1] if index + 1 < len(source) else ''
+
+                  if in_string:
+                      result.append(character)
+                      if escaped:
+                          escaped = False
+                      elif character == '\\':
+                          escaped = True
+                      elif character == '"':
+                          in_string = False
+                      index += 1
+                      continue
+
+                  if character == '"':
+                      in_string = True
+                      result.append(character)
+                      index += 1
+                  elif character == '/' and following == '/':
+                      index += 2
+                      while index < len(source) and source[index] not in '\r\n':
+                          index += 1
+                  elif character == '/' and following == '*':
+                      index += 2
+                      while index + 1 < len(source) and source[index:index + 2] != '*/':
+                          index += 1
+                      index += 2
+                  else:
+                      result.append(character)
+                      index += 1
+
+              return ''.join(result)
+
           bad = []
           for path in glob.glob('**/*.json', recursive=True):
               if path.startswith('node_modules'):
                   continue
-              source = re.sub(r'/\*.*?\*/', '', open(path, encoding='utf-8').read(), flags=re.S)
+              source = strip_json_comments(open(path, encoding='utf-8').read())
               try:
                   json.loads(source)
               except Exception as error:
@@ -36,4 +79,4 @@ jobs:
           PY
 
       - name: Run theme check
-        run: npx --yes @shopify/cli@latest theme check --fail-level error
+        run: npx --yes @shopify/cli@latest theme check --fail-level warning

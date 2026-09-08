@@ -1,15 +1,34 @@
 {% liquid
-  assign current_variant = product.selected_or_first_available_variant
+  assign current_variant = product.selected_variant
+  if current_variant == blank
+    for variant in product.variants
+      assign variant_title_normalized = variant.title | downcase
+      if variant_title_normalized contains 'medium'
+        assign current_variant = variant
+        break
+      endif
+    endfor
+  endif
+  assign current_variant = current_variant | default: product.selected_or_first_available_variant
 
   assign related_collection = product.collections.first | default: collections.all
   assign detail_media = product.media[1] | default: product.featured_media
 
   assign factual_description = product.description
+  assign description_needs_review = false
+  if product.description contains 'without fading or chipping'
+    assign description_needs_review = true
+  endif
+  if product.description contains 'Ready to hang out of the box.'
+    assign description_needs_review = true
+  endif
+  if product.description contains 'Locked this format in for all upcoming listings.'
+    assign description_needs_review = true
+  endif
   assign factual_description = factual_description | replace: ' without fading or chipping', ''
   assign factual_description = factual_description | replace: 'Ready to hang out of the box.', 'Contact us if you need mounting guidance for your wall.'
   assign factual_description = factual_description | replace: 'Locked this format in for all upcoming listings.', ''
-  assign custom_size_message = 'product.custom_size_whatsapp_message' | t: product_title: product.title | url_encode
-  assign custom_size_url = 'https://wa.me/923172920243?text=' | append: custom_size_message
+  assign custom_size_message = 'product.custom_size_whatsapp_message' | t: product_title: product.title
 %}
 
 <section class="container section product-section">
@@ -18,11 +37,12 @@
   <div
     class="product-layout"
     data-product-purchase
+    data-product-url="{{ product.url }}"
     data-money-format="{{ shop.money_format | strip_html | escape }}"
   >
     <div class="product-gallery" data-product-gallery>
       {%- if product.media.size > 0 -%}
-        <div class="product-gallery__thumbs" role="list" aria-label="{{ 'product.gallery_thumbnails' | t }}">
+        <div class="product-gallery__thumbs" role="group" aria-label="{{ 'product.gallery_thumbnails' | t }}">
           {%- for media in product.media -%}
             <button
               class="product-gallery__thumb{% if forloop.first %} is-active{% endif %}"
@@ -31,7 +51,6 @@
               aria-controls="ProductMedia-{{ section.id }}-{{ media.id }}"
               aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}"
               data-gallery-thumbnail="{{ media.id }}"
-              role="listitem"
             >
               {{
                 media.preview_image
@@ -50,8 +69,10 @@
           {%- for media in product.media -%}
             {%- if forloop.first -%}
               {%- assign media_loading = 'eager' -%}
+              {%- assign media_priority = 'high' -%}
             {%- else -%}
               {%- assign media_loading = 'lazy' -%}
+              {%- assign media_priority = 'auto' -%}
             {%- endif -%}
             <div
               class="product-gallery__item media"
@@ -66,6 +87,7 @@
                     | image_url: width: 1800
                     | image_tag:
                       loading: media_loading,
+                      fetchpriority: media_priority,
                       widths: '500, 800, 1100, 1400, 1800',
                       sizes: '(min-width: 1050px) 48vw, 100vw',
                       alt: media.alt | default: product.title
@@ -89,15 +111,18 @@
       <p class="eyebrow">{{ 'product.eyebrow' | t }}</p>
       <h1 class="product-title">{{ product.title }}</h1>
 
-      <div class="product-price price" data-product-price data-base-price="{{ current_variant.price }}">
-        {%- if current_variant.compare_at_price > current_variant.price -%}
-          <s>{{ current_variant.compare_at_price | money }}</s>
-        {%- endif -%}
-        {{ current_variant.price | money }}
+      <div class="product-price price" data-product-price data-base-price="{{ current_variant.price }}" data-base-compare-price="{{ current_variant.compare_at_price | default: 0 }}">
+        <s data-compare-price{% unless current_variant.compare_at_price > current_variant.price %} hidden{% endunless %}>{{ current_variant.compare_at_price | money }}</s>
+        <span data-current-price>{{ current_variant.price | money }}</span>
       </div>
 
       {%- if factual_description != blank -%}
         <div class="product-description rte">{{ factual_description }}</div>
+      {%- endif -%}
+      {%- if request.design_mode -%}
+        {%- if description_needs_review -%}
+          <p class="product-description-warning" role="status">{{ 'product.description_admin_warning' | t }}</p>
+        {%- endif -%}
       {%- endif -%}
 
       {% form 'product', product, class: 'product-form', novalidate: 'novalidate' %}
@@ -111,6 +136,7 @@
                 <option
                   value="{{ variant.id }}"
                   data-price="{{ variant.price }}"
+                  data-compare-price="{{ variant.compare_at_price | default: 0 }}"
                   {% if variant == current_variant %}selected{% endif %}
                   {% unless variant.available %}disabled{% endunless %}
                 >
@@ -144,14 +170,11 @@
 
         </div>
 
-        <a class="product-custom-size-link" href="{{ custom_size_url }}" target="_blank" rel="noopener">
-          <span class="product-custom-size-link__icon" aria-hidden="true">{% render 'icon', name: 'whatsapp' %}</span>
-          <span class="product-custom-size-link__copy">
-            <small>{{ 'product.custom_size_eyebrow' | t }}</small>
-            <strong>{{ 'product.custom_size_request' | t }}</strong>
-          </span>
-          <span class="product-custom-size-link__arrow" aria-hidden="true">&nearr;</span>
-        </a>
+        {%- liquid
+          assign custom_size_label = 'product.custom_size_request' | t
+          assign custom_size_eyebrow = 'product.custom_size_eyebrow' | t
+        -%}
+        {% render 'whatsapp-link', label: custom_size_label, message: custom_size_message, eyebrow: custom_size_eyebrow, css_class: 'product-custom-size-link' %}
 
         <p class="form-errors" data-add-error hidden role="alert">{{ 'product.add_error' | t }}</p>
       {% endform %}
@@ -175,11 +198,7 @@
 
       <aside class="product-commerce-note" aria-label="{{ 'product.ordering_note_label' | t }}">
         <p><strong>{{ 'product.cod_title' | t }}</strong>
-          {%- if settings.online_payments_active -%}
-            {{ 'product.payment_active_body' | t: provider: settings.payment_provider_name }}
-          {%- else -%}
-            {{ 'product.cod_body' | t: provider: settings.payment_provider_name }}
-          {%- endif -%}
+          {% render 'payment-status', active_key: 'product.payment_active_body', inactive_key: 'product.cod_body' %}
         </p>
         <p>{{ 'product.delivery_body' | t }}</p>
         <div>
@@ -363,6 +382,15 @@
     font-size: var(--fs-sm);
     line-height: 1.65;
   }
+  .product-description-warning {
+    margin: calc(var(--sp-3) * -1) 0 var(--sp-5);
+    padding: 10px 12px;
+    border-left: 3px solid var(--danger);
+    background: color-mix(in srgb, var(--danger) 10%, var(--surface));
+    color: var(--ink);
+    font-size: var(--fs-label-sm);
+    line-height: 1.5;
+  }
 
   .product-form {
     display: grid;
@@ -396,6 +424,7 @@
     background: color-mix(in srgb, var(--copper) 11%, var(--surface));
     color: var(--ink);
     box-shadow: 0 8px 24px rgb(0 0 0 / 0.14);
+    text-decoration: none;
     transition: transform 0.2s var(--ease), background 0.2s var(--ease), box-shadow 0.2s var(--ease);
   }
   .product-custom-size-link:hover,
@@ -404,42 +433,42 @@
     box-shadow: 0 11px 30px rgb(0 0 0 / 0.22);
     transform: translateY(-2px);
   }
-  .product-custom-size-link__icon {
+  .product-custom-size-link .whatsapp-link__icon {
     display: grid;
     place-items: center;
     width: 42px;
     height: 42px;
     border-radius: 50%;
-    background: #25d366;
-    color: #fff;
+    background: var(--whatsapp);
+    color: var(--on-nav);
   }
-  .product-custom-size-link__icon .icon {
+  .product-custom-size-link .whatsapp-link__icon .icon {
     width: 21px;
     height: 21px;
   }
-  .product-custom-size-link__copy {
+  .product-custom-size-link .whatsapp-link__copy {
     display: grid;
     gap: 2px;
     min-width: 0;
   }
-  .product-custom-size-link__copy small {
+  .product-custom-size-link .whatsapp-link__copy small {
     color: var(--copper);
     font-size: 0.65rem;
     font-weight: 700;
     line-height: 1.2;
     text-transform: uppercase;
   }
-  .product-custom-size-link__copy strong {
+  .product-custom-size-link .whatsapp-link__copy strong {
     font-size: var(--fs-sm);
     line-height: 1.35;
   }
-  .product-custom-size-link__arrow {
+  .product-custom-size-link .whatsapp-link__arrow {
     color: var(--copper);
     font-size: 1.15rem;
     transition: transform 0.2s var(--ease);
   }
-  .product-custom-size-link:hover .product-custom-size-link__arrow,
-  .product-custom-size-link:focus-visible .product-custom-size-link__arrow {
+  .product-custom-size-link:hover .whatsapp-link__arrow,
+  .product-custom-size-link:focus-visible .whatsapp-link__arrow {
     transform: translate(2px, -2px);
   }
   .product-whatsapp {

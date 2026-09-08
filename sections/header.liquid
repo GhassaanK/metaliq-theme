@@ -1,17 +1,20 @@
 {% liquid
   assign collections_menu = section.settings.collections_menu
-  assign instagram_url = section.settings.instagram_url | default: 'https://www.instagram.com/metaliq.art/'
-  assign facebook_url = section.settings.facebook_url | default: 'https://www.facebook.com/metaliq.art/'
-  assign tiktok_url = section.settings.tiktok_url | default: 'https://www.tiktok.com/@metaliq.art'
-  assign youtube_url = section.settings.youtube_url | default: 'https://www.youtube.com/@metaliq.art'
-  assign custom_whatsapp_message = 'general.whatsapp_custom_message' | t | url_encode
-  assign custom_whatsapp_url = 'https://wa.me/923172920243?text=' | append: custom_whatsapp_message
-  assign visible_cart_count = 0
-  for cart_item in cart.items
-    if cart_item.properties['_surcharge_for'] == blank
-      assign visible_cart_count = visible_cart_count | plus: cart_item.quantity
-    endif
-  endfor
+  assign instagram_url = settings.instagram_url | default: 'https://www.instagram.com/metaliq.art/'
+  assign facebook_url = settings.facebook_url | default: 'https://www.facebook.com/metaliq.art/'
+  assign tiktok_url = settings.tiktok_url | default: 'https://www.tiktok.com/@metaliq.art'
+  assign youtube_url = settings.youtube_url | default: 'https://www.youtube.com/@metaliq.art'
+  assign whatsapp_number = settings.whatsapp_number | default: '+923172920243' | remove: '+' | remove: ' ' | remove: '-' | remove: '(' | remove: ')'
+  assign custom_whatsapp_message = settings.whatsapp_custom_message
+  if custom_whatsapp_message == blank
+    assign custom_whatsapp_message = 'general.whatsapp_custom_message' | t
+  endif
+  assign custom_whatsapp_message = custom_whatsapp_message | url_encode
+  assign custom_whatsapp_url = 'https://wa.me/' | append: whatsapp_number | append: '?text=' | append: custom_whatsapp_message
+  capture visible_cart_count
+    render 'visible-cart-count', cart: cart
+  endcapture
+  assign visible_cart_count = visible_cart_count | strip | plus: 0
 %}
 
 {%- if section.settings.announcement_1 != blank -%}
@@ -58,7 +61,7 @@
     </button>
 
     <a class="brand" href="{{ routes.root_url }}" aria-label="{{ 'general.brand_home' | t: shop_name: shop.name }}">
-      <img class="brand__logo brand__logo--mark" src="{{ 'metaliq-mark-light.png' | asset_url }}" width="512" height="514" alt="">
+      <img class="brand__logo brand__logo--mark" src="{{ 'metaliq-mark-light.webp' | asset_url }}" width="256" height="257" alt="">
     </a>
 
     <nav class="header-nav" id="PrimaryNav" aria-label="{{ 'general.primary_navigation' | t }}" data-nav>
@@ -84,7 +87,7 @@
                   assign menu_link_url = custom_whatsapp_url
                 endif
               -%}
-              <a href="{{ menu_link_url }}"{% if menu_link_is_custom %} target="_blank" rel="noopener"{% endif %}{% if link.current %} aria-current="page"{% endif %}>{{ link.title }}</a>
+              <a href="{{ menu_link_url }}"{% if menu_link_is_custom %} data-whatsapp-cta target="_blank" rel="noopener"{% endif %}{% if link.current %} aria-current="page"{% endif %}>{{ link.title }}</a>
             {%- endfor -%}
           {%- else -%}
             {%- for collection_item in collections -%}
@@ -96,7 +99,7 @@
       </details>
 
       <a href="/pages/about"{% if page.handle == 'about' %} aria-current="page"{% endif %}>{{ 'general.about_us' | t }}</a>
-      <a href="{{ custom_whatsapp_url }}" target="_blank" rel="noopener">{{ 'general.footer_custom_cta' | t }}</a>
+      <a href="{{ custom_whatsapp_url }}" data-whatsapp-cta target="_blank" rel="noopener">{{ 'general.footer_custom_cta' | t }}</a>
       <a href="{{ pages.contact.url | default: routes.root_url }}"{% if page.handle == 'contact' %} aria-current="page"{% endif %}>{{ 'general.contact' | t }}</a>
 
       <div class="mobile-nav__footer">
@@ -152,11 +155,6 @@
     { "type": "text", "id": "announcement_2", "label": "Promotion 2", "default": "Karachi delivery in 4-7 working days" },
     { "type": "text", "id": "announcement_3", "label": "Promotion 3", "default": "Custom metal designs, made for your space" },
     { "type": "link_list", "id": "collections_menu", "label": "t:labels.collections_menu" },
-    { "type": "header", "content": "Social media" },
-    { "type": "url", "id": "instagram_url", "label": "Instagram URL" },
-    { "type": "url", "id": "facebook_url", "label": "Facebook URL" },
-    { "type": "url", "id": "tiktok_url", "label": "TikTok URL" },
-    { "type": "url", "id": "youtube_url", "label": "YouTube URL" },
     { "type": "paragraph", "content": "MetaliQ brand assets are loaded from the theme." }
   ],
   "enabled_on": { "groups": ["header"] }

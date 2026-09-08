@@ -117,7 +117,7 @@ You are responsible for providing accurate contact, billing, delivery, and custo
 
 ### 5. Prices and payment
 
-Prices are displayed in Pakistani Rupees (PKR) and may change without notice. Catalog custom-size prices are calculated by area using the dimensions entered. Bespoke work is quoted separately. The price charged is the price shown at checkout or in the approved custom quote, subject to correction of obvious errors. Delivery charges and other applicable charges are displayed at checkout or communicated in the quote before payment.
+Prices are displayed in Pakistani Rupees (PKR) and may change without notice. Catalog products are sold in the dimensions and at the price shown on their product page. Different-size and bespoke work is discussed through WhatsApp and quoted separately at PKR 1,000 per square foot. The price charged is the price shown at checkout or in the approved custom quote, subject to correction of obvious errors. Delivery charges and other applicable charges are displayed at checkout or communicated in the quote before payment.
 
 Payment must be completed using a payment method offered at checkout. Payment services are provided by third parties and may be subject to their own terms.
 

@@ -6,6 +6,7 @@
     "article": "Article",
     "block": "Block",
     "blog": "Blog",
+    "business_details": "Business details",
     "cart": "Cart",
     "cart_drawer": "Cart drawer",
     "collection": "Collection",
@@ -42,7 +43,8 @@
     "text": "Text",
     "theme": "Theme",
     "typography": "Typography",
-    "visit": "Visit"
+    "visit": "Visit",
+    "whatsapp": "WhatsApp"
   },
   "sections": {
     "home": {
@@ -69,6 +71,7 @@
     "customer_account_menu": "Customer account menu",
     "display_font": "Display font",
     "email": "Email",
+    "business_address": "Business address",
     "fallback_title": "Fallback title",
     "featured_collection": "Featured collection",
     "featured_heading": "Featured heading",
@@ -80,16 +83,20 @@
     "input_corner_radius": "Input corner radius",
     "layout_direction": "Layout direction",
     "location": "Location",
+    "legal_name": "Legal name",
     "menu": "Menu",
     "padding": "Padding",
     "page_margin": "Page margin",
     "page_width": "Page width",
     "posts_per_page": "Entries per page",
+    "phone": "Phone number",
     "products_per_page": "Products per page",
     "show_payment_icons": "Show payment icons",
     "story_image": "Process image",
     "text": "Text",
-    "text_style": "Text style"
+    "text_style": "Text style",
+    "whatsapp_message": "Default custom-design message",
+    "whatsapp_number": "WhatsApp number"
   },
   "info": {
     "body_font": "Body text is set in Inter, bundled with the theme."

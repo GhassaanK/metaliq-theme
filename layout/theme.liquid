@@ -1,26 +1,31 @@
+{%- liquid
+  assign whatsapp_number = settings.whatsapp_number | default: '+923172920243' | remove: '+' | remove: ' ' | remove: '-' | remove: '(' | remove: ')'
+  assign custom_design_message = settings.whatsapp_custom_message
+  if custom_design_message == blank
+    assign custom_design_message = 'general.whatsapp_custom_message' | t
+  endif
+  assign custom_design_message = custom_design_message | url_encode
+  assign custom_design_redirect = 'https://wa.me/' | append: whatsapp_number | append: '?text=' | append: custom_design_message
+-%}
 <!doctype html>
 <html lang="{{ request.locale.iso_code }}" dir="{{ request.locale.direction | default: 'ltr' }}">
   <head>
     {%- if request.page_type == 'page' -%}
       {%- if page.handle == 'custom-design' -%}
-        {%- liquid
-          assign custom_design_message = 'general.whatsapp_custom_message' | t | url_encode
-          assign custom_design_redirect = 'https://wa.me/923172920243?text=' | append: custom_design_message
-        -%}
         <meta http-equiv="refresh" content="0;url={{ custom_design_redirect }}">
         <script>window.location.replace({{ custom_design_redirect | json }});</script>
       {%- endif -%}
     {%- endif -%}
     {% render 'meta-tags' %}
     {% render 'fonts' %}
-    {% render 'css-variables' %}
-    <link rel="icon" type="image/png" href="{{ 'metaliq-mark-orange.png' | asset_url }}">
-    <link rel="apple-touch-icon" href="{{ 'metaliq-mark-orange.png' | asset_url }}">
+    <link rel="icon" type="image/png" href="{{ 'metaliq-mark-orange-256.png' | asset_url }}">
+    <link rel="apple-touch-icon" href="{{ 'metaliq-mark-orange-256.png' | asset_url }}">
     <meta name="theme-color" content="{{ settings.background_color }}">
     {{ 'critical.css' | asset_url | stylesheet_tag: preload: true }}
+    {% render 'css-variables' %}
     {{ content_for_header }}
   </head>
-  <body class="template-{{ request.page_type | handle }}">
+  <body class="template-{{ request.page_type | handle }}" data-custom-design-url="{{ custom_design_redirect }}">
     <a class="skip-link" href="#MainContent">{{ 'general.skip_to_content' | t }}</a>
 
     {% sections 'header-group' %}

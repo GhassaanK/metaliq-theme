@@ -13,12 +13,7 @@
   "sections": {
     "header": {
       "type": "header",
-      "settings": {
-        "instagram_url": "https://www.instagram.com/metaliq.art/",
-        "facebook_url": "https://www.facebook.com/metaliq.art/",
-        "tiktok_url": "https://www.tiktok.com/@metaliq.art",
-        "youtube_url": "https://www.youtube.com/@metaliq.art"
-      }
+      "settings": {}
     }
   },
   "order": [

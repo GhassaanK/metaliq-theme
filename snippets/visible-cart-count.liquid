@@ -1,0 +1,19 @@
+{% doc %}
+  Outputs the customer-visible item count while excluding legacy surcharge
+  helper lines that may remain in an existing cart.
+
+  @param {object} cart - The current Shopify cart.
+
+  @example
+  {% capture visible_count %}{% render 'visible-cart-count', cart: cart %}{% endcapture %}
+{% enddoc %}
+
+{%- liquid
+  assign visible_count = 0
+  for cart_item in cart.items
+    if cart_item.properties['_surcharge_for'] == blank
+      assign visible_count = visible_count | plus: cart_item.quantity
+    endif
+  endfor
+  echo visible_count
+-%}

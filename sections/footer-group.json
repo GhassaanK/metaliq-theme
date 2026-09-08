@@ -14,16 +14,7 @@
     "footer": {
       "type": "footer",
       "settings": {
-        "menu": "",
-        "show_payment_icons": true,
-        "legal_name": "Steed Art",
-        "phone": "03172920243",
-        "email": "hello@metaliq.art",
-        "business_address": "Plot No 635, Gali No 15, Sector-F, Punjab Road, Manzoor Colony, Karachi, Sindh, Pakistan",
-        "instagram_url": "https://www.instagram.com/metaliq.art/",
-        "facebook_url": "https://www.facebook.com/metaliq.art/",
-        "tiktok_url": "https://www.tiktok.com/@metaliq.art",
-        "youtube_url": "https://www.youtube.com/@metaliq.art"
+        "show_payment_icons": true
       }
     }
   },

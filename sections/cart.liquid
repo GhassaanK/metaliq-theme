@@ -5,14 +5,8 @@
   `cart.total_price` already counts both, so the summary needs no adjustment.
 {% endcomment %}
 
-{%- liquid
-  assign visible_item_count = 0
-  for cart_item in cart.items
-    if cart_item.properties['_surcharge_for'] == blank
-      assign visible_item_count = visible_item_count | plus: cart_item.quantity
-    endif
-  endfor
--%}
+{%- capture visible_item_count -%}{%- render 'visible-cart-count', cart: cart -%}{%- endcapture -%}
+{%- assign visible_item_count = visible_item_count | strip | plus: 0 -%}
 
 <section class="container section cart-section">
   <header class="cart-head">
@@ -149,11 +143,7 @@
         <p class="field-note">{{ 'cart.tax_note' | t }}</p>
         <div class="cart-summary__disclosure">
           <p><strong>{{ 'cart.payment_title' | t }}</strong>
-            {%- if settings.online_payments_active -%}
-              {{ 'cart.payment_active_body' | t: provider: settings.payment_provider_name }}
-            {%- else -%}
-              {{ 'cart.payment_body' | t: provider: settings.payment_provider_name }}
-            {%- endif -%}
+            {% render 'payment-status', active_key: 'cart.payment_active_body', inactive_key: 'cart.payment_body' %}
           </p>
           <p>{{ 'cart.delivery_body' | t }}</p>
           <a href="/pages/ordering-and-payments">{{ 'general.ordering_payments' | t }}</a>

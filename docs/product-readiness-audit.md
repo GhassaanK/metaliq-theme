@@ -1,27 +1,17 @@
 # Product readiness audit
 
-Audit date: 4 September 2026  
+Audit date: 8 September 2026
 Source: public `https://metaliq.art/products.json?limit=250`
 
 ## Result
 
-The public catalog contains nine products. Every product has a positive PKR price, one SKU-backed variant, and two images. All variants were available when audited. The descriptions are present but short (77-115 plain-text characters), so they do not yet demonstrate all information requested by Rapid Gateway.
+The public catalog contains 67 products. Every product has at least two images and a description longer than 500 plain-text characters. Description lengths range from 504 to 682 characters, with an average of 589 characters. No product is currently below the previous 250-character readiness threshold.
 
-| Product | Price (PKR) | Images | Description characters |
-| --- | ---: | ---: | ---: |
-| Camaro Rear Metal Wall Art | 8,600 | 2 | 86 |
-| Muscle Car Silhouette Metal Wall Art | 7,200 | 2 | 77 |
-| Classic Mustang Metal Wall Art | 9,800 | 2 | 89 |
-| Crab Metal Wall Art | 4,200 | 2 | 115 |
-| McLaren Front Metal Wall Art | 11,000 | 2 | 104 |
-| Rose & Butterfly Metal Wall Art | 5,800 | 2 | 89 |
-| Islamic Arabesque Pattern Panel | 9,500 | 2 | 104 |
-| Wolf Head Metal Wall Art | 8,200 | 2 | 93 |
-| Monstera Leaf Metal Wall Panel | 6,500 | 2 | 95 |
+Twenty-nine source descriptions still contain one or more unsupported durability or installation phrases. The product template currently substitutes safer customer-facing wording and displays a Theme Editor warning for affected products. Those source descriptions should still be corrected in Shopify Admin so the temporary render-time safeguard can later be removed.
 
-## Required Admin edit for every product
+## Required Admin review for every product
 
-Expand each product description with product-specific, accurate information for:
+Confirm that each product description contains accurate, product-specific information for:
 
 - Material and material thickness
 - Matte black powder-coated finish

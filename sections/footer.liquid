@@ -1,15 +1,20 @@
 {% liquid
-  assign custom_whatsapp_message = 'general.whatsapp_custom_message' | t | url_encode
-  assign custom_link = 'https://wa.me/923172920243?text=' | append: custom_whatsapp_message
-  assign instagram_url = section.settings.instagram_url | default: 'https://www.instagram.com/metaliq.art/'
-  assign facebook_url = section.settings.facebook_url | default: 'https://www.facebook.com/metaliq.art/'
-  assign tiktok_url = section.settings.tiktok_url | default: 'https://www.tiktok.com/@metaliq.art'
-  assign youtube_url = section.settings.youtube_url | default: 'https://www.youtube.com/@metaliq.art'
-  assign legal_name = section.settings.legal_name | default: 'Steed Art'
-  assign phone = section.settings.phone | default: '03172920243'
+  assign whatsapp_number = settings.whatsapp_number | default: '+923172920243' | remove: '+' | remove: ' ' | remove: '-' | remove: '(' | remove: ')'
+  assign custom_whatsapp_message = settings.whatsapp_custom_message
+  if custom_whatsapp_message == blank
+    assign custom_whatsapp_message = 'general.whatsapp_custom_message' | t
+  endif
+  assign custom_whatsapp_message = custom_whatsapp_message | url_encode
+  assign custom_link = 'https://wa.me/' | append: whatsapp_number | append: '?text=' | append: custom_whatsapp_message
+  assign instagram_url = settings.instagram_url | default: 'https://www.instagram.com/metaliq.art/'
+  assign facebook_url = settings.facebook_url | default: 'https://www.facebook.com/metaliq.art/'
+  assign tiktok_url = settings.tiktok_url | default: 'https://www.tiktok.com/@metaliq.art'
+  assign youtube_url = settings.youtube_url | default: 'https://www.youtube.com/@metaliq.art'
+  assign legal_name = settings.business_legal_name | default: 'Steed Art'
+  assign phone = settings.business_phone | default: '03172920243'
   assign phone_link = phone | remove: '+' | remove: ' ' | remove: '-' | remove: '(' | remove: ')'
-  assign email = section.settings.email | default: 'hello@metaliq.art'
-  assign business_address = section.settings.business_address | default: 'Plot No 635, Gali No 15, Sector-F, Punjab Road, Manzoor Colony, Karachi, Sindh, Pakistan'
+  assign email = settings.business_email | default: 'hello@metaliq.art'
+  assign business_address = settings.business_address | default: 'Plot No 635, Gali No 15, Sector-F, Punjab Road, Manzoor Colony, Karachi, Sindh, Pakistan'
 %}
 
 <footer class="site-footer">
@@ -19,7 +24,7 @@
         <p class="eyebrow">{{ section.settings.eyebrow }}</p>
         <h2>{{ section.settings.headline }}</h2>
       </div>
-      <a class="footer-callout__link" href="{{ custom_link }}" target="_blank" rel="noopener">
+      <a class="footer-callout__link" href="{{ custom_link }}" data-whatsapp-cta target="_blank" rel="noopener">
         <span>{{ section.settings.custom_label }}</span>
         {% render 'icon', name: 'arrow-right' %}
       </a>
@@ -72,7 +77,7 @@
                       assign menu_link_url = custom_link
                     endif
                   -%}
-                  <a href="{{ menu_link_url }}"{% if menu_link_is_custom %} target="_blank" rel="noopener"{% endif %}>{{ link.title }}</a>
+                  <a href="{{ menu_link_url }}"{% if menu_link_is_custom %} data-whatsapp-cta target="_blank" rel="noopener"{% endif %}>{{ link.title }}</a>
                 {%- endfor -%}
               {%- elsif i == 1 -%}
                 <a href="{{ routes.all_products_collection_url }}">{{ 'general.shop_all' | t }}</a>
@@ -83,7 +88,7 @@
                 <a href="/pages/about">{{ 'general.about_us' | t }}</a>
                 <a href="{{ pages.contact.url | default: routes.root_url }}">{{ 'general.contact' | t }}</a>
                 <a href="/pages/ordering-and-payments">{{ 'general.ordering_payments' | t }}</a>
-                <a href="{{ custom_link }}" target="_blank" rel="noopener">{{ 'general.footer_custom_cta' | t }}</a>
+                <a href="{{ custom_link }}" data-whatsapp-cta target="_blank" rel="noopener">{{ 'general.footer_custom_cta' | t }}</a>
               {%- else -%}
                 <a href="/policies/refund-policy">{{ 'general.refund_policy' | t }}</a>
                 <a href="/policies/privacy-policy">{{ 'general.privacy_policy' | t }}</a>
@@ -97,7 +102,7 @@
     </div>
 
     <a class="footer-signature" href="{{ routes.root_url }}" aria-label="{{ 'general.brand_home' | t: shop_name: shop.name }}">
-      <img src="{{ 'metaliq-wordmark-light.png' | asset_url }}" width="1400" height="356" alt="MetaliQ">
+      <img src="{{ 'metaliq-wordmark-light.webp' | asset_url }}" width="1200" height="305" alt="MetaliQ">
     </a>
 
     <div class="footer-bottom">
@@ -131,8 +136,11 @@
 
 {%- if section.settings.show_whatsapp -%}
   {%- liquid
-    assign whatsapp_number = section.settings.whatsapp_number | remove: '+' | remove: ' ' | remove: '-' | remove: '(' | remove: ')'
-    assign whatsapp_text = section.settings.whatsapp_prefill | url_encode
+    assign whatsapp_text = settings.whatsapp_custom_message
+    if whatsapp_text == blank
+      assign whatsapp_text = 'general.whatsapp_custom_message' | t
+    endif
+    assign whatsapp_text = whatsapp_text | url_encode
   -%}
   <aside class="whatsapp-widget" data-whatsapp-widget aria-label="{{ 'general.whatsapp_label' | t }}">
     {%- if section.settings.show_whatsapp_prompt -%}
@@ -146,9 +154,10 @@
     <a
       class="whatsapp-widget__button"
       href="https://wa.me/{{ whatsapp_number }}?text={{ whatsapp_text }}"
+      data-whatsapp-cta
       target="_blank"
       rel="noopener"
-      aria-label="{{ 'general.whatsapp_label' | t }}"
+      aria-label="{{ 'general.whatsapp_unread_label' | t }}"
     >
       {% render 'icon', name: 'whatsapp' %}
       <span class="whatsapp-widget__count" aria-hidden="true">1</span>
@@ -172,21 +181,10 @@
     { "type": "link_list", "id": "menu_2", "label": "t:labels.menu" },
     { "type": "text", "id": "heading_3", "label": "t:labels.heading", "default": "Policies" },
     { "type": "link_list", "id": "menu_3", "label": "t:labels.menu" },
-    { "type": "header", "content": "Contact and social" },
-    { "type": "text", "id": "legal_name", "label": "Legal business name", "default": "Steed Art" },
-    { "type": "text", "id": "phone", "label": "Public phone number", "default": "03172920243" },
-    { "type": "text", "id": "email", "label": "t:labels.email", "default": "hello@metaliq.art" },
-    { "type": "textarea", "id": "business_address", "label": "Complete business address", "default": "Plot No 635, Gali No 15, Sector-F, Punjab Road, Manzoor Colony, Karachi, Sindh, Pakistan" },
-    { "type": "url", "id": "instagram_url", "label": "Instagram URL" },
-    { "type": "url", "id": "facebook_url", "label": "Facebook URL" },
-    { "type": "url", "id": "youtube_url", "label": "YouTube URL" },
-    { "type": "url", "id": "tiktok_url", "label": "TikTok URL" },
     { "type": "checkbox", "id": "show_payment_icons", "label": "t:labels.show_payment_icons", "default": true },
     { "type": "header", "content": "WhatsApp" },
     { "type": "checkbox", "id": "show_whatsapp", "label": "Show WhatsApp button", "default": true },
-    { "type": "text", "id": "whatsapp_number", "label": "WhatsApp number", "default": "+923172920243" },
     { "type": "text", "id": "whatsapp_prompt", "label": "Popup message", "default": "Have a custom design in mind? Let's make it happen." },
-    { "type": "textarea", "id": "whatsapp_prefill", "label": "Prefilled WhatsApp message", "default": "Hi MetaliQ Art, I have a custom design in mind and would like to discuss it." },
     { "type": "checkbox", "id": "show_whatsapp_prompt", "label": "Show popup message", "default": true }
   ],
   "enabled_on": { "groups": ["footer"] }

@@ -1,0 +1,76 @@
+{% doc %}
+  Emits sitewide Organization and WebSite structured data from the theme's
+  centralized business and social settings.
+
+  @example
+  {% render 'structured-data' %}
+{% enddoc %}
+
+{%- liquid
+  assign legal_name = settings.business_legal_name | default: 'Steed Art'
+  assign business_phone = settings.business_phone | default: '03172920243'
+  assign business_email = settings.business_email | default: 'hello@metaliq.art'
+  assign business_address = settings.business_address | default: 'Plot No 635, Gali No 15, Sector-F, Punjab Road, Manzoor Colony, Karachi, Sindh, Pakistan'
+  assign instagram_url = settings.instagram_url | default: 'https://www.instagram.com/metaliq.art/'
+  assign facebook_url = settings.facebook_url | default: 'https://www.facebook.com/metaliq.art/'
+  assign tiktok_url = settings.tiktok_url | default: 'https://www.tiktok.com/@metaliq.art'
+  assign youtube_url = settings.youtube_url | default: 'https://www.youtube.com/@metaliq.art'
+  assign organization_id = shop.url | append: '/#organization'
+  assign website_id = shop.url | append: '/#website'
+  assign search_target = shop.url | append: routes.search_url | append: '?q={search_term_string}'
+  assign organization_logo = 'metaliq-mark-orange-256.png' | asset_url
+  unless organization_logo contains '://'
+    assign organization_logo_prefix = organization_logo | slice: 0, 2
+    if organization_logo_prefix == '//'
+      assign organization_logo = organization_logo | prepend: 'https:'
+    else
+      assign organization_logo = organization_logo | prepend: shop.url
+    endif
+  endunless
+-%}
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": {{ organization_id | json }},
+        "name": {{ shop.name | json }},
+        "legalName": {{ legal_name | json }},
+        "url": {{ shop.url | json }},
+        "logo": {{ organization_logo | json }},
+        "email": {{ business_email | json }},
+        "telephone": {{ business_phone | json }},
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": {{ business_address | json }},
+          "addressLocality": "Karachi",
+          "addressRegion": "Sindh",
+          "addressCountry": "PK"
+        },
+        "sameAs": [
+          {{ instagram_url | json }},
+          {{ facebook_url | json }},
+          {{ tiktok_url | json }},
+          {{ youtube_url | json }}
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "@id": {{ website_id | json }},
+        "url": {{ shop.url | json }},
+        "name": {{ shop.name | json }},
+        "publisher": { "@id": {{ organization_id | json }} },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": {{ search_target | json }}
+          },
+          "query-input": "required name=search_term_string"
+        }
+      }
+    ]
+  }
+</script>

@@ -1,0 +1,18 @@
+{% doc %}
+  Renders the appropriate localized payment-status message from the global
+  gateway setting.
+
+  @param {string} active_key - Locale key used when online payments are active.
+  @param {string} inactive_key - Locale key used while online payments are unavailable.
+
+  @example
+  {% render 'payment-status', active_key: 'cart.payment_active_body', inactive_key: 'cart.payment_body' %}
+{% enddoc %}
+
+{%- liquid
+  assign status_key = inactive_key
+  if settings.online_payments_active
+    assign status_key = active_key
+  endif
+-%}
+{{- status_key | t: provider: settings.payment_provider_name -}}

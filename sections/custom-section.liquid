@@ -30,13 +30,13 @@
   }
   .custom-section--image .custom-section__content {
     position: relative;
-    color: var(--on-dark);
+    color: var(--on-nav);
   }
   .custom-section--image::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: rgb(18 15 12 / 0.42);
+    background: color-mix(in srgb, var(--background) 42%, transparent);
   }
   .custom-section__content {
     position: relative;

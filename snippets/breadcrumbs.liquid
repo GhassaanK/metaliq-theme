@@ -32,3 +32,58 @@
     <span aria-current="page">{{ page_title }}</span>
   {%- endif -%}
 </nav>
+
+{%- liquid
+  assign home_url = shop.url | append: routes.root_url
+  assign breadcrumb_name = page_title
+  assign breadcrumb_position = 2
+  assign intermediate_name = blank
+  assign intermediate_url = blank
+
+  if product
+    assign breadcrumb_name = product.title
+    if collection
+      assign intermediate_name = collection.title
+      assign intermediate_url = shop.url | append: collection.url
+      assign breadcrumb_position = 3
+    endif
+  elsif collection
+    assign breadcrumb_name = collection.title
+  elsif article
+    assign breadcrumb_name = article.title
+    assign intermediate_name = blog.title
+    assign intermediate_url = shop.url | append: blog.url
+    assign breadcrumb_position = 3
+  elsif page
+    assign breadcrumb_name = page.title
+  endif
+-%}
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": {{ 'general.home' | t | json }},
+        "item": {{ home_url | json }}
+      },
+      {%- if intermediate_name != blank -%}
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": {{ intermediate_name | json }},
+          "item": {{ intermediate_url | json }}
+        },
+      {%- endif -%}
+      {
+        "@type": "ListItem",
+        "position": {{ breadcrumb_position }},
+        "name": {{ breadcrumb_name | json }},
+        "item": {{ canonical_url | json }}
+      }
+    ]
+  }
+</script>

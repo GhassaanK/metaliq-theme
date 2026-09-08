@@ -1,9 +1,22 @@
 # Files excluded from Shopify CLI operations (push, pull, dev).
 # Repository documentation and tooling never belongs in the live theme.
 
-.github/
+.github/*
 AGENTS.md
 CLAUDE.md
 CODE_OF_CONDUCT.md
 CONTRIBUTING.md
 README.md
+LICENSE.md
+docs/*
+
+# Superseded source exports; optimized storefront assets use WebP/downsized PNG.
+assets/fraunces-latin.woff2
+assets/hero-art-*.jpg
+assets/metaliq-architectural-hero.jpg
+assets/metaliq-logo.png
+assets/metaliq-mark.png
+assets/metaliq-mark-light.png
+assets/metaliq-mark-orange.png
+assets/metaliq-wordmark-dark.png
+assets/metaliq-wordmark-light.png

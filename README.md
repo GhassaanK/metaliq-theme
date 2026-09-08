@@ -46,9 +46,9 @@ editable in the theme editor. `critical.css` repeats the defaults in `:root` pur
 
 ### Typography
 
-Fraunces (display) and Inter (body) ship with the theme as subset `.woff2` files.
-`snippets/fonts.liquid` declares and preloads both — the `@font-face` `src` uses `asset_url` so it
-matches the preload URL exactly, which a relative path inside `critical.css` would not.
+Inter ships with the theme as a subset `.woff2` file and is preloaded from
+`snippets/fonts.liquid`. Headings use the merchant-selectable Shopify font configured in the theme
+settings, with Playfair Display as the default.
 
 ## Product dimensions and custom requests
 

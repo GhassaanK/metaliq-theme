@@ -1,11 +1,5 @@
-{%- liquid
-  assign visible_item_count = 0
-  for cart_item in cart.items
-    if cart_item.properties['_surcharge_for'] == blank
-      assign visible_item_count = visible_item_count | plus: cart_item.quantity
-    endif
-  endfor
--%}
+{%- capture visible_item_count -%}{%- render 'visible-cart-count', cart: cart -%}{%- endcapture -%}
+{%- assign visible_item_count = visible_item_count | strip | plus: 0 -%}
 
 <div class="cart-drawer" data-cart-drawer data-cart-count="{{ visible_item_count }}" aria-hidden="true">
   <button class="cart-drawer__overlay" type="button" aria-label="{{ 'cart.drawer_close' | t }}" data-cart-drawer-close></button>
