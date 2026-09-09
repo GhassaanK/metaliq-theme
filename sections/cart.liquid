@@ -73,7 +73,7 @@
                   item.image
                   | image_url: width: 600
                   | image_tag:
-                    loading: 'lazy',
+                    loading: 'eager',
                     widths: '180, 320, 480, 600',
                     sizes: '(max-width: 520px) calc(100vw - 64px), 180px',
                     alt: item.image.alt | default: item.product.title

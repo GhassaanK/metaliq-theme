@@ -141,7 +141,7 @@ You may not reproduce, manufacture, distribute, resell, or commercially exploit 
 
 ### 9. Delivery
 
-Delivery estimates are estimates rather than guarantees unless we expressly agree otherwise. Made-to-order catalog pieces are generally expected to arrive within 4-7 working days in Karachi and 10-12 working days elsewhere in Pakistan, measured from order and payment confirmation. Custom work follows the timeline confirmed in writing before payment. Delays can occur because of address issues, carrier operations, weather, public holidays, security conditions, or events outside our reasonable control.
+Delivery estimates are estimates rather than guarantees unless we expressly agree otherwise. Made-to-order catalog pieces are generally expected to arrive within 3-4 working days in Karachi and 6-8 working days elsewhere in Pakistan, measured from order and payment confirmation. Custom work follows the timeline confirmed in writing before payment. Delays can occur because of address issues, carrier operations, weather, public holidays, security conditions, or events outside our reasonable control.
 
 Risk of loss or damage transfers as required by applicable law and the agreed delivery arrangement. Inspect the package promptly and report visible damage or missing items as soon as reasonably possible, with photographs of the product and packaging.
 
@@ -233,8 +233,8 @@ MetaliQ Art ships made-to-order metal artwork throughout Pakistan. We do not cur
 
 ### Delivery estimates
 
-- Karachi: estimated arrival within 4-7 working days after order and payment confirmation.
-- Rest of Pakistan: estimated arrival within 10-12 working days after order and payment confirmation.
+- Karachi: estimated arrival within 3-4 working days after order and payment confirmation.
+- Rest of Pakistan: estimated arrival within 6-8 working days after order and payment confirmation.
 - Bespoke work: the estimated production and delivery timeline is confirmed in writing with the quote before payment.
 
 These estimates include normal production and courier time for catalog orders. Working days exclude Sundays and public holidays. Estimates are not guarantees; weather, public holidays, security conditions, remote delivery locations, carrier interruptions, or other events outside our reasonable control can cause delays.

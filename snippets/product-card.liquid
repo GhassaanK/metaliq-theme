@@ -11,7 +11,7 @@
 {% enddoc %}
 
 {% liquid
-  assign card_sizes = sizes | default: '(min-width: 1100px) 22vw, (min-width: 620px) 33vw, 50vw'
+  assign card_sizes = sizes | default: '(min-width: 1100px) 22vw, (min-width: 620px) 33vw, (max-width: 359px) calc(100vw - 40px), 50vw'
   assign card_loading = loading | default: 'lazy'
   assign card_heading_level = heading_level | default: 3
   assign card_heading_tag = 'h' | append: card_heading_level
@@ -82,5 +82,28 @@
       {%- if on_sale -%}<s>{{ card_variant.compare_at_price | money }}</s>{%- endif -%}
       <strong>{{ card_variant.price | money }}</strong>
     </div>
+
+    <form class="product-card__form" method="post" action="{{ routes.cart_add_url }}" data-card-add-form>
+      <input type="hidden" name="id" value="{{ card_variant.id }}">
+      <input type="hidden" name="quantity" value="1">
+      <button
+        class="product-card__add"
+        type="submit"
+        data-card-add-button
+        data-adding="{{ 'product.adding' | t }}"
+        aria-label="{{ 'product.card_add_label' | t: title: product.title }}"
+        {% unless card_variant.available %}disabled{% endunless %}
+      >
+        {% render 'icon', name: 'bag' %}
+        <span data-card-add-label>
+          {%- if card_variant.available -%}
+            {{ 'product.card_add_medium' | t }}
+          {%- else -%}
+            {{ 'product.card_medium_sold_out' | t }}
+          {%- endif -%}
+        </span>
+      </button>
+      <p class="product-card__error" data-card-add-error hidden role="alert">{{ 'product.add_error' | t }}</p>
+    </form>
   </div>
 </article>

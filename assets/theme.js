@@ -31,6 +31,11 @@
 
   routeCustomDesignLinksToWhatsApp();
 
+  // Shopify supplies the policy title; merchant policy content sometimes repeats it as an H1.
+  document.querySelectorAll('.shopify-policy__body h1').forEach((heading) => {
+    heading.remove();
+  });
+
   /* ----------------------------------------------------------------------
      Cart drawer
      ---------------------------------------------------------------------- */
@@ -236,6 +241,51 @@
     }
   });
 
+  document.addEventListener('submit', (event) => {
+    const form = event.target.closest('[data-card-add-form]');
+    if (!form) return;
+
+    event.preventDefault();
+    const button = form.querySelector('[data-card-add-button]');
+    const label = form.querySelector('[data-card-add-label]');
+    const error = form.querySelector('[data-card-add-error]');
+    const variantId = Number(form.elements.id && form.elements.id.value);
+    const originalLabel = label && label.textContent;
+    if (!button || !variantId || button.disabled) return;
+
+    cartDrawerTrigger = button;
+    button.disabled = true;
+    button.setAttribute('aria-busy', 'true');
+    if (label) label.textContent = button.dataset.adding || originalLabel;
+    if (error) error.hidden = true;
+
+    fetch(cartAddUrl + '.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        items: [{ id: variantId, quantity: 1 }],
+        ...cartSectionRequest(),
+      }),
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error('Add to cart failed');
+        return response.json();
+      })
+      .then((cart) => {
+        const html = cart.sections && cart.sections['cart-drawer'];
+        if (renderCartDrawer(html)) return openCartDrawer();
+        return refreshCartDrawer().then(() => openCartDrawer());
+      })
+      .catch(() => {
+        if (error) error.hidden = false;
+      })
+      .finally(() => {
+        button.disabled = false;
+        button.removeAttribute('aria-busy');
+        if (label) label.textContent = originalLabel;
+      });
+  });
+
   document.querySelectorAll('[data-announcement-slider]').forEach((slider) => {
     const slides = Array.from(slider.querySelectorAll('[data-announcement-slide]'));
     const previous = slider.querySelector('[data-announcement-previous]');
@@ -353,29 +403,46 @@
     const prompt = widget.querySelector('[data-whatsapp-prompt]');
     const close = widget.querySelector('[data-whatsapp-close]');
     const storageKey = 'metaliq-whatsapp-prompt-hidden';
+    const seenKey = 'metaliq-whatsapp-prompt-seen';
     if (!prompt) return;
 
+    let shouldShow = true;
     try {
-      if (window.sessionStorage.getItem(storageKey) === 'true') prompt.hidden = true;
+      shouldShow = window.sessionStorage.getItem(storageKey) !== 'true' && window.sessionStorage.getItem(seenKey) !== 'true';
     } catch (error) {
       // Storage can be unavailable in privacy-restricted browsing contexts.
     }
 
-    window.requestAnimationFrame(() => {
+    if (!shouldShow) {
+      prompt.hidden = true;
+      return;
+    }
+
+    const hidePrompt = () => {
+      widget.classList.remove('is-ready', 'has-open-prompt');
+      window.setTimeout(() => {
+        prompt.hidden = true;
+      }, 350);
+      try {
+        window.sessionStorage.setItem(storageKey, 'true');
+      } catch (error) {
+        // The prompt still closes for this render when storage is unavailable.
+      }
+    };
+
+    window.setTimeout(() => {
       widget.classList.add('is-ready');
-      widget.classList.toggle('has-open-prompt', !prompt.hidden);
-    });
+      widget.classList.add('has-open-prompt');
+      try {
+        window.sessionStorage.setItem(seenKey, 'true');
+      } catch (error) {
+        // Showing the prompt does not depend on storage availability.
+      }
+      window.setTimeout(hidePrompt, 9000);
+    }, 2500);
 
     if (close) {
-      close.addEventListener('click', () => {
-        prompt.hidden = true;
-        widget.classList.remove('has-open-prompt');
-        try {
-          window.sessionStorage.setItem(storageKey, 'true');
-        } catch (error) {
-          // The prompt still closes for this render when storage is unavailable.
-        }
-      });
+      close.addEventListener('click', hidePrompt);
     }
   });
 
@@ -524,9 +591,9 @@
       if (event.target.closest('a')) setMenu(false);
     });
 
-    // The nav returns to its horizontal desktop layout above 860px, where
+    // The nav returns to its horizontal desktop layout at 1100px, where
     // `is-open` means nothing — without this the body stays scroll-locked.
-    const desktop = window.matchMedia('(min-width: 861px)');
+    const desktop = window.matchMedia('(min-width: 1100px)');
     const syncToViewport = (event) => {
       if (event.matches) setMenu(false);
     };
@@ -538,7 +605,7 @@
   }
 
   document.querySelectorAll('.nav-dropdown').forEach((dropdown) => {
-    const isDesktopNavigation = () => window.innerWidth >= 861;
+    const isDesktopNavigation = () => window.innerWidth >= 1100;
     let closeTimer;
 
     dropdown.addEventListener('mouseenter', () => {
@@ -588,6 +655,10 @@
   document.querySelectorAll('[data-product-gallery]').forEach((gallery) => {
     const thumbnails = Array.from(gallery.querySelectorAll('[data-gallery-thumbnail]'));
     const mediaItems = Array.from(gallery.querySelectorAll('[data-gallery-media]'));
+    const zoomDialog = gallery.querySelector('[data-product-zoom-dialog]');
+    const zoomImage = gallery.querySelector('[data-product-zoom-image]');
+    const zoomClose = gallery.querySelector('[data-product-zoom-close]');
+    let zoomTrigger = null;
 
     thumbnails.forEach((thumbnail) => {
       thumbnail.addEventListener('click', () => {
@@ -603,6 +674,30 @@
           if (!active) item.querySelector('video')?.pause();
         });
       });
+    });
+
+    gallery.querySelectorAll('[data-product-zoom]').forEach((trigger) => {
+      trigger.addEventListener('click', () => {
+        if (!zoomDialog || !zoomImage) return;
+        zoomTrigger = trigger;
+        zoomImage.src = trigger.dataset.zoomSrc || '';
+        zoomImage.alt = trigger.dataset.zoomAlt || '';
+        zoomDialog.showModal();
+      });
+    });
+
+    const closeZoom = () => {
+      if (!zoomDialog || !zoomDialog.open) return;
+      zoomDialog.close();
+    };
+
+    zoomClose?.addEventListener('click', closeZoom);
+    zoomDialog?.addEventListener('click', (event) => {
+      if (event.target === zoomDialog) closeZoom();
+    });
+    zoomDialog?.addEventListener('close', () => {
+      zoomImage?.removeAttribute('src');
+      zoomTrigger?.focus();
     });
   });
 
@@ -645,49 +740,89 @@
     const priceOutput = root.querySelector('[data-product-price]');
     if (!form || !priceOutput) return;
 
-    const variantSelect = root.querySelector('[data-variant-select]');
+    const variantInputs = Array.from(root.querySelectorAll('[data-variant-input]'));
     const variantIdInput = root.querySelector('[data-variant-id]');
     const currentPriceOutput = priceOutput.querySelector('[data-current-price]');
     const comparePriceOutput = priceOutput.querySelector('[data-compare-price]');
     const addButton = root.querySelector('[data-add-button]');
     const addError = root.querySelector('[data-add-error]');
     const quantityInput = form.querySelector('input[name="quantity"]');
+    const selectedSize = root.querySelector('[data-selected-size]');
+    const availability = root.querySelector('[data-product-availability]');
+    const availabilityText = root.querySelector('[data-availability-text]');
+    const stickyBar = root.querySelector('[data-product-sticky-atc]');
+    const stickyButton = root.querySelector('[data-sticky-add]');
+    const stickyPrice = root.querySelector('[data-sticky-price]');
+    const stickySize = root.querySelector('[data-sticky-size]');
 
-    const variantId = () => (variantSelect ? variantSelect.value : variantIdInput && variantIdInput.value);
+    const selectedVariant = () => variantInputs.find((input) => input.checked);
+    const variantId = () => selectedVariant()?.value || (variantIdInput && variantIdInput.value);
     const variantPrice = () => {
-      if (variantSelect && variantSelect.selectedOptions[0]) {
-        return Number(variantSelect.selectedOptions[0].dataset.price);
-      }
+      if (selectedVariant()) return Number(selectedVariant().dataset.price);
       return Number(priceOutput.dataset.basePrice) || 0;
     };
     const variantComparePrice = () => {
-      if (variantSelect && variantSelect.selectedOptions[0]) {
-        return Number(variantSelect.selectedOptions[0].dataset.comparePrice) || 0;
-      }
+      if (selectedVariant()) return Number(selectedVariant().dataset.comparePrice) || 0;
       return Number(priceOutput.dataset.baseComparePrice) || 0;
     };
 
     const update = () => {
+      const variant = selectedVariant();
       const price = variantPrice();
       const comparePrice = variantComparePrice();
+      const available = variant ? variant.dataset.available === 'true' : !addButton?.disabled;
       if (currentPriceOutput) currentPriceOutput.textContent = formatMoney(price, root.dataset.moneyFormat);
       if (comparePriceOutput) {
         comparePriceOutput.textContent = formatMoney(comparePrice, root.dataset.moneyFormat);
         comparePriceOutput.hidden = comparePrice <= price;
       }
+      if (selectedSize && variant) selectedSize.textContent = variant.dataset.variantTitle || '';
+      if (stickySize && variant) stickySize.textContent = variant.dataset.variantTitle || '';
+      if (stickyPrice) stickyPrice.textContent = formatMoney(price, root.dataset.moneyFormat);
+      if (availability) availability.classList.toggle('is-unavailable', !available);
+      if (availabilityText) {
+        availabilityText.textContent = available ? root.dataset.availableLabel : root.dataset.soldOutLabel;
+      }
+      if (addButton) {
+        addButton.disabled = !available;
+        addButton.textContent = available ? root.dataset.addLabel : root.dataset.soldOutLabel;
+      }
+      if (stickyButton) {
+        stickyButton.disabled = !available;
+        stickyButton.textContent = available ? root.dataset.addLabel : root.dataset.soldOutLabel;
+      }
       if (addError) addError.hidden = true;
     };
 
-    if (variantSelect && variantIdInput) {
-      variantSelect.addEventListener('change', () => {
-        variantIdInput.value = variantSelect.value;
+    variantInputs.forEach((input) => {
+      input.addEventListener('change', () => {
         const url = new URL(root.dataset.productUrl || window.location.pathname, window.location.origin);
-        url.searchParams.set('variant', variantSelect.value);
+        url.searchParams.set('variant', input.value);
         window.history.replaceState({}, '', `${url.pathname}${url.search}`);
+        update();
       });
-    }
+    });
 
-    if (variantSelect) variantSelect.addEventListener('change', update);
+    stickyButton?.addEventListener('click', () => {
+      if (addButton?.disabled) return;
+      form.requestSubmit(addButton);
+    });
+
+    if (stickyBar && addButton) {
+      const updateStickyBar = () => {
+        const headerBottom = Math.max(0, document.querySelector('[data-site-header]')?.getBoundingClientRect().bottom || 0);
+        const buttonBounds = addButton.getBoundingClientRect();
+        const productBounds = root.getBoundingClientRect();
+        const visible = window.innerWidth <= 860 && buttonBounds.bottom < headerBottom && productBounds.bottom > headerBottom + 90;
+        stickyBar.classList.toggle('is-visible', visible);
+        stickyBar.setAttribute('aria-hidden', String(!visible));
+        stickyBar.toggleAttribute('inert', !visible);
+        document.body.classList.toggle('product-sticky-atc-visible', visible);
+      };
+      updateStickyBar();
+      window.addEventListener('scroll', updateStickyBar, { passive: true });
+      window.addEventListener('resize', updateStickyBar);
+    }
 
     /* Add through the AJAX API so the customer stays on the product page. */
     form.addEventListener('submit', (event) => {
@@ -706,6 +841,10 @@
         addButton.disabled = true;
         addButton.textContent = addButton.dataset.adding || label;
       }
+      if (stickyButton) {
+        stickyButton.disabled = true;
+        stickyButton.textContent = addButton?.dataset.adding || label;
+      }
 
       fetch(cartAddUrl + '.js', {
         method: 'POST',
@@ -721,6 +860,10 @@
             addButton.disabled = false;
             addButton.textContent = label;
           }
+          if (stickyButton) {
+            stickyButton.disabled = false;
+            stickyButton.textContent = label;
+          }
           const html = cart.sections && cart.sections['cart-drawer'];
           if (renderCartDrawer(html)) return openCartDrawer();
           return refreshCartDrawer().then(() => openCartDrawer());
@@ -729,6 +872,10 @@
           if (addButton) {
             addButton.disabled = false;
             addButton.textContent = label;
+          }
+          if (stickyButton) {
+            stickyButton.disabled = false;
+            stickyButton.textContent = label;
           }
           if (addError) addError.hidden = false;
         });

@@ -61,7 +61,7 @@ Do not add a payment-receipt upload to checkout. Basic Shopify does not permit a
 - Under **Settings > Shipping and delivery**, configure a Pakistan zone and the actual rates customers will pay.
 - Test one Karachi address and one address elsewhere in Pakistan.
 - Confirm shipping charges are visible before order submission.
-- Keep storefront estimates at 4-7 working days for Karachi and 10-12 working days elsewhere in Pakistan, measured from confirmation.
+- Keep storefront estimates at 3-4 working days for Karachi and 6-8 working days elsewhere in Pakistan, measured from confirmation.
 
 ## 6. Custom requests
 
