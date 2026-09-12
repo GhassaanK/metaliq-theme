@@ -214,6 +214,8 @@
   </div>
 </section>
 
+{% render 'limited-time-sale', section: section %}
+
 {%- assign testimonial_count = 0 -%}
 {%- for block in section.blocks -%}
   {%- if block.type == 'testimonial' -%}
@@ -1723,6 +1725,23 @@
     { "type": "text", "id": "button_label", "label": "t:labels.button_label", "default": "Shop wall art" },
     { "type": "url", "id": "button_link", "label": "t:labels.button_link" },
     { "type": "text", "id": "button2_label", "label": "t:labels.button_label", "default": "Create something custom" },
+
+    { "type": "header", "content": "t:sections.home.limited_sale" },
+    { "type": "checkbox", "id": "limited_sale_enabled", "label": "t:labels.campaign_enabled", "default": true },
+    { "type": "text", "id": "limited_sale_eyebrow", "label": "t:labels.campaign_eyebrow" },
+    { "type": "text", "id": "limited_sale_heading", "label": "t:labels.campaign_heading" },
+    { "type": "textarea", "id": "limited_sale_intro", "label": "t:labels.campaign_intro" },
+    {
+      "type": "product_list",
+      "id": "limited_sale_products",
+      "label": "t:labels.campaign_products",
+      "limit": 6
+    },
+    {
+      "type": "image_picker",
+      "id": "limited_sale_image",
+      "label": "t:labels.campaign_fallback_image"
+    },
 
     { "type": "header", "content": "Testimonials" },
     { "type": "paragraph", "content": "Add only reviews received from verified customers. This section remains hidden until at least one complete testimonial block is added." },

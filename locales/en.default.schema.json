@@ -26,6 +26,7 @@
     "header": "Header",
     "home": "Home",
     "layout": "Layout",
+    "limited_sale": "Limited-time offer",
     "login": "Login",
     "main": "Main",
     "order": "Order",
@@ -54,8 +55,13 @@
       "intro": "Introduction",
       "collections": "Collections",
       "featured": "Featured work",
+      "limited_sale": "Limited-time bundles",
       "process": "Process",
       "closing": "Closing"
+    },
+    "limited_offers": {
+      "name": "Limited bundle offers",
+      "shared_settings": "The deadline and discount are shared with the homepage campaign. Configure them in Theme settings > Limited-time offer."
     }
   },
   "labels": {
@@ -66,6 +72,17 @@
     "body_font": "Body font",
     "button_label": "Button label",
     "button_link": "Button link",
+    "campaign_discount_amount": "Fixed discount (PKR)",
+    "campaign_discount_percentage": "Discount percentage",
+    "campaign_discount_type": "Discount type",
+    "campaign_active": "Campaign is active",
+    "campaign_enabled": "Show limited-time bundles",
+    "campaign_end": "Campaign end date and time",
+    "campaign_eyebrow": "Campaign label",
+    "campaign_fallback_image": "Fallback bundle image",
+    "campaign_heading": "Campaign heading",
+    "campaign_intro": "Campaign introduction",
+    "campaign_products": "Bundle products",
     "collection": "Collection",
     "collections_menu": "Collections dropdown menu",
     "customer_account_menu": "Customer account menu",
@@ -99,9 +116,14 @@
     "whatsapp_number": "WhatsApp number"
   },
   "info": {
-    "body_font": "Body text is set in Inter, bundled with the theme."
+    "body_font": "Body text is set in Inter, bundled with the theme.",
+    "campaign_end": "Use an exact ISO date with Pakistan's UTC offset, for example 2026-10-12T23:59:00+05:00. Match the scheduled Shopify discount end time."
   },
   "options": {
+    "discount": {
+      "fixed": "Fixed amount",
+      "percentage": "Percentage"
+    },
     "alignment": {
       "left": "Left",
       "center": "Center",

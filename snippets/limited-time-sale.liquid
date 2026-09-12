@@ -1,0 +1,495 @@
+{% doc %}
+  Renders the homepage limited-time bundle campaign.
+
+  @param {section} section - The section containing campaign presentation settings
+  @param {product[]} [products] - Products to render instead of the homepage product list
+  @param {string} [heading] - Optional campaign heading override
+  @param {string} [intro] - Optional campaign introduction override
+  @param {string} [eyebrow] - Optional campaign label override
+  @param {image} [fallback_image] - Image used when a bundle product has no image
+  @param {boolean} [collection_page] - Whether this is the dedicated collection template
+
+  @example
+  {% render 'limited-time-sale', section: section %}
+{% enddoc %}
+
+{%- liquid
+  assign campaign_products = products | default: section.settings.limited_sale_products
+  assign campaign_eyebrow = eyebrow | default: section.settings.limited_sale_eyebrow
+  assign campaign_heading = heading | default: section.settings.limited_sale_heading
+  assign campaign_intro = intro | default: section.settings.limited_sale_intro
+  assign campaign_fallback_image = fallback_image | default: section.settings.limited_sale_image
+  assign campaign_enabled = section.settings.limited_sale_enabled
+  assign campaign_live = false
+
+  if settings.limited_sale_active
+    if settings.limited_sale_end != blank
+      assign campaign_live = true
+    endif
+  endif
+
+  if collection_page
+    assign campaign_enabled = true
+  elsif campaign_live == false
+    assign campaign_enabled = false
+  endif
+
+  if campaign_eyebrow == blank
+    assign campaign_eyebrow = 'home.limited_sale_eyebrow' | t
+  endif
+  if campaign_heading == blank
+    assign campaign_heading = 'home.limited_sale_heading' | t
+  endif
+  if campaign_intro == blank
+    assign campaign_intro = 'home.limited_sale_intro' | t
+  endif
+-%}
+
+{%- if campaign_enabled and campaign_products != blank -%}
+  <section
+    class="home-limited-sale section{% if collection_page %} home-limited-sale--collection{% endif %}{% unless campaign_live %} is-expired{% endunless %}"
+    data-limited-sale
+    data-sale-end="{{ settings.limited_sale_end | escape }}"
+    data-sale-active="{{ campaign_live }}"
+  >
+    <div class="container">
+      <header class="home-limited-sale__header reveal">
+        <div class="home-limited-sale__copy">
+          <p class="eyebrow">{{ campaign_eyebrow | escape }}</p>
+          <h2>{{ campaign_heading | escape }}</h2>
+          <p>{{ campaign_intro | escape }}</p>
+        </div>
+
+        <div class="home-limited-sale__deadline" data-sale-deadline>
+          <p{% unless campaign_live %} hidden{% endunless %}>{{ 'home.limited_sale_ends' | t }}</p>
+          <div class="home-limited-sale__timer" data-sale-timer role="timer" aria-label="{{ 'home.limited_sale_countdown' | t }}"{% unless campaign_live %} hidden{% endunless %}>
+            <span><strong data-sale-days>00</strong><small>{{ 'home.limited_sale_days' | t }}</small></span>
+            <span><strong data-sale-hours>00</strong><small>{{ 'home.limited_sale_hours' | t }}</small></span>
+            <span><strong data-sale-minutes>00</strong><small>{{ 'home.limited_sale_minutes' | t }}</small></span>
+            <span><strong data-sale-seconds>00</strong><small>{{ 'home.limited_sale_seconds' | t }}</small></span>
+          </div>
+          <p class="home-limited-sale__exact-date"{% unless campaign_live %} hidden{% endunless %}><span>{{ 'home.limited_sale_ends_on' | t }}</span> <time data-sale-end-date></time></p>
+          <p class="home-limited-sale__expired" data-sale-expired{% if campaign_live %} hidden{% endif %}>{{ 'home.limited_sale_expired' | t }}</p>
+        </div>
+      </header>
+
+      <div class="home-limited-sale__grid">
+        {%- for campaign_product in campaign_products -%}
+          {%- liquid
+            assign campaign_image = campaign_product.featured_image | default: campaign_fallback_image
+          -%}
+          {%- if campaign_image != blank -%}
+            {%- liquid
+              assign campaign_variant = campaign_product.selected_or_first_available_variant
+              assign promotional_price = campaign_variant.price
+
+              if settings.limited_sale_discount_type == 'fixed'
+                assign fixed_discount = settings.limited_sale_discount_amount | times: 100
+                assign promotional_price = campaign_variant.price | minus: fixed_discount | at_least: 0
+              else
+                assign price_factor = 100 | minus: settings.limited_sale_discount_percentage
+                assign promotional_price = campaign_variant.price | times: price_factor | divided_by: 100
+              endif
+
+              assign campaign_saving = campaign_variant.price | minus: promotional_price
+              assign campaign_saving_money = campaign_saving | money
+            -%}
+            <article class="limited-bundle-card reveal">
+              <a class="limited-bundle-card__media" href="{{ campaign_product.url }}">
+                {{
+                  campaign_image
+                  | image_url: width: 1200
+                  | image_tag:
+                    loading: 'lazy',
+                    widths: '360, 540, 720, 960, 1200',
+                    sizes: '(max-width: 699px) 78vw, (max-width: 1099px) 44vw, 30vw',
+                    alt: campaign_image.alt | default: campaign_product.title
+                }}
+                <span class="limited-bundle-card__badge">
+                  {%- if settings.limited_sale_discount_type == 'fixed' -%}
+                    {{ 'home.limited_sale_save' | t: amount: campaign_saving_money }}
+                  {%- else -%}
+                    {{ 'home.limited_sale_percentage' | t: percent: settings.limited_sale_discount_percentage }}
+                  {%- endif -%}
+                </span>
+              </a>
+
+              <div class="limited-bundle-card__body">
+                <p class="limited-bundle-card__label">{{ 'home.limited_sale_bundle_label' | t }}</p>
+                <h3><a href="{{ campaign_product.url }}">{{ campaign_product.title | escape }}</a></h3>
+                {%- if campaign_product.metafields.custom.bundle_contents != blank -%}
+                  <div class="limited-bundle-card__contents">
+                    <strong>{{ 'home.limited_sale_includes' | t }}</strong>
+                    {{ campaign_product.metafields.custom.bundle_contents | metafield_tag }}
+                  </div>
+                {%- elsif campaign_product.description != blank -%}
+                  <div class="limited-bundle-card__contents">
+                    <strong>{{ 'home.limited_sale_includes' | t }}</strong>
+                    <p>{{ campaign_product.description | strip_html | truncatewords: 28 }}</p>
+                  </div>
+                {%- endif -%}
+
+                <div class="limited-bundle-card__pricing">
+                  <span><small>{{ 'home.limited_sale_regular' | t }}</small><s>{{ campaign_variant.price | money }}</s></span>
+                  <span><small>{{ 'home.limited_sale_offer_price' | t }}</small><strong>{{ promotional_price | money }}</strong></span>
+                </div>
+                <p class="limited-bundle-card__discount-note">{{ 'home.limited_sale_discount_note' | t }}</p>
+
+                {%- if campaign_product.variants.size == 1 -%}
+                  <form method="post" action="{{ routes.cart_add_url }}" data-card-add-form>
+                    <input type="hidden" name="id" value="{{ campaign_variant.id }}">
+                    <input type="hidden" name="quantity" value="1">
+                    <button
+                      class="button button--block"
+                      type="submit"
+                      data-card-add-button
+                      data-adding="{{ 'product.adding' | t }}"
+                      {% unless campaign_variant.available %}disabled{% endunless %}
+                    >
+                      <span data-card-add-label>
+                        {%- if campaign_variant.available -%}
+                          {{ 'product.add_to_cart' | t }}
+                        {%- else -%}
+                          {{ 'product.sold_out' | t }}
+                        {%- endif -%}
+                      </span>
+                    </button>
+                    <p class="product-card__error" data-card-add-error hidden role="alert">{{ 'product.add_error' | t }}</p>
+                  </form>
+                {%- else -%}
+                  <a class="button button--block" href="{{ campaign_product.url }}">{{ 'home.limited_sale_choose_options' | t }}</a>
+                {%- endif -%}
+              </div>
+            </article>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    </div>
+  </section>
+{%- endif -%}
+
+{% stylesheet %}
+  .home-limited-sale {
+    position: relative;
+    overflow: hidden;
+    border-block: 1px solid color-mix(in srgb, var(--copper) 32%, var(--line));
+    background: var(--nav);
+    color: var(--on-nav);
+  }
+  .home-limited-sale__header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: var(--stack-xl);
+    margin-bottom: var(--stack-xl);
+    padding-bottom: var(--stack-lg);
+    border-bottom: 1px solid color-mix(in srgb, var(--on-nav) 18%, transparent);
+  }
+  .home-limited-sale__copy {
+    max-width: 700px;
+  }
+  .home-limited-sale__copy .eyebrow {
+    margin-bottom: var(--stack-sm);
+  }
+  .home-limited-sale__copy h2 {
+    margin: 0;
+    color: var(--on-nav);
+  }
+  .home-limited-sale__copy > p:last-child {
+    max-width: 62ch;
+    margin-top: var(--stack-sm);
+    color: color-mix(in srgb, var(--on-nav) 72%, transparent);
+  }
+  .home-limited-sale__deadline {
+    min-width: 332px;
+  }
+  .home-limited-sale__deadline > p:first-child {
+    margin-bottom: var(--stack-sm);
+    color: var(--copper);
+    font-size: var(--fs-label-sm);
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .home-limited-sale__timer {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(56px, 1fr));
+    gap: 8px;
+  }
+  .home-limited-sale__timer > span {
+    display: grid;
+    justify-items: center;
+    min-width: 0;
+    padding: 10px 8px;
+    border: 1px solid color-mix(in srgb, var(--on-nav) 20%, transparent);
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--on-nav) 5%, transparent);
+  }
+  .home-limited-sale__timer strong {
+    color: var(--on-nav);
+    font-family: var(--serif);
+    font-size: var(--fs-h3);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .home-limited-sale__timer small {
+    margin-top: 5px;
+    color: color-mix(in srgb, var(--on-nav) 62%, transparent);
+    font-size: 0.7rem;
+  }
+  .home-limited-sale__expired {
+    color: var(--copper);
+    font-family: var(--serif);
+    font-size: var(--fs-h3);
+  }
+  .home-limited-sale__exact-date {
+    margin-top: 8px;
+    color: color-mix(in srgb, var(--on-nav) 68%, transparent);
+    font-size: var(--fs-label-sm);
+    text-align: right;
+  }
+  .home-limited-sale__exact-date span {
+    color: var(--on-nav);
+    font-weight: 600;
+  }
+  .home-limited-sale__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--gutter);
+  }
+  .limited-bundle-card {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--on-nav) 17%, transparent);
+    border-radius: var(--radius-lg);
+    background: var(--background);
+    color: var(--ink);
+  }
+  .limited-bundle-card__media {
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: var(--surface-2);
+  }
+  .limited-bundle-card__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.35s var(--ease);
+  }
+  .limited-bundle-card:hover .limited-bundle-card__media img {
+    transform: scale(1.025);
+  }
+  .limited-bundle-card__badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 7px 10px;
+    border-radius: var(--radius);
+    background: var(--copper);
+    color: var(--on-accent);
+    font-size: var(--fs-label-sm);
+    font-weight: 700;
+  }
+  .limited-bundle-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--stack-sm);
+    padding: var(--stack-lg);
+  }
+  .limited-bundle-card__label {
+    color: var(--copper-dark);
+    font-size: var(--fs-label-sm);
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .limited-bundle-card h3 {
+    margin: 0;
+    font-size: var(--fs-h3);
+    line-height: 1.12;
+  }
+  .limited-bundle-card h3 a:hover {
+    color: var(--copper-dark);
+  }
+  .limited-bundle-card__contents {
+    color: var(--muted);
+    font-size: var(--fs-small);
+  }
+  .limited-bundle-card__contents > strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--ink);
+    font-size: var(--fs-label-sm);
+  }
+  .limited-bundle-card__contents ul {
+    padding-left: 1.1rem;
+    list-style: disc;
+  }
+  .limited-bundle-card__contents li + li {
+    margin-top: 3px;
+  }
+  .limited-bundle-card__pricing {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: var(--stack-sm) var(--stack-lg);
+    margin-top: auto;
+    padding-top: var(--stack-sm);
+  }
+  .limited-bundle-card__pricing span {
+    display: grid;
+    gap: 2px;
+  }
+  .limited-bundle-card__pricing small {
+    color: var(--muted);
+    font-size: var(--fs-label-sm);
+  }
+  .limited-bundle-card__pricing s {
+    color: var(--muted);
+  }
+  .limited-bundle-card__pricing strong {
+    color: var(--copper-dark);
+    font-family: var(--serif);
+    font-size: var(--fs-h3);
+  }
+  .limited-bundle-card__discount-note {
+    color: var(--muted);
+    font-size: var(--fs-label-sm);
+  }
+  .limited-bundle-card .button {
+    margin-top: var(--stack-sm);
+  }
+  .home-limited-sale.is-expired .limited-bundle-card form,
+  .home-limited-sale.is-expired .limited-bundle-card .button,
+  .home-limited-sale.is-expired .limited-bundle-card__badge,
+  .home-limited-sale.is-expired .limited-bundle-card__pricing,
+  .home-limited-sale.is-expired .limited-bundle-card__discount-note,
+  .home-limited-sale.is-expired .home-limited-sale__exact-date {
+    display: none;
+  }
+  @media (max-width: 899px) {
+    .home-limited-sale__header {
+      grid-template-columns: 1fr;
+    }
+    .home-limited-sale__deadline {
+      min-width: 0;
+      max-width: 420px;
+    }
+    .home-limited-sale__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 619px) {
+    .home-limited-sale__grid {
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(78vw, 1fr);
+      grid-template-columns: none;
+      margin-right: calc(var(--page-margin) * -1);
+      padding-right: var(--page-margin);
+      overflow-x: auto;
+      overscroll-behavior-inline: contain;
+      scroll-snap-type: inline mandatory;
+      scrollbar-width: none;
+    }
+    .home-limited-sale__grid::-webkit-scrollbar {
+      display: none;
+    }
+    .limited-bundle-card {
+      scroll-snap-align: start;
+    }
+    .home-limited-sale__timer {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .home-limited-sale__timer > span {
+      padding-inline: 4px;
+    }
+    .limited-bundle-card__body {
+      padding: var(--stack-md);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .limited-bundle-card__media img {
+      transition: none;
+    }
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  (() => {
+    const initializeCampaign = (campaign) => {
+      if (campaign.dataset.countdownInitialized === 'true') return;
+      campaign.dataset.countdownInitialized = 'true';
+
+      if (campaign.dataset.saleActive !== 'true') return;
+
+      const deadlineElement = campaign.querySelector('[data-sale-deadline]');
+      const timerElement = campaign.querySelector('[data-sale-timer]');
+      const expiredElement = campaign.querySelector('[data-sale-expired]');
+      const exactDateElement = campaign.querySelector('[data-sale-end-date]');
+      const deadline = Date.parse(campaign.dataset.saleEnd || '');
+
+      if (!Number.isFinite(deadline)) {
+        if (deadlineElement) deadlineElement.hidden = true;
+        return;
+      }
+
+      if (exactDateElement) {
+        exactDateElement.dateTime = new Date(deadline).toISOString();
+        exactDateElement.textContent = new Intl.DateTimeFormat('en-PK', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          timeZone: 'Asia/Karachi',
+          timeZoneName: 'short',
+        }).format(deadline);
+      }
+
+      const outputs = {
+        days: campaign.querySelector('[data-sale-days]'),
+        hours: campaign.querySelector('[data-sale-hours]'),
+        minutes: campaign.querySelector('[data-sale-minutes]'),
+        seconds: campaign.querySelector('[data-sale-seconds]'),
+      };
+
+      let interval;
+      const update = () => {
+        const remaining = deadline - Date.now();
+        if (remaining <= 0) {
+          campaign.classList.add('is-expired');
+          if (timerElement) timerElement.hidden = true;
+          if (expiredElement) expiredElement.hidden = false;
+          window.clearInterval(interval);
+          return;
+        }
+
+        const totalSeconds = Math.floor(remaining / 1000);
+        const values = {
+          days: Math.floor(totalSeconds / 86400),
+          hours: Math.floor((totalSeconds % 86400) / 3600),
+          minutes: Math.floor((totalSeconds % 3600) / 60),
+          seconds: totalSeconds % 60,
+        };
+
+        Object.entries(values).forEach(([key, value]) => {
+          if (outputs[key]) outputs[key].textContent = String(value).padStart(2, '0');
+        });
+      };
+
+      update();
+      if (campaign.classList.contains('is-expired')) return;
+      interval = window.setInterval(update, 1000);
+    };
+
+    const initializeAll = (root = document) => {
+      root.querySelectorAll('[data-limited-sale]').forEach(initializeCampaign);
+    };
+
+    initializeAll();
+    document.addEventListener('shopify:section:load', (event) => initializeAll(event.target));
+  })();
+{% endjavascript %}

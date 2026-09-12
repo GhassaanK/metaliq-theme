@@ -1,0 +1,11 @@
+{
+  "sections": {
+    "main": {
+      "type": "limited-offers-collection",
+      "settings": {}
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

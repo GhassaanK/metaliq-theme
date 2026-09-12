@@ -186,6 +186,51 @@
     ]
   },
   {
+    "name": "t:general.limited_sale",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "limited_sale_active",
+        "label": "t:labels.campaign_active",
+        "default": false
+      },
+      {
+        "type": "text",
+        "id": "limited_sale_end",
+        "label": "t:labels.campaign_end",
+        "info": "t:info.campaign_end"
+      },
+      {
+        "type": "select",
+        "id": "limited_sale_discount_type",
+        "label": "t:labels.campaign_discount_type",
+        "options": [
+          { "value": "percentage", "label": "t:options.discount.percentage" },
+          { "value": "fixed", "label": "t:options.discount.fixed" }
+        ],
+        "default": "percentage"
+      },
+      {
+        "type": "range",
+        "id": "limited_sale_discount_percentage",
+        "label": "t:labels.campaign_discount_percentage",
+        "min": 1,
+        "max": 50,
+        "step": 1,
+        "unit": "%",
+        "default": 15,
+        "visible_if": "{{ settings.limited_sale_discount_type == 'percentage' }}"
+      },
+      {
+        "type": "number",
+        "id": "limited_sale_discount_amount",
+        "label": "t:labels.campaign_discount_amount",
+        "default": 500,
+        "visible_if": "{{ settings.limited_sale_discount_type == 'fixed' }}"
+      }
+    ]
+  },
+  {
     "name": "Commerce compliance",
     "settings": [
       {
