@@ -11,7 +11,25 @@
   "sections": {
     "main": {
       "type": "product",
-      "settings": {}
+      "blocks": {
+        "judge_me_reviews_review_widget_6Gcdkg": {
+          "type": "shopify://apps/judge-me-reviews/blocks/review_widget/61ccd3b1-a9f2-4160-9fe9-4fec8413e5d8",
+          "settings": {
+            "review_data": "sample_data",
+            "max_width": 1200,
+            "show_shop_reviews": false,
+            "empty_state": "empty_widget"
+          }
+        }
+      },
+      "block_order": [
+        "judge_me_reviews_review_widget_6Gcdkg"
+      ],
+      "settings": {
+        "materials_text": "<p>Powder-coated mild steel with a matte black finish.</p>",
+        "installation_text": "<p>Mounting requirements depend on the artwork dimensions and wall construction. Review the product description and contact us before ordering if you need mounting guidance.</p>",
+        "shipping_text": "<p>Each piece is made to order and packed for delivery. See the estimates below and review the Shipping and Refund Policies before ordering.</p>"
+      }
     }
   },
   "order": [
