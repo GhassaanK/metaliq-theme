@@ -28,6 +28,10 @@ Under **Online Store > Pages**, create and publish:
 | --- | --- | --- |
 | About Us | `about` | `about` |
 | Ordering & Payments | `ordering-and-payments` | `ordering-and-payments` |
+| Custom Orders | `custom-orders` | `default page` |
+| Product Care & Installation | `product-care-and-installation` | `default page` |
+
+Use the reviewed copy in `docs/shopify-policy-copy.md` for the two informational pages. The footer detects these pages and links them only after they exist, preventing broken routes.
 
 ## 3. Confirm legal and store identity
 
@@ -43,7 +47,7 @@ The full address must match the submitted business documents character for chara
 
 ## 4. Payments and checkout
 
-Until Rapid Gateway is approved, leave **Theme settings > Commerce compliance > Online payments are active** disabled. The storefront then states that COD is active and online payments are onboarding.
+Keep customer-facing payment copy method-neutral: available payment methods are shown at checkout. Do not publish temporary gateway-onboarding status. Confirm that Cash on Delivery is enabled only for the orders and locations the business actually supports.
 
 Confirm the manual Cash on Delivery method under **Settings > Payments** has clear customer instructions. After Rapid is activated:
 
@@ -51,7 +55,7 @@ Confirm the manual Cash on Delivery method under **Settings > Payments** has cle
 2. Complete one low-value successful payment and verify the order is marked paid.
 3. Test declined and abandoned payments; neither should enter production.
 4. Refund the successful test and verify return to the original method.
-5. Enable **Online payments are active** and keep the provider name as `Rapid Gateway`.
+5. Confirm that checkout accurately displays Rapid only after it is active and tested. The storefront policy copy does not need to expose implementation status.
 
 Do not add a payment-receipt upload to checkout. Basic Shopify does not permit arbitrary checkout form customisation of that kind, and collecting a receipt is unnecessary for a connected gateway. Use Shopify's recorded transaction status. Bespoke customers should receive a secure draft-order invoice/payment link only after quote and design approval.
 
@@ -61,7 +65,7 @@ Do not add a payment-receipt upload to checkout. Basic Shopify does not permit a
 - Under **Settings > Shipping and delivery**, configure a Pakistan zone and the actual rates customers will pay.
 - Test one Karachi address and one address elsewhere in Pakistan.
 - Confirm shipping charges are visible before order submission.
-- Keep storefront estimates at 3-4 working days for Karachi and 6-8 working days elsewhere in Pakistan, measured from confirmation.
+- Keep storefront estimates at 2 to 3 working days for Karachi and 5 to 7 working days elsewhere in Pakistan after order confirmation. These estimates include normal made-to-order production and courier delivery; working days exclude Sundays and public holidays in Pakistan.
 
 ## 6. Custom requests
 

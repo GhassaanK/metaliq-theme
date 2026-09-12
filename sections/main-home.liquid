@@ -455,7 +455,7 @@
     </header>
 
     <div class="home-faq__list" data-faq-accordion>
-      {%- for i in (1..8) -%}
+      {%- for i in (1..10) -%}
         {%- liquid
           assign question_key = 'home.faq_' | append: i | append: '_question'
           assign answer_key = 'home.faq_' | append: i | append: '_answer'

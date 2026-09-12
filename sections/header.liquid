@@ -23,7 +23,7 @@
       {% render 'icon', name: 'arrow-right' %}
     </button>
     <div class="announcement__viewport">
-      {%- for i in (1..3) -%}
+      {%- for i in (1..4) -%}
         {%- liquid
           assign message_key = 'announcement_' | append: i
           assign icon_name = 'sparkle'
@@ -152,8 +152,9 @@
       "label": "t:labels.announcement",
       "default": "Free delivery on orders over PKR 9,999"
     },
-    { "type": "text", "id": "announcement_2", "label": "Promotion 2", "default": "Karachi delivery in 3-4 working days" },
-    { "type": "text", "id": "announcement_3", "label": "Promotion 3", "default": "Custom metal designs, made for your space" },
+    { "type": "text", "id": "announcement_2", "label": "Promotion 2", "default": "Karachi delivery in 2 to 3 working days" },
+    { "type": "text", "id": "announcement_3", "label": "Promotion 3", "default": "Nationwide delivery in 5 to 7 working days" },
+    { "type": "text", "id": "announcement_4", "label": "Promotion 4", "default": "Custom metal designs, made for your space" },
     { "type": "link_list", "id": "collections_menu", "label": "t:labels.collections_menu" },
     { "type": "paragraph", "content": "MetaliQ brand assets are loaded from the theme." }
   ],

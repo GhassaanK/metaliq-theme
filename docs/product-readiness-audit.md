@@ -20,7 +20,7 @@ Confirm that each product description contains accurate, product-specific inform
 - Suitable wall types and installation method
 - Cleaning and care guidance
 - Made-to-order disclosure
-- Estimated arrival: 3-4 working days in Karachi; 6-8 working days elsewhere in Pakistan after confirmation
+- Estimated arrival: 2 to 3 working days in Karachi; 5 to 7 working days elsewhere in Pakistan after order confirmation
 - Link to the Shipping Policy
 
 Do not publish generic specifications that are not true for the individual item. Confirm that the two images show the actual design and that at least one image makes scale clear. Add additional detail and installation images where available.

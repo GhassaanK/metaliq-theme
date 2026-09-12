@@ -4,7 +4,7 @@ These drafts are written for the current MetaliQ Art storefront and should be re
 
 ## Privacy policy
 
-**Last updated: 4 September 2026**
+**Last updated: 9 September 2026**
 
 This Privacy Policy explains how Steed Art, trading as MetaliQ Art ("MetaliQ Art", "we", "us", or "our"), collects, uses, and shares personal information when you visit, use, make a purchase from, or otherwise communicate with our online store (the "Services"). Steed Art is the controller of personal information described in this policy. Our store is powered by Shopify.
 
@@ -38,7 +38,7 @@ We may use personal information to:
 
 ### How we share information
 
-We may share personal information with service providers that help us operate the store, including Shopify, payment processors (including Rapid Gateway when activated), delivery and logistics providers, file-upload and form providers (including Hulk Contact Form Builder when activated), hosting and technology providers, analytics providers, marketing providers, professional advisers, and customer-support services.
+We may share personal information with service providers that help us operate the store, including Shopify, payment providers offered at checkout, delivery and logistics providers, hosting and technology providers, analytics and advertising providers, marketing providers, professional advisers, and customer-support services. If a form or file-upload service is enabled, information submitted through it may also be processed by that provider.
 
 We may also disclose information when required by law, to protect our rights or the rights of others, in connection with a business transaction, or with your direction or consent. We do not sell your personal information for money.
 
@@ -89,9 +89,37 @@ Plot No 635, Gali No 15, Sector-F, Punjab Road, Manzoor Colony, Karachi, Sindh, 
 
 ---
 
+## Custom orders page
+
+**Last updated: 9 September 2026**
+
+Custom work includes bespoke artwork, personalized wording or names, customer-supplied references, and products made to customer-supplied measurements or dimensions not offered as a catalog variant.
+
+Start the request through MetaliQ Art's official WhatsApp contact and provide the design brief, intended dimensions, delivery location, and any reference material. MetaliQ will review the request and confirm the design, measurements, matte black powder-coated finish, quotation, payment requirement, and estimated production and delivery timeline in writing before production begins. Payment or advance requirements vary by project; no fixed percentage is promised.
+
+Review every proof carefully. Approval confirms the composition, spelling, wording, and measurements shown. Changes requested after approval may affect the price and timeline and may not be possible after cutting or finishing begins.
+
+Custom orders may be cancelled within 24 hours of being placed. After 24 hours, cancellation is not guaranteed because design or production work may have begun. Custom, personalized, bespoke, and custom-sized products are not eligible for change-of-mind returns. Claims remain available where the delivered product is damaged, defective, incorrect, incomplete, or materially different from the approved specification; report reasonably discoverable issues within 3 calendar days of delivery.
+
+Customers are responsible for the accuracy of supplied measurements, spellings, and instructions and for having the necessary rights to any names, images, artwork, logos, characters, text, or other submitted content. MetaliQ may refuse work it reasonably believes is unlawful or infringes another person's rights.
+
+## Product care & installation page
+
+**Last updated: 9 September 2026**
+
+MetaliQ Art products are precision-cut from mild steel and finished in matte black powder coating. Treat products as suitable for indoor use unless the individual product page expressly states otherwise. Product images may be digital mockups or photographs and may not show exact scale; screens and lighting can also affect the appearance of color and finish.
+
+Remove dust with a clean, soft, dry cloth. Avoid abrasive pads, harsh chemicals, and prolonged moisture. Handle the artwork by stronger edges and avoid bending delicate cut details.
+
+Installation requirements vary by the artwork's size and weight and by the wall construction. Check that the wall and installation method are suitable, use anchors or hardware appropriate for that wall and product, and use a professional installer whenever necessary. Mounting hardware is included only where the individual product listing expressly confirms it.
+
+MetaliQ does not advertise a general extended warranty. Any product-specific warranty applies only when expressly stated on the relevant product page or in a written order agreement. This does not limit consumer rights that cannot lawfully be excluded.
+
+---
+
 ## Terms and conditions
 
-**Last updated: 4 September 2026**
+**Last updated: 9 September 2026**
 
 These Terms and Conditions ("Terms") govern your use of the MetaliQ Art online store and your purchase of products or services from us. Our store is powered by Shopify. By accessing the store or placing an order, you agree to these Terms and to the policies referenced in them.
 
@@ -141,7 +169,7 @@ You may not reproduce, manufacture, distribute, resell, or commercially exploit 
 
 ### 9. Delivery
 
-Delivery estimates are estimates rather than guarantees unless we expressly agree otherwise. Made-to-order catalog pieces are generally expected to arrive within 3-4 working days in Karachi and 6-8 working days elsewhere in Pakistan, measured from order and payment confirmation. Custom work follows the timeline confirmed in writing before payment. Delays can occur because of address issues, carrier operations, weather, public holidays, security conditions, or events outside our reasonable control.
+Delivery estimates are estimates rather than guaranteed deadlines unless we expressly agree otherwise. Made-to-order catalog pieces are generally expected to arrive within 2 to 3 working days in Karachi and 5 to 7 working days elsewhere in Pakistan after order confirmation. For prepaid orders, payment must also be confirmed before processing begins. These estimates include normal production, finishing, quality checking, packaging, dispatch, and courier delivery. Working days exclude Sundays and public holidays in Pakistan. Custom work follows the timeline confirmed separately before production. Delays can occur because of address issues, courier operations, weather, public holidays, security conditions, remote locations, or events outside our reasonable control.
 
 Risk of loss or damage transfers as required by applicable law and the agreed delivery arrangement. Inspect the package promptly and report visible damage or missing items as soon as reasonably possible, with photographs of the product and packaging.
 
@@ -151,7 +179,7 @@ You are responsible for confirming that the wall, mounting hardware, and install
 
 ### 11. Cancellations, returns, and refunds
 
-Order cancellations, returns, replacements, and refunds are handled under the return or refund policy displayed on the store and any mandatory rights under applicable law. Contact us before returning an item. Products returned without authorisation may be delayed or refused where permitted by law.
+Orders may be cancelled within 24 hours of being placed. After 24 hours, cancellation is not guaranteed because made-to-order production may already have begun. Eligible standard catalog products may be returned within 7 business days of delivery subject to the return conditions in our Refund Policy. Custom, personalized, bespoke, and custom-sized products are not eligible for change-of-mind returns, but claims remain available where a product is damaged, defective, incorrect, incomplete, or materially different from the approved specification. Report reasonably discoverable damage or defects within 3 calendar days of delivery. Contact us before returning an item.
 
 ### 12. Third-party services and links
 
@@ -192,29 +220,39 @@ Plot No 635, Gali No 15, Sector-F, Punjab Road, Manzoor Colony, Karachi, Sindh, 
 
 ## Refund policy
 
-**Last updated: 4 September 2026**
+**Last updated: 9 September 2026**
 
 Every MetaliQ Art piece is made to order. Please review the product, dimensions, finish, delivery details, and any approved design proof carefully before confirming an order.
 
 ### Cancellations
 
-Contact us immediately if you need to cancel. A catalog order may be cancelled only before production begins. Once material has been allocated, cutting has started, or finishing is underway, the order cannot be cancelled for change of mind.
+An order may be cancelled within 24 hours of being placed. Contact us with the order number or relevant order details. A cancellation request is accepted only after MetaliQ confirms it. After 24 hours, cancellation is not guaranteed because made-to-order production may already have begun, material may have been allocated, or the order may have been dispatched.
 
-For bespoke work, the design proof, dimensions, matte black powder-coated finish, price, payment schedule, and estimated timeline are confirmed before payment. An advance becomes non-refundable once the customer approves the design or production begins. Changes requested after approval may require a revised quote and timeline.
+For bespoke work, the design proof, dimensions, matte black powder-coated finish, price, payment requirement, and estimated timeline are confirmed before payment. Any advance requirement varies by project and is disclosed before payment. After the cancellation period ends and approved work enters production, an advance may become non-refundable where it has been applied to design, material, cutting, or production costs. Changes requested after approval may require a revised quote and timeline.
+
+### Eligible standard catalog returns
+
+Eligible standard catalog products may be returned within 7 business days of delivery. The return period begins on the delivery date. Contact MetaliQ before sending any return and wait for authorization and return instructions.
+
+A change-of-mind return is eligible only if the product is unused, uninstalled, undamaged, in its original condition, complete with all supplied components or accessories, securely packed, and accompanied by proof of purchase. The product must not be personalized, custom-sized, bespoke, or manufactured using customer-provided measurements.
+
+For an approved change-of-mind return, the customer pays return shipping and is responsible for safe packaging. Original delivery charges are not refundable for a change-of-mind return. MetaliQ does not offer automatic change-of-mind exchanges; an eligible item should be returned and the replacement product ordered separately.
+
+Custom, personalized, bespoke, and custom-sized products are not eligible for change-of-mind returns. This does not prevent a claim where a product arrives damaged, defective, incorrect, incomplete, or materially different from the approved design or confirmed specification.
 
 ### Damage, defects, and incorrect items
 
-Inspect the artwork and packaging promptly after delivery. Damage, a manufacturing defect, or an incorrect item must be reported within three calendar days of delivery by emailing hello@metaliq.art or calling 0317 2920243. Include the order number and clear photographs of the artwork, outer packaging, inner packaging, and shipping label. Keep the item and all packaging until we complete our review.
+Inspect the artwork and packaging promptly after delivery. Damage, a manufacturing defect, a missing component, or an incorrect item should be reported within 3 calendar days of delivery by emailing hello@metaliq.art or calling 0317 2920243. Include the order number and, where reasonably available, photographs of the complete artwork, affected area, outer packaging, inner packaging, and courier label. Keep the item and all packaging until we complete our review. An unboxing video may help but is not the sole mandatory evidence.
 
-If the claim is approved, we will offer an appropriate repair, replacement, or refund. Do not return an item without written instructions from us.
+If the claim is approved, we will offer an appropriate repair, replacement, affected-component replacement, partial refund, or full refund. Where a return is required because of an approved MetaliQ error, defect, transit damage, incorrect product, or missing component, MetaliQ will arrange or reimburse reasonable return shipping costs. Do not return an item without written instructions from us.
 
 ### Items not eligible for change-of-mind return
 
-Made-to-order, custom-size, personalised, and bespoke products are not returnable for change of mind, incorrect customer-supplied measurements, minor colour or finish differences caused by screen and lighting conditions, or damage caused by incorrect installation, misuse, or improper care. This does not limit rights that cannot lawfully be excluded.
+Custom-size, personalized, and bespoke products are not returnable for change of mind, incorrect customer-supplied measurements, minor colour or finish differences caused by screen and lighting conditions, or damage caused by incorrect installation, misuse, or improper care. This does not limit rights that cannot lawfully be excluded or valid claims for damage, defects, incorrect or incomplete products, or material differences from an approved specification.
 
 ### Refund method and timing
 
-Approved online-payment refunds are returned to the original payment method. For a cash-on-delivery order, we will agree a reasonable refund method with the customer. Processing by banks or payment providers can take additional time after we issue a refund. Shipping charges are refunded only where required by law or where the approved claim results from our error.
+Approved refunds will generally be initiated within 7 business days after the return or claim is approved. Where possible, prepaid orders are refunded through the original payment method. Cash-on-delivery refunds may be issued through a mutually agreed bank transfer, mobile wallet, or another agreed method. Banks and payment providers may take additional time to credit funds. Original shipping charges are non-refundable for change-of-mind returns; applicable shipping charges may be refunded where an approved claim results from MetaliQ's error, defect, or transit damage.
 
 ### Contact
 
@@ -227,21 +265,21 @@ Plot No 635, Gali No 15, Sector-F, Punjab Road, Manzoor Colony, Karachi, Sindh, 
 
 ## Shipping policy
 
-**Last updated: 4 September 2026**
+**Last updated: 9 September 2026**
 
 MetaliQ Art ships made-to-order metal artwork throughout Pakistan. We do not currently advertise international shipping.
 
 ### Delivery estimates
 
-- Karachi: estimated arrival within 3-4 working days after order and payment confirmation.
-- Rest of Pakistan: estimated arrival within 6-8 working days after order and payment confirmation.
-- Bespoke work: the estimated production and delivery timeline is confirmed in writing with the quote before payment.
+- Karachi: estimated arrival within 2 to 3 working days after order confirmation.
+- Rest of Pakistan: estimated arrival within 5 to 7 working days after order confirmation.
+- Bespoke work: the estimated production and delivery timeline is confirmed separately before production.
 
-These estimates include normal production and courier time for catalog orders. Working days exclude Sundays and public holidays. Estimates are not guarantees; weather, public holidays, security conditions, remote delivery locations, carrier interruptions, or other events outside our reasonable control can cause delays.
+These estimates include normal made-to-order production, finishing, quality checking, packaging, dispatch, and courier delivery for catalog orders. For prepaid orders, payment must also be confirmed before processing begins. Working days exclude Sundays and public holidays in Pakistan. Estimates are not guarantees; weather, public holidays, security conditions, remote delivery locations, courier interruptions, or other events outside our reasonable control can cause delays.
 
 ### Shipping charges
 
-Available shipping charges are calculated and displayed during Shopify checkout before the order is placed. Custom project delivery charges are included in or stated alongside the approved quote. Customers can review the total before paying or confirming a cash-on-delivery order.
+Orders above PKR 9,999 qualify for free standard delivery within Pakistan. For orders below PKR 9,999, any applicable shipping charge is shown before the order is completed. Custom project delivery charges are included in or stated alongside the approved quote where special handling, size, location, or delivery arrangements are required.
 
 ### Order processing and dispatch
 
@@ -254,6 +292,10 @@ The customer is responsible for providing a complete address, accessible deliver
 ### Inspecting delivery
 
 Inspect the package promptly. If artwork arrives damaged, defective, or incorrect, notify us within three calendar days and follow the evidence requirements in our Refund Policy. Keep the product and packaging while the claim is reviewed.
+
+### Open parcels and international delivery
+
+Do not assume that open-parcel inspection is available. It depends on the courier and delivery service and is available only when MetaliQ expressly confirms it for the order. We do not currently offer standard international checkout or international delivery; customers outside Pakistan may contact us to ask whether a special arrangement is possible.
 
 ### Contact
 

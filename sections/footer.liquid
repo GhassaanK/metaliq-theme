@@ -57,6 +57,7 @@
             assign heading_key = 'heading_' | append: i
             assign menu = section.settings[menu_key]
             assign heading = section.settings[heading_key]
+            assign menu_urls = menu.links | map: 'url' | join: ','
           -%}
           <div class="footer-col">
             <h2>{{ heading }}</h2>
@@ -79,6 +80,22 @@
                   -%}
                   <a href="{{ menu_link_url }}"{% if menu_link_is_custom %} data-whatsapp-cta target="_blank" rel="noopener"{% endif %}>{{ link.title }}</a>
                 {%- endfor -%}
+                {%- if i == 2 -%}
+                  {%- unless menu_urls contains '/pages/ordering-and-payments' -%}
+                    <a href="/pages/ordering-and-payments">{{ 'general.ordering_payments' | t }}</a>
+                  {%- endunless -%}
+                  {%- if pages['custom-orders'] != blank -%}
+                    {%- unless menu_urls contains '/pages/custom-orders' -%}<a href="{{ pages['custom-orders'].url }}">{{ 'general.custom_orders' | t }}</a>{%- endunless -%}
+                  {%- endif -%}
+                  {%- if pages['product-care-and-installation'] != blank -%}
+                    {%- unless menu_urls contains '/pages/product-care-and-installation' -%}<a href="{{ pages['product-care-and-installation'].url }}">{{ 'general.product_care' | t }}</a>{%- endunless -%}
+                  {%- endif -%}
+                {%- elsif i == 3 -%}
+                  {%- unless menu_urls contains '/policies/refund-policy' -%}<a href="/policies/refund-policy">{{ 'general.refund_policy' | t }}</a>{%- endunless -%}
+                  {%- unless menu_urls contains '/policies/privacy-policy' -%}<a href="/policies/privacy-policy">{{ 'general.privacy_policy' | t }}</a>{%- endunless -%}
+                  {%- unless menu_urls contains '/policies/terms-of-service' -%}<a href="/policies/terms-of-service">{{ 'general.terms_conditions' | t }}</a>{%- endunless -%}
+                  {%- unless menu_urls contains '/policies/shipping-policy' -%}<a href="/policies/shipping-policy">{{ 'general.shipping_policy' | t }}</a>{%- endunless -%}
+                {%- endif -%}
               {%- elsif i == 1 -%}
                 <a href="{{ routes.all_products_collection_url }}">{{ 'general.shop_all' | t }}</a>
                 <a href="{{ routes.collections_url }}">{{ 'collections.title' | t }}</a>
@@ -88,6 +105,8 @@
                 <a href="/pages/about">{{ 'general.about_us' | t }}</a>
                 <a href="{{ pages.contact.url | default: routes.root_url }}">{{ 'general.contact' | t }}</a>
                 <a href="/pages/ordering-and-payments">{{ 'general.ordering_payments' | t }}</a>
+                {%- if pages['custom-orders'] != blank -%}<a href="{{ pages['custom-orders'].url }}">{{ 'general.custom_orders' | t }}</a>{%- endif -%}
+                {%- if pages['product-care-and-installation'] != blank -%}<a href="{{ pages['product-care-and-installation'].url }}">{{ 'general.product_care' | t }}</a>{%- endif -%}
                 <a href="{{ custom_link }}" data-whatsapp-cta target="_blank" rel="noopener">{{ 'general.footer_custom_cta' | t }}</a>
               {%- else -%}
                 <a href="/policies/refund-policy">{{ 'general.refund_policy' | t }}</a>
