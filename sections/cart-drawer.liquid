@@ -33,12 +33,14 @@
             {%- liquid
               assign group = item.properties['_size_group']
               assign extra_price = 0
+              assign original_extra_price = 0
               assign linked_key = blank
               assign linked_ratio = 0
               if group != blank
                 for other in cart.items
                   if other.properties['_surcharge_for'] == group
                     assign extra_price = extra_price | plus: other.final_line_price
+                    assign original_extra_price = original_extra_price | plus: other.original_line_price
                     assign linked_key = other.key
                     if item.quantity > 0
                       assign linked_ratio = other.quantity | divided_by: item.quantity
@@ -47,6 +49,7 @@
                 endfor
               endif
               assign line_total = item.final_line_price | plus: extra_price
+              assign original_line_total = item.original_line_price | plus: original_extra_price
               assign decreased_quantity = item.quantity | minus: 1 | at_least: 1
               assign increased_quantity = item.quantity | plus: 1
             -%}
@@ -74,7 +77,17 @@
                 {%- if item.product.description != blank -%}
                   <div class="cart-drawer__description">{{ item.product.description | strip_html | truncatewords: 24 }}</div>
                 {%- endif -%}
-                <strong>{{ line_total | money }}</strong>
+                <div class="cart-drawer__price{% if original_line_total > line_total %} cart-drawer__price--discounted{% endif %}">
+                  {%- if original_line_total > line_total -%}<s>{{ original_line_total | money }}</s>{%- endif -%}
+                  <strong>{{ line_total | money }}</strong>
+                </div>
+                {%- if item.discount_allocations.size > 0 -%}
+                  <ul class="cart-drawer__discounts" aria-label="{{ 'cart.discounts' | t }}">
+                    {%- for allocation in item.discount_allocations -%}
+                      <li>{{ allocation.discount_application.title }}: -{{ allocation.amount | money }}</li>
+                    {%- endfor -%}
+                  </ul>
+                {%- endif -%}
 
                 <div class="cart-drawer__quantity" aria-label="{{ 'general.quantity' | t }}">
                   <button
@@ -117,6 +130,13 @@
       </div>
 
       <footer class="cart-drawer__footer">
+        {%- if cart.discount_applications.size > 0 -%}
+          <ul class="cart-drawer__summary-discounts" aria-label="{{ 'cart.discounts' | t }}">
+            {%- for discount_application in cart.discount_applications -%}
+              <li><span>{{ discount_application.title }}</span><strong>-{{ discount_application.total_allocated_amount | money }}</strong></li>
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
         <div class="cart-drawer__subtotal">
           <span>{{ 'cart.subtotal' | t }}</span>
           <strong>{{ cart.total_price | money }}</strong>
@@ -203,7 +223,10 @@
   .cart-drawer__item-info > p { color: var(--copper); font-size: 0.62rem; text-transform: uppercase; }
   .cart-drawer__item-info h3 { margin: 4px 0 8px; font-size: 1.05rem; line-height: 1.2; overflow-wrap: anywhere; }
   .cart-drawer__description { color: var(--muted); font-size: 0.75rem; line-height: 1.5; }
-  .cart-drawer__item-info > strong { margin-top: 10px; font-size: 0.86rem; }
+  .cart-drawer__price { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; font-size: 0.86rem; }
+  .cart-drawer__price s { color: var(--muted); }
+  .cart-drawer__price--discounted strong { color: var(--copper); }
+  .cart-drawer__discounts { display: grid; gap: 3px; margin-top: 6px; color: var(--copper); font-size: 0.7rem; }
   .cart-drawer__quantity {
     display: grid;
     grid-template-columns: 32px 38px 32px;
@@ -231,6 +254,8 @@
   .cart-drawer__remove .icon { width: 16px; height: 16px; }
   .cart-drawer__remove:hover { color: var(--copper); }
   .cart-drawer__footer { padding: 22px 26px 26px; border-top: 1px solid var(--line); background: var(--surface); }
+  .cart-drawer__summary-discounts { display: grid; gap: 7px; margin-bottom: 12px; color: var(--copper); font-size: var(--fs-label-sm); }
+  .cart-drawer__summary-discounts li { display: flex; justify-content: space-between; gap: 16px; }
   .cart-drawer__subtotal { display: flex; justify-content: space-between; gap: 20px; font-size: 1rem; }
   .cart-drawer__subtotal strong { font-variant-numeric: tabular-nums; }
   .cart-drawer__footer > p { margin: 8px 0 18px; color: var(--muted); font-size: 0.7rem; }

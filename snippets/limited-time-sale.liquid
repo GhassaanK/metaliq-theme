@@ -1,37 +1,29 @@
 {% doc %}
-  Renders the homepage limited-time bundle campaign.
+  Renders the homepage limited-time product campaign.
 
   @param {section} section - The section containing campaign presentation settings
-  @param {product[]} [products] - Products to render instead of the homepage product list
-  @param {string} [heading] - Optional campaign heading override
-  @param {string} [intro] - Optional campaign introduction override
-  @param {string} [eyebrow] - Optional campaign label override
-  @param {image} [fallback_image] - Image used when a bundle product has no image
-  @param {boolean} [collection_page] - Whether this is the dedicated collection template
 
   @example
   {% render 'limited-time-sale', section: section %}
 {% enddoc %}
 
 {%- liquid
-  assign campaign_products = products | default: section.settings.limited_sale_products
-  assign campaign_eyebrow = eyebrow | default: section.settings.limited_sale_eyebrow
-  assign campaign_heading = heading | default: section.settings.limited_sale_heading
-  assign campaign_intro = intro | default: section.settings.limited_sale_intro
-  assign campaign_fallback_image = fallback_image | default: section.settings.limited_sale_image
+  assign campaign_products = section.settings.limited_sale_products
+  assign campaign_eyebrow = section.settings.limited_sale_eyebrow
+  assign campaign_heading = section.settings.limited_sale_heading
+  assign campaign_intro = section.settings.limited_sale_intro
+  assign campaign_fallback_image = section.settings.limited_sale_image
   assign campaign_enabled = section.settings.limited_sale_enabled
   assign campaign_live = false
+  assign campaign_end_timestamp = settings.limited_sale_end | date: '%s' | plus: 0
+  assign current_timestamp = 'now' | date: '%s' | plus: 0
 
   if settings.limited_sale_active
     if settings.limited_sale_end != blank
-      assign campaign_live = true
+      if campaign_end_timestamp > current_timestamp
+        assign campaign_live = true
+      endif
     endif
-  endif
-
-  if collection_page
-    assign campaign_enabled = true
-  elsif campaign_live == false
-    assign campaign_enabled = false
   endif
 
   if campaign_eyebrow == blank
@@ -47,7 +39,7 @@
 
 {%- if campaign_enabled and campaign_products != blank -%}
   <section
-    class="home-limited-sale section{% if collection_page %} home-limited-sale--collection{% endif %}{% unless campaign_live %} is-expired{% endunless %}"
+    class="home-limited-sale section{% unless campaign_live %} is-expired{% endunless %}"
     data-limited-sale
     data-sale-end="{{ settings.limited_sale_end | escape }}"
     data-sale-active="{{ campaign_live }}"
@@ -80,22 +72,29 @@
           -%}
           {%- if campaign_image != blank -%}
             {%- liquid
-              assign campaign_variant = campaign_product.selected_or_first_available_variant
-              assign promotional_price = campaign_variant.price
-
-              if settings.limited_sale_discount_type == 'fixed'
-                assign fixed_discount = settings.limited_sale_discount_amount | times: 100
-                assign promotional_price = campaign_variant.price | minus: fixed_discount | at_least: 0
-              else
-                assign price_factor = 100 | minus: settings.limited_sale_discount_percentage
-                assign promotional_price = campaign_variant.price | times: price_factor | divided_by: 100
+              assign campaign_variant = blank
+              for product_variant in campaign_product.variants
+                assign variant_title_normalized = product_variant.title | downcase
+                if variant_title_normalized contains 'medium'
+                  assign campaign_variant = product_variant
+                  break
+                endif
+              endfor
+              assign campaign_variant = campaign_variant | default: campaign_product.selected_or_first_available_variant
+              assign campaign_url = campaign_product.url | append: '?variant=' | append: campaign_variant.id
+              assign has_sale_price = false
+              if campaign_variant.compare_at_price > campaign_variant.price
+                assign has_sale_price = true
               endif
-
-              assign campaign_saving = campaign_variant.price | minus: promotional_price
+              assign campaign_saving = campaign_variant.compare_at_price | minus: campaign_variant.price
               assign campaign_saving_money = campaign_saving | money
+              assign campaign_saving_percentage = 0
+              if has_sale_price
+                assign campaign_saving_percentage = campaign_saving | times: 100.0 | divided_by: campaign_variant.compare_at_price | round
+              endif
             -%}
             <article class="limited-bundle-card reveal">
-              <a class="limited-bundle-card__media" href="{{ campaign_product.url }}">
+              <a class="limited-bundle-card__media" href="{{ campaign_url }}">
                 {{
                   campaign_image
                   | image_url: width: 1200
@@ -106,23 +105,21 @@
                     alt: campaign_image.alt | default: campaign_product.title
                 }}
                 <span class="limited-bundle-card__badge">
-                  {%- if settings.limited_sale_discount_type == 'fixed' -%}
-                    {{ 'home.limited_sale_save' | t: amount: campaign_saving_money }}
+                  {%- if has_sale_price -%}
+                    {{ 'home.limited_sale_percentage' | t: percent: campaign_saving_percentage }}
                   {%- else -%}
-                    {{ 'home.limited_sale_percentage' | t: percent: settings.limited_sale_discount_percentage }}
+                    {{ 'home.limited_sale_badge' | t }}
                   {%- endif -%}
                 </span>
               </a>
 
               <div class="limited-bundle-card__body">
                 <p class="limited-bundle-card__label">{{ 'home.limited_sale_bundle_label' | t }}</p>
-                <h3><a href="{{ campaign_product.url }}">{{ campaign_product.title | escape }}</a></h3>
-                {%- if campaign_product.metafields.custom.bundle_contents != blank -%}
-                  <div class="limited-bundle-card__contents">
-                    <strong>{{ 'home.limited_sale_includes' | t }}</strong>
-                    {{ campaign_product.metafields.custom.bundle_contents | metafield_tag }}
-                  </div>
-                {%- elsif campaign_product.description != blank -%}
+                <h3><a href="{{ campaign_url }}">{{ campaign_product.title | escape }}</a></h3>
+                {%- unless campaign_product.has_only_default_variant -%}
+                  <p class="limited-bundle-card__variant">{{ campaign_variant.title | escape }}</p>
+                {%- endunless -%}
+                {%- if campaign_product.description != blank -%}
                   <div class="limited-bundle-card__contents">
                     <strong>{{ 'home.limited_sale_includes' | t }}</strong>
                     <p>{{ campaign_product.description | strip_html | truncatewords: 28 }}</p>
@@ -130,35 +127,36 @@
                 {%- endif -%}
 
                 <div class="limited-bundle-card__pricing">
-                  <span><small>{{ 'home.limited_sale_regular' | t }}</small><s>{{ campaign_variant.price | money }}</s></span>
-                  <span><small>{{ 'home.limited_sale_offer_price' | t }}</small><strong>{{ promotional_price | money }}</strong></span>
+                  {%- if has_sale_price -%}
+                    <span><small>{{ 'home.limited_sale_regular' | t }}</small><s>{{ campaign_variant.compare_at_price | money }}</s></span>
+                    <span><small>{{ 'home.limited_sale_offer_price' | t }}</small><strong>{{ campaign_variant.price | money }}</strong></span>
+                    <span class="visually-hidden">{{ 'home.limited_sale_save' | t: amount: campaign_saving_money }}</span>
+                  {%- else -%}
+                    <span><small>{{ 'home.limited_sale_price' | t }}</small><strong>{{ campaign_variant.price | money }}</strong></span>
+                  {%- endif -%}
                 </div>
                 <p class="limited-bundle-card__discount-note">{{ 'home.limited_sale_discount_note' | t }}</p>
 
-                {%- if campaign_product.variants.size == 1 -%}
-                  <form method="post" action="{{ routes.cart_add_url }}" data-card-add-form>
-                    <input type="hidden" name="id" value="{{ campaign_variant.id }}">
-                    <input type="hidden" name="quantity" value="1">
-                    <button
-                      class="button button--block"
-                      type="submit"
-                      data-card-add-button
-                      data-adding="{{ 'product.adding' | t }}"
-                      {% unless campaign_variant.available %}disabled{% endunless %}
-                    >
-                      <span data-card-add-label>
-                        {%- if campaign_variant.available -%}
-                          {{ 'product.add_to_cart' | t }}
-                        {%- else -%}
-                          {{ 'product.sold_out' | t }}
-                        {%- endif -%}
-                      </span>
-                    </button>
-                    <p class="product-card__error" data-card-add-error hidden role="alert">{{ 'product.add_error' | t }}</p>
-                  </form>
-                {%- else -%}
-                  <a class="button button--block" href="{{ campaign_product.url }}">{{ 'home.limited_sale_choose_options' | t }}</a>
-                {%- endif -%}
+                <form method="post" action="{{ routes.cart_add_url }}" data-card-add-form>
+                  <input type="hidden" name="id" value="{{ campaign_variant.id }}">
+                  <input type="hidden" name="quantity" value="1">
+                  <button
+                    class="button button--block"
+                    type="submit"
+                    data-card-add-button
+                    data-adding="{{ 'product.adding' | t }}"
+                    {% unless campaign_variant.available %}disabled{% endunless %}
+                  >
+                    <span data-card-add-label>
+                      {%- if campaign_variant.available -%}
+                        {{ 'product.add_to_cart' | t }}
+                      {%- else -%}
+                        {{ 'product.sold_out' | t }}
+                      {%- endif -%}
+                    </span>
+                  </button>
+                  <p class="product-card__error" data-card-add-error hidden role="alert">{{ 'product.add_error' | t }}</p>
+                </form>
               </div>
             </article>
           {%- endif -%}
@@ -186,11 +184,13 @@
     border-bottom: 1px solid color-mix(in srgb, var(--on-nav) 18%, transparent);
   }
   .home-limited-sale__copy {
+    min-width: 0;
     max-width: 700px;
   }
   .home-limited-sale__copy .eyebrow {
     margin-bottom: var(--stack-sm);
   }
+  .home-limited-sale__copy h1,
   .home-limited-sale__copy h2 {
     margin: 0;
     color: var(--on-nav);
@@ -199,6 +199,7 @@
     max-width: 62ch;
     margin-top: var(--stack-sm);
     color: color-mix(in srgb, var(--on-nav) 72%, transparent);
+    overflow-wrap: anywhere;
   }
   .home-limited-sale__deadline {
     min-width: 332px;
@@ -214,6 +215,9 @@
     display: grid;
     grid-template-columns: repeat(4, minmax(56px, 1fr));
     gap: 8px;
+  }
+  .home-limited-sale__deadline > [hidden] {
+    display: none;
   }
   .home-limited-sale__timer > span {
     display: grid;
@@ -254,6 +258,7 @@
   .home-limited-sale__grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    min-width: 0;
     gap: var(--gutter);
   }
   .limited-bundle-card {
@@ -318,6 +323,10 @@
     color: var(--muted);
     font-size: var(--fs-small);
   }
+  .limited-bundle-card__variant {
+    color: var(--muted);
+    font-size: var(--fs-label-sm);
+  }
   .limited-bundle-card__contents > strong {
     display: block;
     margin-bottom: 4px;
@@ -367,6 +376,7 @@
   .home-limited-sale.is-expired .limited-bundle-card__badge,
   .home-limited-sale.is-expired .limited-bundle-card__pricing,
   .home-limited-sale.is-expired .limited-bundle-card__discount-note,
+  .home-limited-sale.is-expired .home-limited-sale__deadline > p:first-child,
   .home-limited-sale.is-expired .home-limited-sale__exact-date {
     display: none;
   }

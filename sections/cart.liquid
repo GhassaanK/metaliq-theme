@@ -45,17 +45,20 @@
             endif
 
             assign extra_price = 0
+            assign original_extra_price = 0
             assign remove_keys = item.key
             if group != blank
               for other in cart.items
                 if other.properties['_surcharge_for'] == group
                   assign extra_price = extra_price | plus: other.final_line_price
+                  assign original_extra_price = original_extra_price | plus: other.original_line_price
                   assign remove_keys = remove_keys | append: ',' | append: other.key
                 endif
               endfor
             endif
 
             assign line_total = item.final_line_price | plus: extra_price
+            assign original_line_total = item.original_line_price | plus: original_extra_price
             assign is_grouped = false
             if extra_price > 0
               assign is_grouped = true
@@ -122,7 +125,17 @@
 
             <div class="cart-line__aside">
               <span>{{ 'cart.line_total' | t }}</span>
+              {%- if original_line_total > line_total -%}
+                <s class="cart-line__original-price">{{ original_line_total | money }}</s>
+              {%- endif -%}
               <strong class="cart-line__price price">{{ line_total | money }}</strong>
+              {%- if item.discount_allocations.size > 0 -%}
+                <ul class="cart-line__discounts" aria-label="{{ 'cart.discounts' | t }}">
+                  {%- for allocation in item.discount_allocations -%}
+                    <li>{{ allocation.discount_application.title }}: -{{ allocation.amount | money }}</li>
+                  {%- endfor -%}
+                </ul>
+              {%- endif -%}
             </div>
           </article>
         {%- endfor -%}
@@ -136,6 +149,12 @@
         <div class="cart-summary__row cart-summary__row--items">
           <span>{{ 'cart.item_count' | t: count: visible_item_count }}</span>
         </div>
+        {%- for discount_application in cart.discount_applications -%}
+          <div class="cart-summary__row cart-summary__row--discount">
+            <span>{{ discount_application.title }}</span>
+            <strong>-{{ discount_application.total_allocated_amount | money }}</strong>
+          </div>
+        {%- endfor -%}
         <div class="cart-summary__row">
           <span>{{ 'cart.subtotal' | t }}</span>
           <strong>{{ cart.total_price | money }}</strong>
@@ -330,6 +349,18 @@
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
+  .cart-line__original-price {
+    color: var(--muted);
+    font-size: var(--fs-sm);
+    white-space: nowrap;
+  }
+  .cart-line__discounts {
+    max-width: 18ch;
+    color: var(--copper);
+    font-size: 0.68rem;
+    line-height: 1.35;
+    text-align: right;
+  }
   .cart-lines > .button {
     justify-self: end;
     margin-top: 4px;
@@ -367,6 +398,13 @@
   .cart-summary__row--items + .cart-summary__row {
     margin-top: 0;
     border-top: 0;
+  }
+  .cart-summary__row--discount {
+    margin-top: 0;
+    padding-block: 10px;
+    border-top: 0;
+    color: var(--copper);
+    font-size: var(--fs-label-sm);
   }
   .cart-summary .button {
     margin-top: var(--sp-4);
