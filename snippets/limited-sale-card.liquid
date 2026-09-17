@@ -1,0 +1,77 @@
+{% doc %}
+  Renders one product card inside the homepage limited-time sale carousel.
+
+  @param {product} product - Product containing the sale variant
+  @param {image} [fallback_image] - Image used when the product has no featured image
+
+  @example
+  {% render 'limited-sale-card', product: product %}
+{% enddoc %}
+
+{%- liquid
+  assign sale_variant = blank
+  for product_variant in product.variants
+    assign variant_title_normalized = product_variant.title | downcase
+    if variant_title_normalized contains 'medium'
+      assign sale_variant = product_variant
+      break
+    endif
+  endfor
+  assign sale_variant = sale_variant | default: product.selected_or_first_available_variant
+  assign sale_image = product.featured_image | default: fallback_image
+  assign sale_url = product.url | append: '?variant=' | append: sale_variant.id
+  assign sale_saving = sale_variant.compare_at_price | minus: sale_variant.price
+  assign sale_saving_money = sale_saving | money
+  assign sale_percentage = sale_saving | times: 100.0 | divided_by: sale_variant.compare_at_price | round
+-%}
+
+{%- if sale_image != blank and sale_variant.compare_at_price > sale_variant.price -%}
+  <article class="limited-bundle-card reveal">
+    <a class="limited-bundle-card__media" href="{{ sale_url }}">
+      {{
+        sale_image
+        | image_url: width: 1200
+        | image_tag:
+          loading: 'lazy',
+          widths: '360, 540, 720, 960, 1200',
+          sizes: '(max-width: 619px) 86vw, (max-width: 899px) 46vw, 31vw',
+          alt: sale_image.alt | default: product.title
+      }}
+      <span class="limited-bundle-card__badge">{{ 'home.limited_sale_percentage' | t: percent: sale_percentage }}</span>
+    </a>
+
+    <div class="limited-bundle-card__body">
+      <p class="limited-bundle-card__label">{{ 'home.limited_sale_product_label' | t }}</p>
+      <h3><a href="{{ sale_url }}">{{ product.title | escape }}</a></h3>
+      {%- unless product.has_only_default_variant -%}
+        <p class="limited-bundle-card__variant">{{ sale_variant.title | escape }}</p>
+      {%- endunless -%}
+      <div class="limited-bundle-card__pricing">
+        <span><small>{{ 'home.limited_sale_regular' | t }}</small><s>{{ sale_variant.compare_at_price | money }}</s></span>
+        <span><small>{{ 'home.limited_sale_offer_price' | t }}</small><strong>{{ sale_variant.price | money }}</strong></span>
+      </div>
+      <p class="limited-bundle-card__saving">{{ 'home.limited_sale_save' | t: amount: sale_saving_money }}</p>
+
+      <form method="post" action="{{ routes.cart_add_url }}" data-card-add-form>
+        <input type="hidden" name="id" value="{{ sale_variant.id }}">
+        <input type="hidden" name="quantity" value="1">
+        <button
+          class="button button--block"
+          type="submit"
+          data-card-add-button
+          data-adding="{{ 'product.adding' | t }}"
+          {% unless sale_variant.available %}disabled{% endunless %}
+        >
+          <span data-card-add-label>
+            {%- if sale_variant.available -%}
+              {{ 'product.add_to_cart' | t }}
+            {%- else -%}
+              {{ 'product.sold_out' | t }}
+            {%- endif -%}
+          </span>
+        </button>
+        <p class="product-card__error" data-card-add-error hidden role="alert">{{ 'product.add_error' | t }}</p>
+      </form>
+    </div>
+  </article>
+{%- endif -%}

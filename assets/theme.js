@@ -652,6 +652,34 @@
     });
   }
 
+  const filterDialog = document.querySelector('[data-filter-dialog]');
+  const filterOpen = document.querySelector('[data-filter-open]');
+  const filterClose = filterDialog?.querySelector('[data-filter-close]');
+  if (filterDialog && filterOpen && filterClose) {
+    const closeFilterDialog = () => {
+      filterDialog.close();
+      document.documentElement.classList.remove('filter-drawer-open');
+    };
+
+    filterOpen.addEventListener('click', () => {
+      filterDialog.showModal();
+      document.documentElement.classList.add('filter-drawer-open');
+    });
+    filterClose.addEventListener('click', closeFilterDialog);
+    filterDialog.addEventListener('close', () => {
+      document.documentElement.classList.remove('filter-drawer-open');
+    });
+    filterDialog.addEventListener('click', (event) => {
+      if (event.target === filterDialog) closeFilterDialog();
+    });
+  }
+
+  document.querySelectorAll('[data-filter-auto-apply]').forEach((form) => {
+    form.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+      input.addEventListener('change', () => form.requestSubmit());
+    });
+  });
+
   document.querySelectorAll('[data-product-gallery]').forEach((gallery) => {
     const thumbnails = Array.from(gallery.querySelectorAll('[data-gallery-thumbnail]'));
     const mediaItems = Array.from(gallery.querySelectorAll('[data-gallery-media]'));
@@ -744,6 +772,7 @@
     const variantIdInput = root.querySelector('[data-variant-id]');
     const currentPriceOutput = priceOutput.querySelector('[data-current-price]');
     const comparePriceOutput = priceOutput.querySelector('[data-compare-price]');
+    const salePercentageOutput = priceOutput.querySelector('[data-sale-percentage]');
     const addButton = root.querySelector('[data-add-button]');
     const addError = root.querySelector('[data-add-error]');
     const quantityInput = form.querySelector('input[name="quantity"]');
@@ -775,6 +804,11 @@
       if (comparePriceOutput) {
         comparePriceOutput.textContent = formatMoney(comparePrice, root.dataset.moneyFormat);
         comparePriceOutput.hidden = comparePrice <= price;
+      }
+      if (salePercentageOutput) {
+        const percentage = comparePrice > price ? Math.round(((comparePrice - price) / comparePrice) * 100) : 0;
+        salePercentageOutput.textContent = (root.dataset.saleLabel || '__PERCENT__% off').replace('__PERCENT__', percentage);
+        salePercentageOutput.hidden = percentage <= 0;
       }
       if (selectedSize && variant) selectedSize.textContent = variant.dataset.variantTitle || '';
       if (stickySize && variant) stickySize.textContent = variant.dataset.variantTitle || '';

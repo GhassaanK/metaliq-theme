@@ -8,20 +8,89 @@
 {% enddoc %}
 
 {%- liquid
-  assign campaign_products = section.settings.limited_sale_products
+  assign campaign_collection = settings.limited_sale_collection
+  if campaign_collection == blank
+    assign campaign_collection = collections['sale']
+  endif
+  assign use_campaign_collection = false
+  if campaign_collection != blank
+    if campaign_collection.products_count > 0
+      assign use_campaign_collection = true
+    endif
+  endif
+  assign campaign_limit = 50
+  assign campaign_count = 0
+
+  if use_campaign_collection
+    assign campaign_products = campaign_collection.products
+    for campaign_product in campaign_products
+      assign count_variant = blank
+      for product_variant in campaign_product.variants
+        assign variant_title_normalized = product_variant.title | downcase
+        if variant_title_normalized contains 'medium'
+          assign count_variant = product_variant
+          break
+        endif
+      endfor
+      assign count_variant = count_variant | default: campaign_product.selected_or_first_available_variant
+      if count_variant.compare_at_price > count_variant.price
+        assign campaign_count = campaign_count | plus: 1
+      endif
+      if campaign_count == campaign_limit
+        break
+      endif
+    endfor
+  else
+    assign counted_product_handles = '|'
+    for source_collection in collections
+      for campaign_product in source_collection.products
+        capture product_handle_token
+          echo '|'
+          echo campaign_product.handle
+          echo '|'
+        endcapture
+        unless counted_product_handles contains product_handle_token
+          assign counted_product_handles = counted_product_handles | append: campaign_product.handle | append: '|'
+          assign count_variant = blank
+          for product_variant in campaign_product.variants
+            assign variant_title_normalized = product_variant.title | downcase
+            if variant_title_normalized contains 'medium'
+              assign count_variant = product_variant
+              break
+            endif
+          endfor
+          assign count_variant = count_variant | default: campaign_product.selected_or_first_available_variant
+          if count_variant.compare_at_price > count_variant.price
+            assign campaign_count = campaign_count | plus: 1
+          endif
+        endunless
+        if campaign_count == campaign_limit
+          break
+        endif
+      endfor
+      if campaign_count == campaign_limit
+        break
+      endif
+    endfor
+  endif
   assign campaign_eyebrow = section.settings.limited_sale_eyebrow
   assign campaign_heading = section.settings.limited_sale_heading
   assign campaign_intro = section.settings.limited_sale_intro
   assign campaign_fallback_image = section.settings.limited_sale_image
   assign campaign_enabled = section.settings.limited_sale_enabled
   assign campaign_live = false
+  assign campaign_has_deadline = false
+  assign campaign_expired = false
   assign campaign_end_timestamp = settings.limited_sale_end | date: '%s' | plus: 0
   assign current_timestamp = 'now' | date: '%s' | plus: 0
 
-  if settings.limited_sale_active
-    if settings.limited_sale_end != blank
+  if settings.limited_sale_end != blank
+    if campaign_end_timestamp > 0
+      assign campaign_has_deadline = true
       if campaign_end_timestamp > current_timestamp
         assign campaign_live = true
+      else
+        assign campaign_expired = true
       endif
     endif
   endif
@@ -37,9 +106,17 @@
   endif
 -%}
 
-{%- if campaign_enabled and campaign_products != blank -%}
+{%- if campaign_enabled and campaign_count == 0 and request.design_mode -%}
+  <section class="home-limited-sale section">
+    <div class="container">
+      <p>{{ 'home.limited_sale_select_collection' | t }}</p>
+    </div>
+  </section>
+{%- endif -%}
+
+{%- if campaign_enabled and campaign_count > 0 -%}
   <section
-    class="home-limited-sale section{% unless campaign_live %} is-expired{% endunless %}"
+    class="home-limited-sale section{% if campaign_count == 1 %} home-limited-sale--single{% endif %}{% if campaign_expired %} is-expired{% endif %}"
     data-limited-sale
     data-sale-end="{{ settings.limited_sale_end | escape }}"
     data-sale-active="{{ campaign_live }}"
@@ -52,115 +129,70 @@
           <p>{{ campaign_intro | escape }}</p>
         </div>
 
-        <div class="home-limited-sale__deadline" data-sale-deadline>
-          <p{% unless campaign_live %} hidden{% endunless %}>{{ 'home.limited_sale_ends' | t }}</p>
-          <div class="home-limited-sale__timer" data-sale-timer role="timer" aria-label="{{ 'home.limited_sale_countdown' | t }}"{% unless campaign_live %} hidden{% endunless %}>
-            <span><strong data-sale-days>00</strong><small>{{ 'home.limited_sale_days' | t }}</small></span>
-            <span><strong data-sale-hours>00</strong><small>{{ 'home.limited_sale_hours' | t }}</small></span>
-            <span><strong data-sale-minutes>00</strong><small>{{ 'home.limited_sale_minutes' | t }}</small></span>
-            <span><strong data-sale-seconds>00</strong><small>{{ 'home.limited_sale_seconds' | t }}</small></span>
+        <div class="home-limited-sale__tools">
+          {%- if campaign_has_deadline -%}
+            <div class="home-limited-sale__deadline" data-sale-deadline>
+              <p{% unless campaign_live %} hidden{% endunless %}>{{ 'home.limited_sale_ends' | t }}</p>
+              <div class="home-limited-sale__timer" data-sale-timer role="timer" aria-label="{{ 'home.limited_sale_countdown' | t }}"{% unless campaign_live %} hidden{% endunless %}>
+                <span><strong data-sale-days>00</strong><small>{{ 'home.limited_sale_days' | t }}</small></span>
+                <span><strong data-sale-hours>00</strong><small>{{ 'home.limited_sale_hours' | t }}</small></span>
+                <span><strong data-sale-minutes>00</strong><small>{{ 'home.limited_sale_minutes' | t }}</small></span>
+                <span><strong data-sale-seconds>00</strong><small>{{ 'home.limited_sale_seconds' | t }}</small></span>
+              </div>
+              <p class="home-limited-sale__exact-date"{% unless campaign_live %} hidden{% endunless %}><span>{{ 'home.limited_sale_ends_on' | t }}</span> <time data-sale-end-date></time></p>
+              <p class="home-limited-sale__expired" data-sale-expired{% if campaign_live %} hidden{% endif %}>{{ 'home.limited_sale_expired' | t }}</p>
+            </div>
+          {%- elsif request.design_mode -%}
+            <p class="home-limited-sale__editor-note">{{ 'home.limited_sale_set_deadline' | t }}</p>
+          {%- endif -%}
+          <div class="home-limited-sale__controls" aria-label="{{ 'home.limited_sale_controls' | t }}">
+            <span class="home-limited-sale__position"><span data-sale-current>01</span> / <span data-sale-total>{{ campaign_count }}</span></span>
+            <button class="icon-button home-limited-sale__arrow home-limited-sale__arrow--previous" type="button" aria-label="{{ 'home.limited_sale_previous' | t }}" data-sale-previous disabled>{% render 'icon', name: 'arrow-right' %}</button>
+            <button class="icon-button home-limited-sale__arrow" type="button" aria-label="{{ 'home.limited_sale_next' | t }}" data-sale-next>{% render 'icon', name: 'arrow-right' %}</button>
           </div>
-          <p class="home-limited-sale__exact-date"{% unless campaign_live %} hidden{% endunless %}><span>{{ 'home.limited_sale_ends_on' | t }}</span> <time data-sale-end-date></time></p>
-          <p class="home-limited-sale__expired" data-sale-expired{% if campaign_live %} hidden{% endif %}>{{ 'home.limited_sale_expired' | t }}</p>
         </div>
       </header>
 
-      <div class="home-limited-sale__grid">
-        {%- for campaign_product in campaign_products -%}
+      <div class="home-limited-sale__grid{% if campaign_count == 1 %} home-limited-sale__grid--single{% endif %}" data-sale-track tabindex="0" aria-label="{{ 'home.limited_sale_products' | t }}">
+        {%- if use_campaign_collection -%}
+          {%- for campaign_product in campaign_products -%}
+            {%- render 'limited-sale-card', product: campaign_product, fallback_image: campaign_fallback_image -%}
+          {%- endfor -%}
+        {%- else -%}
           {%- liquid
-            assign campaign_image = campaign_product.featured_image | default: campaign_fallback_image
+            assign rendered_product_handles = '|'
+            assign rendered_campaign_products = 0
           -%}
-          {%- if campaign_image != blank -%}
-            {%- liquid
-              assign campaign_variant = blank
-              for product_variant in campaign_product.variants
-                assign variant_title_normalized = product_variant.title | downcase
-                if variant_title_normalized contains 'medium'
-                  assign campaign_variant = product_variant
-                  break
-                endif
-              endfor
-              assign campaign_variant = campaign_variant | default: campaign_product.selected_or_first_available_variant
-              assign campaign_url = campaign_product.url | append: '?variant=' | append: campaign_variant.id
-              assign has_sale_price = false
-              if campaign_variant.compare_at_price > campaign_variant.price
-                assign has_sale_price = true
-              endif
-              assign campaign_saving = campaign_variant.compare_at_price | minus: campaign_variant.price
-              assign campaign_saving_money = campaign_saving | money
-              assign campaign_saving_percentage = 0
-              if has_sale_price
-                assign campaign_saving_percentage = campaign_saving | times: 100.0 | divided_by: campaign_variant.compare_at_price | round
-              endif
-            -%}
-            <article class="limited-bundle-card reveal">
-              <a class="limited-bundle-card__media" href="{{ campaign_url }}">
-                {{
-                  campaign_image
-                  | image_url: width: 1200
-                  | image_tag:
-                    loading: 'lazy',
-                    widths: '360, 540, 720, 960, 1200',
-                    sizes: '(max-width: 699px) 78vw, (max-width: 1099px) 44vw, 30vw',
-                    alt: campaign_image.alt | default: campaign_product.title
-                }}
-                <span class="limited-bundle-card__badge">
-                  {%- if has_sale_price -%}
-                    {{ 'home.limited_sale_percentage' | t: percent: campaign_saving_percentage }}
-                  {%- else -%}
-                    {{ 'home.limited_sale_badge' | t }}
-                  {%- endif -%}
-                </span>
-              </a>
-
-              <div class="limited-bundle-card__body">
-                <p class="limited-bundle-card__label">{{ 'home.limited_sale_bundle_label' | t }}</p>
-                <h3><a href="{{ campaign_url }}">{{ campaign_product.title | escape }}</a></h3>
-                {%- unless campaign_product.has_only_default_variant -%}
-                  <p class="limited-bundle-card__variant">{{ campaign_variant.title | escape }}</p>
-                {%- endunless -%}
-                {%- if campaign_product.description != blank -%}
-                  <div class="limited-bundle-card__contents">
-                    <strong>{{ 'home.limited_sale_includes' | t }}</strong>
-                    <p>{{ campaign_product.description | strip_html | truncatewords: 28 }}</p>
-                  </div>
+          {%- for source_collection in collections -%}
+            {%- for campaign_product in source_collection.products -%}
+              {%- capture product_handle_token -%}|{{ campaign_product.handle }}|{%- endcapture -%}
+              {%- unless rendered_product_handles contains product_handle_token -%}
+                {%- liquid
+                  assign rendered_product_handles = rendered_product_handles | append: campaign_product.handle | append: '|'
+                  assign campaign_variant = blank
+                  for product_variant in campaign_product.variants
+                    assign variant_title_normalized = product_variant.title | downcase
+                    if variant_title_normalized contains 'medium'
+                      assign campaign_variant = product_variant
+                      break
+                    endif
+                  endfor
+                  assign campaign_variant = campaign_variant | default: campaign_product.selected_or_first_available_variant
+                -%}
+                {%- if campaign_variant.compare_at_price > campaign_variant.price -%}
+                  {%- render 'limited-sale-card', product: campaign_product, fallback_image: campaign_fallback_image -%}
+                  {%- assign rendered_campaign_products = rendered_campaign_products | plus: 1 -%}
                 {%- endif -%}
-
-                <div class="limited-bundle-card__pricing">
-                  {%- if has_sale_price -%}
-                    <span><small>{{ 'home.limited_sale_regular' | t }}</small><s>{{ campaign_variant.compare_at_price | money }}</s></span>
-                    <span><small>{{ 'home.limited_sale_offer_price' | t }}</small><strong>{{ campaign_variant.price | money }}</strong></span>
-                    <span class="visually-hidden">{{ 'home.limited_sale_save' | t: amount: campaign_saving_money }}</span>
-                  {%- else -%}
-                    <span><small>{{ 'home.limited_sale_price' | t }}</small><strong>{{ campaign_variant.price | money }}</strong></span>
-                  {%- endif -%}
-                </div>
-                <p class="limited-bundle-card__discount-note">{{ 'home.limited_sale_discount_note' | t }}</p>
-
-                <form method="post" action="{{ routes.cart_add_url }}" data-card-add-form>
-                  <input type="hidden" name="id" value="{{ campaign_variant.id }}">
-                  <input type="hidden" name="quantity" value="1">
-                  <button
-                    class="button button--block"
-                    type="submit"
-                    data-card-add-button
-                    data-adding="{{ 'product.adding' | t }}"
-                    {% unless campaign_variant.available %}disabled{% endunless %}
-                  >
-                    <span data-card-add-label>
-                      {%- if campaign_variant.available -%}
-                        {{ 'product.add_to_cart' | t }}
-                      {%- else -%}
-                        {{ 'product.sold_out' | t }}
-                      {%- endif -%}
-                    </span>
-                  </button>
-                  <p class="product-card__error" data-card-add-error hidden role="alert">{{ 'product.add_error' | t }}</p>
-                </form>
-              </div>
-            </article>
-          {%- endif -%}
-        {%- endfor -%}
+              {%- endunless -%}
+              {%- if rendered_campaign_products == campaign_limit -%}
+                {%- break -%}
+              {%- endif -%}
+            {%- endfor -%}
+            {%- if rendered_campaign_products == campaign_limit -%}
+              {%- break -%}
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
       </div>
     </div>
   </section>
@@ -170,18 +202,31 @@
   .home-limited-sale {
     position: relative;
     overflow: hidden;
-    border-block: 1px solid color-mix(in srgb, var(--copper) 32%, var(--line));
+    border-top: 3px solid var(--copper);
+    border-bottom: 1px solid color-mix(in srgb, var(--copper) 32%, var(--line));
     background: var(--nav);
     color: var(--on-nav);
   }
   .home-limited-sale__header {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    align-items: end;
+    align-items: center;
     gap: var(--stack-xl);
     margin-bottom: var(--stack-xl);
     padding-bottom: var(--stack-lg);
     border-bottom: 1px solid color-mix(in srgb, var(--on-nav) 18%, transparent);
+  }
+  .home-limited-sale--single .container {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+    align-items: center;
+    gap: clamp(32px, 6vw, 100px);
+  }
+  .home-limited-sale--single .home-limited-sale__header {
+    display: block;
+    margin: 0;
+    padding: 0;
+    border: 0;
   }
   .home-limited-sale__copy {
     min-width: 0;
@@ -194,12 +239,57 @@
   .home-limited-sale__copy h2 {
     margin: 0;
     color: var(--on-nav);
+    font-size: 2.25rem;
+    line-height: 1.1;
   }
-  .home-limited-sale__copy > p:last-child {
+  .home-limited-sale__copy > p:last-of-type {
     max-width: 62ch;
     margin-top: var(--stack-sm);
     color: color-mix(in srgb, var(--on-nav) 72%, transparent);
     overflow-wrap: anywhere;
+  }
+  .home-limited-sale__tools {
+    display: grid;
+    justify-items: end;
+    gap: var(--stack-md);
+  }
+  .home-limited-sale__editor-note {
+    max-width: 36ch;
+    color: var(--on-nav-muted);
+    font-size: var(--fs-label-sm);
+  }
+  .home-limited-sale__controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .home-limited-sale__position {
+    min-width: 64px;
+    margin-right: 8px;
+    color: var(--on-nav-muted);
+    font-size: var(--fs-label);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+  .home-limited-sale__arrow {
+    width: 44px;
+    height: 44px;
+    border: 1px solid color-mix(in srgb, var(--on-nav) 32%, transparent);
+    border-radius: 50%;
+    transition: border-color 0.2s var(--ease), color 0.2s var(--ease), background 0.2s var(--ease);
+  }
+  .home-limited-sale__arrow--previous .icon {
+    transform: rotate(180deg);
+  }
+  .home-limited-sale__arrow:not(:disabled):hover,
+  .home-limited-sale__arrow:not(:disabled):focus-visible {
+    border-color: var(--copper);
+    background: var(--copper);
+    color: var(--on-accent);
+  }
+  .home-limited-sale__arrow:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
   }
   .home-limited-sale__deadline {
     min-width: 332px;
@@ -224,6 +314,7 @@
     justify-items: center;
     min-width: 0;
     padding: 10px 8px;
+    min-height: 68px;
     border: 1px solid color-mix(in srgb, var(--on-nav) 20%, transparent);
     border-radius: var(--radius);
     background: color-mix(in srgb, var(--on-nav) 5%, transparent);
@@ -231,9 +322,12 @@
   .home-limited-sale__timer strong {
     color: var(--on-nav);
     font-family: var(--serif);
-    font-size: var(--fs-h3);
+    font-size: 1.7rem;
     font-variant-numeric: tabular-nums;
     line-height: 1;
+  }
+  .home-limited-sale__timer > span:last-child strong {
+    color: var(--copper-light);
   }
   .home-limited-sale__timer small {
     margin-top: 5px;
@@ -256,20 +350,36 @@
     font-weight: 600;
   }
   .home-limited-sale__grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: flex;
+    align-items: stretch;
     min-width: 0;
     gap: var(--gutter);
+    padding: 2px 2px 10px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: inline mandatory;
+    scrollbar-width: none;
+  }
+  .home-limited-sale__grid--single {
+    overflow: visible;
+  }
+  .home-limited-sale__grid::-webkit-scrollbar {
+    display: none;
   }
   .limited-bundle-card {
     display: grid;
     grid-template-rows: auto 1fr;
+    flex: 0 0 calc((100% - (var(--gutter) * 2)) / 3);
     min-width: 0;
     overflow: hidden;
     border: 1px solid color-mix(in srgb, var(--on-nav) 17%, transparent);
     border-radius: var(--radius-lg);
     background: var(--background);
     color: var(--ink);
+    scroll-snap-align: start;
+  }
+  .home-limited-sale__grid--single .limited-bundle-card {
+    flex-basis: 100%;
   }
   .limited-bundle-card__media {
     position: relative;
@@ -303,7 +413,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--stack-sm);
-    padding: var(--stack-lg);
+    padding: 24px;
   }
   .limited-bundle-card__label {
     color: var(--copper-dark);
@@ -313,32 +423,16 @@
   }
   .limited-bundle-card h3 {
     margin: 0;
-    font-size: var(--fs-h3);
-    line-height: 1.12;
+    min-height: 2.4em;
+    font-size: 1.25rem;
+    line-height: 1.2;
   }
   .limited-bundle-card h3 a:hover {
     color: var(--copper-dark);
   }
-  .limited-bundle-card__contents {
-    color: var(--muted);
-    font-size: var(--fs-small);
-  }
   .limited-bundle-card__variant {
     color: var(--muted);
     font-size: var(--fs-label-sm);
-  }
-  .limited-bundle-card__contents > strong {
-    display: block;
-    margin-bottom: 4px;
-    color: var(--ink);
-    font-size: var(--fs-label-sm);
-  }
-  .limited-bundle-card__contents ul {
-    padding-left: 1.1rem;
-    list-style: disc;
-  }
-  .limited-bundle-card__contents li + li {
-    margin-top: 3px;
   }
   .limited-bundle-card__pricing {
     display: flex;
@@ -361,12 +455,14 @@
   }
   .limited-bundle-card__pricing strong {
     color: var(--copper-dark);
-    font-family: var(--serif);
-    font-size: var(--fs-h3);
+    font-family: var(--sans);
+    font-size: 1.55rem;
+    font-weight: 700;
   }
-  .limited-bundle-card__discount-note {
-    color: var(--muted);
-    font-size: var(--fs-label-sm);
+  .limited-bundle-card__saving {
+    color: var(--copper-dark);
+    font-size: var(--fs-label);
+    font-weight: 700;
   }
   .limited-bundle-card .button {
     margin-top: var(--stack-sm);
@@ -375,40 +471,62 @@
   .home-limited-sale.is-expired .limited-bundle-card .button,
   .home-limited-sale.is-expired .limited-bundle-card__badge,
   .home-limited-sale.is-expired .limited-bundle-card__pricing,
-  .home-limited-sale.is-expired .limited-bundle-card__discount-note,
+  .home-limited-sale.is-expired .home-limited-sale__grid,
+  .home-limited-sale.is-expired .home-limited-sale__controls,
   .home-limited-sale.is-expired .home-limited-sale__deadline > p:first-child,
   .home-limited-sale.is-expired .home-limited-sale__exact-date {
     display: none;
   }
   @media (max-width: 899px) {
+    .home-limited-sale--single .container {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .home-limited-sale--single .home-limited-sale__header {
+      padding-bottom: var(--stack-lg);
+      border-bottom: 1px solid color-mix(in srgb, var(--on-nav) 18%, transparent);
+    }
     .home-limited-sale__header {
       grid-template-columns: 1fr;
+    }
+    .home-limited-sale__tools {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      justify-items: normal;
+      flex-wrap: wrap;
     }
     .home-limited-sale__deadline {
       min-width: 0;
       max-width: 420px;
     }
     .home-limited-sale__grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      overflow-x: auto;
+    }
+    .limited-bundle-card {
+      flex-basis: calc((100% - var(--gutter)) / 2);
+      min-height: 0;
     }
   }
   @media (max-width: 619px) {
+    .home-limited-sale__copy h2 {
+      font-size: 1.8rem;
+    }
+    .home-limited-sale__tools {
+      align-items: start;
+    }
     .home-limited-sale__grid {
-      grid-auto-flow: column;
-      grid-auto-columns: minmax(78vw, 1fr);
-      grid-template-columns: none;
       margin-right: calc(var(--page-margin) * -1);
       padding-right: var(--page-margin);
-      overflow-x: auto;
-      overscroll-behavior-inline: contain;
-      scroll-snap-type: inline mandatory;
-      scrollbar-width: none;
-    }
-    .home-limited-sale__grid::-webkit-scrollbar {
-      display: none;
     }
     .limited-bundle-card {
-      scroll-snap-align: start;
+      flex-basis: 88%;
+    }
+    .home-limited-sale__grid--single {
+      margin-right: 0;
+      padding-right: 0;
+    }
+    .home-limited-sale__grid--single .limited-bundle-card {
+      flex-basis: 100%;
     }
     .home-limited-sale__timer {
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -417,7 +535,10 @@
       padding-inline: 4px;
     }
     .limited-bundle-card__body {
-      padding: var(--stack-md);
+      padding: 18px;
+    }
+    .limited-bundle-card h3 {
+      min-height: 0;
     }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -429,6 +550,144 @@
 
 {% javascript %}
   (() => {
+    const initializeSlider = (campaign) => {
+      if (campaign.dataset.sliderInitialized === 'true') return;
+      campaign.dataset.sliderInitialized = 'true';
+
+      const track = campaign.querySelector('[data-sale-track]');
+      const previous = campaign.querySelector('[data-sale-previous]');
+      const next = campaign.querySelector('[data-sale-next]');
+      const current = campaign.querySelector('[data-sale-current]');
+      const total = campaign.querySelector('[data-sale-total]');
+      if (!track || !previous || !next) return;
+
+      const cards = [...track.querySelectorAll('.limited-bundle-card')];
+      if (total) total.textContent = String(cards.length).padStart(2, '0');
+      const hasMultipleCards = cards.length > 1;
+      previous.disabled = !hasMultipleCards;
+      next.disabled = !hasMultipleCards;
+      if (!cards.length) {
+        return;
+      }
+
+      const cloneCount = hasMultipleCards ? Math.min(3, cards.length) : 0;
+      const createClone = (card) => {
+        const clone = card.cloneNode(true);
+        clone.classList.add('limited-bundle-card--clone');
+        clone.setAttribute('aria-hidden', 'true');
+        clone.inert = true;
+        clone.querySelectorAll('a, button, input').forEach((element) => {
+          element.tabIndex = -1;
+        });
+        clone.querySelectorAll('img').forEach((image) => {
+          image.loading = 'eager';
+        });
+        return clone;
+      };
+
+      if (hasMultipleCards) {
+        cards.slice(-cloneCount).reverse().forEach((card) => track.prepend(createClone(card)));
+        cards.slice(0, cloneCount).forEach((card) => track.append(createClone(card)));
+      }
+
+      const cardStep = () => {
+        if (!cards.length) return track.clientWidth;
+        const gap = parseFloat(window.getComputedStyle(track).columnGap) || 0;
+        return cards[0].getBoundingClientRect().width + gap;
+      };
+
+      let physicalIndex = cloneCount;
+      let scrollEndTimer;
+
+      const physicalIndexFromScroll = () => {
+        return Math.round(track.scrollLeft / cardStep());
+      };
+
+      const logicalIndex = (index = physicalIndexFromScroll()) => {
+        return ((index - cloneCount) % cards.length + cards.length) % cards.length;
+      };
+
+      const jumpToPhysicalIndex = (index) => {
+        physicalIndex = index;
+        track.scrollTo({ left: index * cardStep(), behavior: 'auto' });
+      };
+
+      const update = () => {
+        const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
+        physicalIndex = physicalIndexFromScroll();
+        const index = logicalIndex(physicalIndex);
+        track.dataset.saleIndex = String(index);
+        if (current) current.textContent = String(index + 1).padStart(2, '0');
+        previous.disabled = !hasMultipleCards || maxScroll <= 2;
+        next.disabled = !hasMultipleCards || maxScroll <= 2;
+      };
+
+      const normalizePosition = () => {
+        physicalIndex = physicalIndexFromScroll();
+        if (physicalIndex >= cloneCount + cards.length) {
+          jumpToPhysicalIndex(physicalIndex - cards.length);
+        } else if (physicalIndex < cloneCount) {
+          jumpToPhysicalIndex(physicalIndex + cards.length);
+        }
+        update();
+      };
+
+      const move = (direction) => {
+        if (!hasMultipleCards) return;
+        physicalIndex = physicalIndexFromScroll() + direction;
+        track.scrollTo({
+          left: physicalIndex * cardStep(),
+          behavior: 'smooth',
+        });
+      };
+
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let autoplayTimer;
+      const stopAutoplay = () => window.clearTimeout(autoplayTimer);
+      const startAutoplay = () => {
+        stopAutoplay();
+        if (!hasMultipleCards || reduceMotion || document.hidden || campaign.matches(':hover') || campaign.contains(document.activeElement) || campaign.classList.contains('is-expired')) return;
+        autoplayTimer = window.setTimeout(() => {
+          move(1);
+          startAutoplay();
+        }, 5000);
+      };
+      const moveManually = (direction) => {
+        move(direction);
+        startAutoplay();
+      };
+
+      previous.addEventListener('click', () => moveManually(-1));
+      next.addEventListener('click', () => moveManually(1));
+      track.addEventListener('scroll', () => {
+        update();
+        window.clearTimeout(scrollEndTimer);
+        scrollEndTimer = window.setTimeout(normalizePosition, 140);
+      }, { passive: true });
+      campaign.addEventListener('mouseenter', stopAutoplay);
+      campaign.addEventListener('mouseleave', startAutoplay);
+      campaign.addEventListener('focusin', stopAutoplay);
+      campaign.addEventListener('focusout', () => {
+        window.setTimeout(() => {
+          if (!campaign.contains(document.activeElement)) startAutoplay();
+        }, 0);
+      });
+      track.addEventListener('pointerdown', stopAutoplay, { passive: true });
+      track.addEventListener('pointerup', startAutoplay, { passive: true });
+      track.addEventListener('pointercancel', startAutoplay, { passive: true });
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) stopAutoplay();
+        else startAutoplay();
+      });
+      window.addEventListener('resize', () => {
+        jumpToPhysicalIndex(cloneCount + logicalIndex(physicalIndex));
+        update();
+      }, { passive: true });
+      jumpToPhysicalIndex(cloneCount);
+      update();
+      startAutoplay();
+    };
+
     const initializeCampaign = (campaign) => {
       if (campaign.dataset.countdownInitialized === 'true') return;
       campaign.dataset.countdownInitialized = 'true';
@@ -496,7 +755,10 @@
     };
 
     const initializeAll = (root = document) => {
-      root.querySelectorAll('[data-limited-sale]').forEach(initializeCampaign);
+      root.querySelectorAll('[data-limited-sale]').forEach((campaign) => {
+        initializeSlider(campaign);
+        initializeCampaign(campaign);
+      });
     };
 
     initializeAll();

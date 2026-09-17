@@ -154,66 +154,6 @@
   </div>
 </section>
 
-<section class="home-collections section">
-  <div class="container">
-    <div class="section-head reveal">
-      <div>
-        <p class="eyebrow">{{ 'home.collections_index' | t }}</p>
-        <h2>{{ 'home.collections_heading' | t }}</h2>
-      </div>
-      <a class="link" href="{{ routes.collections_url }}">{{ 'collections.view_all' | t }}</a>
-    </div>
-
-    <div class="home-collections__grid">
-      {%- for collection_item in collections -%}
-        {%- if collection_item.handle == 'best-sellers' -%}
-          {%- continue -%}
-        {%- endif -%}
-        {%- if collection_item.handle == recent_collection.handle -%}
-          {%- continue -%}
-        {%- endif -%}
-        {%- liquid
-          assign tile_image = collection_item.featured_image
-          if tile_image == blank and collection_item.products.first != blank
-            assign tile_image = collection_item.products.first.featured_image
-          endif
-          assign placeholder_index = forloop.index0 | modulo: 4
-        -%}
-        <a class="home-tile reveal" href="{{ collection_item.url }}">
-          <span class="home-tile__media media">
-            {%- if tile_image != blank -%}
-              {{
-                tile_image
-                | image_url: width: 1000
-                | image_tag:
-                  loading: 'lazy',
-                  widths: '320, 480, 720, 1000',
-                  sizes: '(max-width: 560px) calc(50vw - 24px), (max-width: 1099px) calc(50vw - 30px), 25vw',
-                  alt: collection_item.title
-              }}
-            {%- else -%}
-              {%- case placeholder_index -%}
-                {%- when 1 -%}
-                  <img src="{{ 'hero-art-botanical.webp' | asset_url }}" width="800" height="1202" alt="{{ collection_item.title | escape }}" loading="lazy">
-                {%- when 2 -%}
-                  <img src="{{ 'hero-art-anime-silhouette.webp' | asset_url }}" width="800" height="1202" alt="{{ collection_item.title | escape }}" loading="lazy">
-                {%- when 3 -%}
-                  <img src="{{ 'hero-art-anime-portrait.webp' | asset_url }}" width="800" height="800" alt="{{ collection_item.title | escape }}" loading="lazy">
-                {%- else -%}
-                  <img src="{{ 'hero-art-western.webp' | asset_url }}" width="800" height="534" alt="{{ collection_item.title | escape }}" loading="lazy">
-              {%- endcase -%}
-            {%- endif -%}
-          </span>
-          <span class="home-tile__caption">
-            <span class="home-tile__title">{{ collection_item.title }}</span>
-            <span class="home-tile__arrow" aria-hidden="true">&#8599;</span>
-          </span>
-        </a>
-      {%- endfor -%}
-    </div>
-  </div>
-</section>
-
 {% render 'limited-time-sale', section: section %}
 
 {%- assign testimonial_count = 0 -%}
@@ -326,7 +266,7 @@
       <div class="home-bestsellers__track reveal" data-carousel-track tabindex="0" aria-label="Best selling products">
         {%- for product in featured.products limit: 12 -%}
           <div class="home-bestsellers__item">
-            {% render 'product-card', product: product, sizes: '(min-width: 1100px) 31vw, (min-width: 700px) 45vw, 82vw' %}
+            {% render 'product-card', product: product, sizes: '(min-width: 1100px) 23vw, (min-width: 700px) 31vw, 74vw' %}
           </div>
         {%- endfor -%}
       </div>
@@ -436,7 +376,7 @@
         {%- for product in recent_collection.products limit: 12 -%}
           <div class="home-recent__item">
             <span class="home-recent__date-mark">{{ 'home.recent_badge' | t }}</span>
-            {% render 'product-card', product: product, sizes: '(min-width: 1100px) 23vw, (min-width: 700px) 45vw, 82vw' %}
+            {% render 'product-card', product: product, sizes: '(min-width: 1100px) 18vw, (min-width: 700px) 31vw, 74vw' %}
           </div>
         {%- endfor -%}
       </div>
@@ -856,64 +796,6 @@
     line-height: 1.75;
   }
 
-  /* ---- Collections ---- */
-  .home-collections {
-    border-bottom: 1px solid var(--line);
-    background: var(--surface);
-  }
-  .home-collections__grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 24px;
-  }
-  .home-tile {
-    position: relative;
-    min-width: 0;
-    overflow: hidden;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: var(--surface-2);
-  }
-  .home-tile__media {
-    display: block;
-    aspect-ratio: 4 / 5;
-  }
-  .home-tile__media img,
-  .home-tile__media .media-fallback {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.7s var(--ease);
-  }
-  .home-tile:hover .home-tile__media img,
-  .home-tile:hover .home-tile__media .media-fallback {
-    transform: scale(1.04);
-  }
-  .home-tile__caption {
-    position: absolute;
-    inset: auto 0 0;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: var(--sp-3);
-    padding: 64px var(--sp-4) var(--sp-4);
-    background: linear-gradient(transparent, rgb(0 0 0 / 0.82));
-    color: var(--on-nav);
-  }
-  .home-tile__title {
-    font-family: var(--serif);
-    font-size: clamp(1.2rem, 1rem + 0.7vw, 1.65rem);
-    line-height: 1.1;
-  }
-  .home-tile__arrow {
-    color: color-mix(in srgb, var(--on-nav) 72%, transparent);
-    transition: transform 0.25s var(--ease);
-  }
-  .home-tile:hover .home-tile__arrow {
-    transform: translate(3px, -3px);
-    color: var(--copper);
-  }
-
   /* ---- Testimonials ---- */
   .home-testimonials {
     border-bottom: 1px solid var(--line);
@@ -1198,8 +1080,8 @@
   .home-bestsellers__track {
     display: grid;
     grid-auto-flow: column;
-    grid-auto-columns: calc((100% - 48px) / 3);
-    gap: 24px;
+    grid-auto-columns: calc((100% - 60px) / 4);
+    gap: 20px;
     padding-bottom: 8px;
     overflow-x: auto;
     overscroll-behavior-inline: contain;
@@ -1484,8 +1366,8 @@
   .home-recent__track {
     display: grid;
     grid-auto-flow: column;
-    grid-auto-columns: calc((100% - 60px) / 4);
-    gap: 20px;
+    grid-auto-columns: calc((100% - 64px) / 5);
+    gap: 16px;
     padding-bottom: 8px;
     overflow-x: auto;
     overscroll-behavior-inline: contain;
@@ -1542,10 +1424,6 @@
   }
 
   @media (max-width: 980px) {
-    .home-collections__grid {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
-    }
     .home-faq__layout {
       grid-template-columns: 1fr;
       gap: 44px;
@@ -1574,8 +1452,8 @@
       max-height: none;
     }
     .home-bestsellers__track {
-      grid-auto-columns: calc((100% - 20px) / 2);
-      gap: 20px;
+      grid-auto-columns: calc((100% - 32px) / 3);
+      gap: 16px;
     }
     .home-why__layout {
       grid-template-columns: 1fr;
@@ -1598,8 +1476,8 @@
       min-height: 460px;
     }
     .home-recent__track {
-      grid-auto-columns: calc((100% - 20px) / 2);
-      gap: 20px;
+      grid-auto-columns: calc((100% - 32px) / 3);
+      gap: 16px;
     }
   }
 
@@ -1607,18 +1485,6 @@
     .home-hero {
       align-items: center;
       text-align: left;
-    }
-    .home-collections__grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-    }
-    .home-tile__caption {
-      grid-template-columns: 1fr auto;
-      gap: 8px;
-      padding: 42px 12px 12px;
-    }
-    .home-tile__title {
-      font-size: 1rem;
     }
     .testimonial-card {
       gap: 18px;
@@ -1658,7 +1524,7 @@
       justify-content: space-between;
     }
     .home-bestsellers__track {
-      grid-auto-columns: 78%;
+      grid-auto-columns: 74%;
       gap: 14px;
     }
     .home-why__benefit {
@@ -1703,7 +1569,7 @@
       justify-content: space-between;
     }
     .home-recent__track {
-      grid-auto-columns: 78%;
+      grid-auto-columns: 74%;
       gap: 14px;
     }
   }
@@ -1731,13 +1597,6 @@
     { "type": "text", "id": "limited_sale_eyebrow", "label": "t:labels.campaign_eyebrow" },
     { "type": "text", "id": "limited_sale_heading", "label": "t:labels.campaign_heading" },
     { "type": "textarea", "id": "limited_sale_intro", "label": "t:labels.campaign_intro" },
-    {
-      "type": "product_list",
-      "id": "limited_sale_products",
-      "label": "t:labels.campaign_products",
-      "info": "t:info.campaign_products",
-      "limit": 6
-    },
     {
       "type": "image_picker",
       "id": "limited_sale_image",

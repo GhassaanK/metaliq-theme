@@ -1,0 +1,137 @@
+{% doc %}
+  Renders collection navigation and Shopify storefront filters.
+
+  @param {collection} collection - The collection being filtered
+  @param {string} id_prefix - Unique prefix for input IDs
+  @param {boolean} [show_heading] - Whether to render the filter heading
+  @param {boolean} [auto_apply] - Whether checkbox changes submit immediately
+
+  @example
+  {% render 'collection-filters', collection: collection, id_prefix: 'desktop', show_heading: true, auto_apply: true %}
+{% enddoc %}
+
+<form class="collection-filters" action="{{ collection.url }}" method="get"{% if auto_apply %} data-filter-auto-apply{% endif %}>
+  {%- if collection.sort_by != blank -%}
+    <input type="hidden" name="sort_by" value="{{ collection.sort_by | escape }}">
+  {%- endif -%}
+
+  {%- if show_heading -%}
+    <div class="collection-filters__heading">
+      <h2>{{ 'collection.filters' | t }}</h2>
+      {%- if collection.filters != empty -%}
+        <a href="{{ collection.url }}">{{ 'collection.clear_all' | t }}</a>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
+  <details class="collection-filter" open>
+    <summary>
+      <span>{{ 'collection.categories' | t }}</span>
+      <span class="collection-filter__chevron" aria-hidden="true"></span>
+    </summary>
+    <ul class="collection-filter__categories" role="list">
+      {%- for collection_item in collections -%}
+        {%- if collection_item.handle == 'sale' -%}
+          {%- continue -%}
+        {%- endif -%}
+        <li>
+          <a href="{{ collection_item.url }}"{% if collection_item.handle == collection.handle %} aria-current="page"{% endif %}>
+            <span>{{ collection_item.title }}</span>
+            <span>{{ collection_item.products_count }}</span>
+          </a>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </details>
+
+  {%- for filter in collection.filters -%}
+    {%- liquid
+      assign filter_active_count = filter.active_values.size
+      if filter.type == 'price_range'
+        if filter.min_value.value != nil
+          assign filter_active_count = 1
+        elsif filter.max_value.value != nil
+          assign filter_active_count = 1
+        endif
+      endif
+    -%}
+    <details class="collection-filter" open>
+      <summary>
+        <span>
+          {{ filter.label | escape }}
+          {%- if filter_active_count > 0 -%}
+            <span class="collection-filter__count">{{ filter_active_count }}</span>
+          {%- endif -%}
+        </span>
+        <span class="collection-filter__chevron" aria-hidden="true"></span>
+      </summary>
+
+      {%- case filter.type -%}
+        {%- when 'boolean', 'list' -%}
+          <ul class="collection-filter__values" role="list">
+            {%- for value in filter.values -%}
+              {%- assign input_id = id_prefix | append: '-' | append: filter.label | handle | append: '-' | append: forloop.index -%}
+              <li>
+                <input
+                  id="{{ input_id }}"
+                  type="checkbox"
+                  name="{{ value.param_name }}"
+                  value="{{ value.value }}"
+                  {% if value.active %}checked{% endif %}
+                  {% if value.count == 0 and value.active == false %}disabled{% endif %}
+                >
+                <label for="{{ input_id }}">
+                  <span>{{ value.label | escape }}</span>
+                  <span>{{ value.count }}</span>
+                </label>
+              </li>
+            {%- endfor -%}
+          </ul>
+
+        {%- when 'price_range' -%}
+          <div class="collection-filter__price">
+            <p>{{ 'collection.price_limit' | t: price: filter.range_max | money }}</p>
+            <div>
+              <label for="{{ id_prefix }}-price-min">{{ 'collection.price_from' | t }}</label>
+              <span>
+                <small>{{ localization.country.currency.symbol }}</small>
+                <input
+                  id="{{ id_prefix }}-price-min"
+                  name="{{ filter.min_value.param_name }}"
+                  type="number"
+                  min="0"
+                  max="{{ filter.range_max | divided_by: 100.0 }}"
+                  step="1"
+                  placeholder="0"
+                  {% if filter.min_value.value != nil %}value="{{ filter.min_value.value | divided_by: 100.0 }}"{% endif %}
+                >
+              </span>
+            </div>
+            <div>
+              <label for="{{ id_prefix }}-price-max">{{ 'collection.price_to' | t }}</label>
+              <span>
+                <small>{{ localization.country.currency.symbol }}</small>
+                <input
+                  id="{{ id_prefix }}-price-max"
+                  name="{{ filter.max_value.param_name }}"
+                  type="number"
+                  min="0"
+                  max="{{ filter.range_max | divided_by: 100.0 }}"
+                  step="1"
+                  placeholder="{{ filter.range_max | divided_by: 100.0 }}"
+                  {% if filter.max_value.value != nil %}value="{{ filter.max_value.value | divided_by: 100.0 }}"{% endif %}
+                >
+              </span>
+            </div>
+          </div>
+      {%- endcase -%}
+    </details>
+  {%- endfor -%}
+
+  {%- if collection.filters != empty -%}
+    <div class="collection-filters__actions">
+      <button class="button" type="submit">{{ 'collection.apply_filters' | t }}</button>
+      <a class="button button--ghost" href="{{ collection.url }}">{{ 'collection.clear_all' | t }}</a>
+    </div>
+  {%- endif -%}
+</form>

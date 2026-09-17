@@ -68,14 +68,13 @@
     "body_font": "Body font",
     "button_label": "Button label",
     "button_link": "Button link",
-    "campaign_active": "Campaign is active",
     "campaign_enabled": "Show limited-time offers",
     "campaign_end": "Campaign end date and time",
     "campaign_eyebrow": "Campaign label",
     "campaign_fallback_image": "Fallback product image",
     "campaign_heading": "Campaign heading",
     "campaign_intro": "Campaign introduction",
-    "campaign_products": "Sale products",
+    "campaign_collection": "Offer collection",
     "collection": "Collection",
     "collections_menu": "Collections dropdown menu",
     "customer_account_menu": "Customer account menu",
@@ -110,9 +109,9 @@
   },
   "info": {
     "body_font": "Body text is set in Inter, bundled with the theme.",
-    "campaign_end": "Use an exact ISO date with Pakistan's UTC offset, for example 2026-10-12T23:59:00+05:00. Match the scheduled Shopify discount end time.",
-    "campaign_discount_setup": "Discount values come from Shopify. Automatic discounts are shown after an eligible item is added to cart; product sale prices use the Price and Compare-at price stored on each variant.",
-    "campaign_products": "Select the same products included in the scheduled Shopify automatic discount. The Medium variant is featured when available."
+    "campaign_end": "Enter the sale's exact end date in ISO format with Pakistan's UTC offset, for example 2026-10-12T23:59:00+05:00. The section changes to an ended state at this time, but product prices must be restored separately.",
+    "campaign_discount_setup": "Set each variant's Price to the sale price and Compare-at price to its original price. The theme calculates every saving from those Shopify values.",
+    "campaign_collection": "Choose the Sale collection used only as the product source for this homepage section. Sale is used when no collection is selected."
   },
   "options": {
     "alignment": {

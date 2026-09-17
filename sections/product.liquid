@@ -10,6 +10,11 @@
     endfor
   endif
   assign current_variant = current_variant | default: product.selected_or_first_available_variant
+  assign current_sale_percentage = 0
+  if current_variant.compare_at_price > current_variant.price
+    assign current_saving = current_variant.compare_at_price | minus: current_variant.price
+    assign current_sale_percentage = current_saving | times: 100.0 | divided_by: current_variant.compare_at_price | round
+  endif
 
   assign related_collection = product.collections.first | default: collections.all
   assign detail_media = product.media[1] | default: product.featured_media
@@ -54,6 +59,7 @@
     data-available-label="{{ 'product.available_to_order' | t | escape }}"
     data-sold-out-label="{{ 'product.sold_out' | t | escape }}"
     data-add-label="{{ 'product.add_to_cart' | t | escape }}"
+    data-sale-label="{{ 'home.limited_sale_percentage' | t: percent: '__PERCENT__' | escape }}"
   >
     <div class="product-gallery" data-product-gallery>
       {%- if product.media.size > 0 -%}
@@ -175,6 +181,7 @@
       <div class="product-price price" data-product-price data-base-price="{{ current_variant.price }}" data-base-compare-price="{{ current_variant.compare_at_price | default: 0 }}">
         <s data-compare-price{% unless current_variant.compare_at_price > current_variant.price %} hidden{% endunless %}>{{ current_variant.compare_at_price | money }}</s>
         <span data-current-price>{{ current_variant.price | money }}</span>
+        <span class="product-price__badge tag" data-sale-percentage{% unless current_variant.compare_at_price > current_variant.price %} hidden{% endunless %}>{{ 'home.limited_sale_percentage' | t: percent: current_sale_percentage }}</span>
       </div>
       <p class="product-price-context">{{ 'product.price_context' | t }}</p>
 
@@ -608,8 +615,16 @@
     margin: var(--sp-2) 0 var(--sp-3);
   }
   .product-price {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 12px;
     margin-bottom: 4px;
     font-size: var(--fs-h4);
+  }
+  .product-price__badge {
+    font-family: var(--sans);
+    font-size: var(--fs-label-sm);
   }
   .product-price-context {
     margin: 0 0 var(--sp-4);

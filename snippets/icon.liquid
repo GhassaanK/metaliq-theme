@@ -4,7 +4,7 @@
 
   @param {string} name - One of: precision, cut, layers, shield, package, gift,
     truck, sparkle, star, arrow-right, instagram, tiktok, pinterest, youtube,
-    facebook, mail, play, whatsapp, close, bag, zoom-in
+    facebook, mail, play, whatsapp, close, bag, zoom-in, filter
 
   @example
   {% render 'icon', name: 'shield' %}
@@ -30,6 +30,8 @@
       <path d="M6 8h12l-1 12H7L6 8Z" /><path d="M9 8V6a3 3 0 0 1 6 0v2" />
     {%- when 'zoom-in' -%}
       <circle cx="11" cy="11" r="7" /><path d="m20 20-4-4M11 8v6M8 11h6" />
+    {%- when 'filter' -%}
+      <path d="M4 6h16M7 12h10M10 18h4" />
     {%- when 'gift' -%}
       <rect x="3" y="8" width="18" height="4" rx="1" /><path d="M5 12v9h14v-9M12 8v13" /><path d="M12 8S9 3 6.5 5 8 8 12 8ZM12 8s3-5 5.5-3S16 8 12 8Z" />
     {%- when 'truck' -%}

@@ -76,7 +76,18 @@
               {%- liquid
                 assign menu_link_url = link.url
                 assign menu_link_is_custom = false
+                assign menu_link_is_sale_collection = false
+                assign menu_link_is_view_all = false
                 assign menu_link_title = link.title | downcase
+                if link.url contains '/collections/sale'
+                  assign menu_link_is_sale_collection = true
+                endif
+                if link.url == routes.collections_url
+                  assign menu_link_is_view_all = true
+                endif
+                if menu_link_title contains 'view all'
+                  assign menu_link_is_view_all = true
+                endif
                 if link.url contains '/pages/custom-design'
                   assign menu_link_is_custom = true
                 endif
@@ -87,13 +98,33 @@
                   assign menu_link_url = custom_whatsapp_url
                 endif
               -%}
-              <a href="{{ menu_link_url }}"{% if menu_link_is_custom %} data-whatsapp-cta target="_blank" rel="noopener"{% endif %}{% if link.current %} aria-current="page"{% endif %}>{{ link.title }}</a>
+              {%- unless menu_link_is_sale_collection -%}
+                <a class="nav-dropdown__item{% if menu_link_is_view_all %} nav-dropdown__item--all{% endif %}" href="{{ menu_link_url }}"{% if menu_link_is_custom %} data-whatsapp-cta target="_blank" rel="noopener"{% endif %}{% if link.current %} aria-current="page"{% endif %}>
+                  <span class="nav-dropdown__item-label">{{ link.title }}</span>
+                  {%- if menu_link_is_view_all -%}
+                    <span class="nav-dropdown__item-arrow" aria-hidden="true">&rarr;</span>
+                  {%- elsif link.type == 'collection_link' and link.object != blank -%}
+                    <span class="nav-dropdown__item-meta">{{ 'collection.count' | t: count: link.object.products_count }}</span>
+                  {%- else -%}
+                    <span class="nav-dropdown__item-arrow" aria-hidden="true">&nearr;</span>
+                  {%- endif -%}
+                </a>
+              {%- endunless -%}
             {%- endfor -%}
           {%- else -%}
             {%- for collection_item in collections -%}
-              <a href="{{ collection_item.url }}">{{ collection_item.title }}</a>
+              {%- if collection_item.handle == 'sale' -%}
+                {%- continue -%}
+              {%- endif -%}
+              <a class="nav-dropdown__item" href="{{ collection_item.url }}"{% if collection_item.handle == collection.handle %} aria-current="page"{% endif %}>
+                <span class="nav-dropdown__item-label">{{ collection_item.title }}</span>
+                <span class="nav-dropdown__item-meta">{{ 'collection.count' | t: count: collection_item.products_count }}</span>
+              </a>
             {%- endfor -%}
-            <a href="{{ routes.collections_url }}">{{ 'collections.view_all' | t }}</a>
+            <a class="nav-dropdown__item nav-dropdown__item--all" href="{{ routes.collections_url }}">
+              <span class="nav-dropdown__item-label">{{ 'collections.view_all' | t }}</span>
+              <span class="nav-dropdown__item-arrow" aria-hidden="true">&rarr;</span>
+            </a>
           {%- endif -%}
         </div>
       </details>

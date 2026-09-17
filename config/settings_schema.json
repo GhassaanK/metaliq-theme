@@ -193,10 +193,10 @@
         "content": "t:info.campaign_discount_setup"
       },
       {
-        "type": "checkbox",
-        "id": "limited_sale_active",
-        "label": "t:labels.campaign_active",
-        "default": false
+        "type": "collection",
+        "id": "limited_sale_collection",
+        "label": "t:labels.campaign_collection",
+        "info": "t:info.campaign_collection"
       },
       {
         "type": "text",

@@ -9,6 +9,9 @@
   {%- paginate collections by section.settings.per_page -%}
     <div class="collections-grid">
       {%- for collection in collections -%}
+        {%- if collection.handle == 'sale' -%}
+          {%- continue -%}
+        {%- endif -%}
         <a class="collections-grid__item" href="{{ collection.url }}">
           <span class="media collections-grid__media">
             {%- if collection.featured_image -%}

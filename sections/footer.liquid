@@ -67,7 +67,11 @@
                   {%- liquid
                     assign menu_link_url = link.url
                     assign menu_link_is_custom = false
+                    assign menu_link_is_sale_collection = false
                     assign menu_link_title = link.title | downcase
+                    if link.url contains '/collections/sale'
+                      assign menu_link_is_sale_collection = true
+                    endif
                     if link.url contains '/pages/custom-design'
                       assign menu_link_is_custom = true
                     endif
@@ -78,7 +82,9 @@
                       assign menu_link_url = custom_link
                     endif
                   -%}
-                  <a href="{{ menu_link_url }}"{% if menu_link_is_custom %} data-whatsapp-cta target="_blank" rel="noopener"{% endif %}>{{ link.title }}</a>
+                  {%- unless menu_link_is_sale_collection -%}
+                    <a href="{{ menu_link_url }}"{% if menu_link_is_custom %} data-whatsapp-cta target="_blank" rel="noopener"{% endif %}>{{ link.title }}</a>
+                  {%- endunless -%}
                 {%- endfor -%}
                 {%- if i == 2 -%}
                   {%- unless menu_urls contains '/pages/ordering-and-payments' -%}
