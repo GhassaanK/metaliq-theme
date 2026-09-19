@@ -26,12 +26,12 @@
     "business_address": "Plot No 635, Gali No 15, Sector-F, Punjab Road, Manzoor Colony, Karachi, Sindh, Pakistan",
     "whatsapp_number": "+923172920243",
     "whatsapp_custom_message": "Hi MetaliQ Art, I have a custom design in mind and would like to discuss it.",
-    "limited_sale_end": "2026-10-12T23:59:00+05:00",
-    "limited_sale_collection": "sale",
     "instagram_url": "https://www.instagram.com/metaliq.art/",
     "facebook_url": "https://www.facebook.com/metaliq.art/",
     "tiktok_url": "https://www.tiktok.com/@metaliq.art",
     "youtube_url": "https://www.youtube.com/@metaliq.art",
+    "limited_sale_collection": "sale",
+    "limited_sale_end": "2026-10-12T23:59:00+05:00",
     "sections": {
       "cart-drawer": {
         "type": "cart-drawer",
@@ -44,6 +44,13 @@
         "type": "shopify://apps/judge-me-reviews/blocks/judgeme_core/61ccd3b1-a9f2-4160-9fe9-4fec8413e5d8",
         "disabled": false,
         "settings": {}
+      },
+      "13047258039897440615": {
+        "type": "shopify://apps/judge-me-reviews/blocks/cart_drawer_widget/61ccd3b1-a9f2-4160-9fe9-4fec8413e5d8",
+        "disabled": false,
+        "settings": {
+          "widget_type": "review-widget"
+        }
       }
     }
   },
