@@ -699,7 +699,12 @@ select {
 .product-card__form {
   margin-top: 14px;
 }
-.product-card__add {
+.product-card__actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 7px;
+}
+.product-card__buy {
   display: flex;
   width: 100%;
   min-height: 42px;
@@ -716,18 +721,58 @@ select {
   font-weight: 700;
   transition: background-color 0.2s var(--ease), border-color 0.2s var(--ease), transform 0.2s var(--ease);
 }
-.product-card__add .icon {
+.product-card__utility-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+.product-card__add,
+.product-card__wishlist {
+  display: flex;
+  min-width: 0;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 700;
+  transition: background-color 0.2s var(--ease), border-color 0.2s var(--ease), color 0.2s var(--ease), transform 0.2s var(--ease);
+}
+.product-card__add,
+.product-card__wishlist {
+  width: 100%;
+  padding: 0;
+}
+.product-card__add .icon,
+.product-card__wishlist .icon {
   width: 17px;
   height: 17px;
 }
-.product-card__add:not(:disabled):hover {
+.product-card__buy:not(:disabled):hover {
   border-color: var(--copper-light);
   background: var(--copper-light);
   transform: translateY(-2px);
 }
-.product-card__add:disabled {
+.product-card__add:not(:disabled):hover,
+.product-card__wishlist:hover,
+.product-card__wishlist[aria-pressed='true'] {
+  border-color: var(--copper);
+  background: color-mix(in srgb, var(--copper) 12%, transparent);
+  color: var(--copper-light);
+}
+.product-card__add:disabled,
+.product-card__buy:disabled {
   cursor: not-allowed;
   opacity: 0.5;
+}
+.wishlist-button[aria-pressed='true'] .icon {
+  fill: currentColor;
 }
 .product-card__error {
   margin-top: 7px;
@@ -1105,6 +1150,12 @@ select {
 .header-actions .icon-button:hover svg,
 .header-actions .icon-button:focus-visible svg {
   transform: translateY(-2px);
+}
+.wishlist-link.has-items {
+  color: var(--copper);
+}
+.wishlist-link.has-items svg {
+  fill: currentColor;
 }
 .icon-button {
   position: relative;
@@ -1954,11 +2005,23 @@ html.reveal-on .reveal.is-in {
   .product-card__form {
     margin-top: 10px;
   }
-  .product-card__add {
+  .product-card__buy {
     min-height: 40px;
-    gap: 6px;
-    padding-inline: 8px;
-    font-size: 0.7rem;
+    padding-inline: 6px;
+    font-size: 0.66rem;
+  }
+  .product-card__add,
+  .product-card__wishlist {
+    min-height: 40px;
+    font-size: 0.64rem;
+  }
+  .product-card__add,
+  .product-card__wishlist {
+    width: 100%;
+  }
+  .product-card__add .icon {
+    width: 15px;
+    height: 15px;
   }
   .product-card__badge {
     top: 8px;

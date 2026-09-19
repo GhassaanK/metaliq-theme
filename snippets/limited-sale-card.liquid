@@ -55,21 +55,47 @@
       <form method="post" action="{{ routes.cart_add_url }}" data-card-add-form>
         <input type="hidden" name="id" value="{{ sale_variant.id }}">
         <input type="hidden" name="quantity" value="1">
-        <button
-          class="button button--block"
-          type="submit"
-          data-card-add-button
-          data-adding="{{ 'product.adding' | t }}"
-          {% unless sale_variant.available %}disabled{% endunless %}
-        >
-          <span data-card-add-label>
-            {%- if sale_variant.available -%}
-              {{ 'product.add_to_cart' | t }}
-            {%- else -%}
-              {{ 'product.sold_out' | t }}
-            {%- endif -%}
-          </span>
-        </button>
+        <div class="limited-bundle-card__actions">
+          <div class="limited-bundle-card__utility-actions">
+            <button
+              class="limited-bundle-card__add"
+              type="submit"
+              data-card-add-button
+              data-adding="{{ 'product.adding' | t }}"
+              aria-label="{{ 'product.card_add_label' | t: title: product.title }}"
+              title="{{ 'product.add_to_cart' | t }}"
+              {% unless sale_variant.available %}disabled{% endunless %}
+            >
+              {% render 'icon', name: 'bag' %}
+              <span class="visually-hidden" data-card-add-label>
+                {%- if sale_variant.available -%}
+                  {{ 'product.add_to_cart' | t }}
+                {%- else -%}
+                  {{ 'product.sold_out' | t }}
+                {%- endif -%}
+              </span>
+            </button>
+            {% render 'wishlist-button', product: product, variant: sale_variant, css_class: 'limited-bundle-card__wishlist', show_label: false %}
+          </div>
+          <button
+            class="button button--primary button--block"
+            type="submit"
+            name="return_to"
+            value="{{ routes.root_url }}checkout"
+            data-card-buy-now
+            data-buying="{{ 'product.buying_now' | t }}"
+            aria-label="{{ 'product.buy_now_label' | t: title: product.title }}"
+            {% unless sale_variant.available %}disabled{% endunless %}
+          >
+            <span data-card-buy-label>
+              {%- if sale_variant.available -%}
+                {{ 'product.buy_now' | t }}
+              {%- else -%}
+                {{ 'product.sold_out' | t }}
+              {%- endif -%}
+            </span>
+          </button>
+        </div>
         <p class="product-card__error" data-card-add-error hidden role="alert">{{ 'product.add_error' | t }}</p>
       </form>
     </div>
