@@ -63,6 +63,19 @@
             if extra_price > 0
               assign is_grouped = true
             endif
+
+            assign unit_price = line_total
+            if item.quantity > 1
+              assign unit_price = line_total | divided_by: item.quantity
+            endif
+
+            assign has_visible_properties = false
+            for property in item.properties
+              assign property_prefix = property.first | slice: 0
+              if property_prefix != '_' and property.last != blank
+                assign has_visible_properties = true
+              endif
+            endfor
           %}
 
           {%- if surcharge_for != blank and has_parent -%}
@@ -92,8 +105,24 @@
               {%- endif -%}
               <h2><a href="{{ item.url }}">{{ item.product.title }}</a></h2>
 
-              {%- if item.product.description != blank -%}
-                <div class="cart-line__description rte">{{ item.product.description }}</div>
+              {%- unless item.product.has_only_default_variant -%}
+                <ul class="cart-line__options">
+                  {%- for option in item.options_with_values -%}
+                    <li><span>{{ option.name }}</span><strong>{{ option.value }}</strong></li>
+                  {%- endfor -%}
+                </ul>
+              {%- endunless -%}
+
+              {%- if has_visible_properties -%}
+                <ul class="cart-line__options cart-line__options--properties">
+                  {%- for property in item.properties -%}
+                    {%- assign property_prefix = property.first | slice: 0 -%}
+                    {%- if property_prefix == '_' or property.last == blank -%}
+                      {% continue %}
+                    {%- endif -%}
+                    <li><span>{{ property.first }}</span><strong>{{ property.last }}</strong></li>
+                  {%- endfor -%}
+                </ul>
               {%- endif -%}
 
               <div class="cart-line__controls">
@@ -125,10 +154,16 @@
 
             <div class="cart-line__aside">
               <span>{{ 'cart.line_total' | t }}</span>
-              {%- if original_line_total > line_total -%}
-                <s class="cart-line__original-price">{{ original_line_total | money }}</s>
-              {%- endif -%}
-              <strong class="cart-line__price price">{{ line_total | money }}</strong>
+              <div class="cart-line__amounts">
+                {%- if original_line_total > line_total -%}
+                  <s class="cart-line__original-price">{{ original_line_total | money }}</s>
+                {%- endif -%}
+                <strong class="cart-line__price price">{{ line_total | money }}</strong>
+                {%- if item.quantity > 1 -%}
+                  {%- assign unit_price_money = unit_price | money -%}
+                  <small class="cart-line__unit-price">{{ 'cart.unit_price' | t: price: unit_price_money }}</small>
+                {%- endif -%}
+              </div>
               {%- if item.discount_allocations.size > 0 -%}
                 <ul class="cart-line__discounts" aria-label="{{ 'cart.discounts' | t }}">
                   {%- for allocation in item.discount_allocations -%}
@@ -160,6 +195,12 @@
           <strong>{{ cart.total_price | money }}</strong>
         </div>
         <p class="field-note">{{ 'cart.tax_note' | t }}</p>
+        <button class="button button--primary button--block cart-summary__checkout" type="submit" name="checkout">
+          {{- 'cart.checkout' | t -}}
+        </button>
+        <a class="link cart-summary__continue" href="{{ routes.all_products_collection_url }}">
+          {{- 'cart.continue' | t -}}
+        </a>
         <div class="cart-summary__disclosure">
           <p><strong>{{ 'cart.payment_title' | t }}</strong>
             {% render 'payment-status', active_key: 'cart.payment_active_body', inactive_key: 'cart.payment_body' %}
@@ -170,12 +211,6 @@
           <a href="/policies/refund-policy">{{ 'cart.refund_link' | t }}</a>
           <a href="/policies/terms-of-service">{{ 'cart.terms_link' | t }}</a>
         </div>
-        <button class="button button--primary button--block" type="submit" name="checkout">
-          {{- 'cart.checkout' | t -}}
-        </button>
-        <a class="link cart-summary__continue" href="{{ routes.all_products_collection_url }}">
-          {{- 'cart.continue' | t -}}
-        </a>
         {%- liquid
           assign cart_whatsapp_label = 'cart.whatsapp_cta' | t
           assign cart_whatsapp_message = 'cart.whatsapp_message' | t
@@ -274,21 +309,31 @@
     font-size: 0.64rem;
     text-transform: uppercase;
   }
-  .cart-line__description {
-    max-width: 68ch;
-    color: var(--muted);
-    font-size: var(--fs-sm);
-    line-height: 1.6;
+  .cart-line__options {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .cart-line__options + .cart-line__options {
+    margin-top: 6px;
+  }
+  .cart-line__options li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    min-width: 0;
+    font-size: var(--fs-label-sm);
+    line-height: 1.4;
     overflow-wrap: anywhere;
   }
-  .cart-line__description > * + * {
-    margin-top: 10px;
+  .cart-line__options span {
+    color: var(--muted);
   }
-  .cart-line__description img,
-  .cart-line__description video,
-  .cart-line__description iframe {
-    max-width: 100%;
-    height: auto;
+  .cart-line__options strong {
+    color: var(--ink);
+    font-weight: 600;
   }
   .cart-line__controls {
     display: flex;
@@ -344,8 +389,21 @@
     font-size: 0.64rem;
     text-transform: uppercase;
   }
+  .cart-line__amounts {
+    display: flex;
+    align-items: flex-end;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
   .cart-line__price {
     font-size: clamp(1rem, 0.9rem + 0.3vw, 1.25rem);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .cart-line__unit-price {
+    color: var(--muted);
+    font-size: 0.68rem;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }

@@ -154,6 +154,17 @@
         <a href="{{ tiktok_url }}" target="_blank" rel="noopener" aria-label="TikTok">{% render 'icon', name: 'tiktok' %}</a>
         <a href="{{ youtube_url }}" target="_blank" rel="noopener" aria-label="YouTube">{% render 'icon', name: 'youtube' %}</a>
       </div>
+      <button
+        class="icon-button wishlist-link"
+        type="button"
+        aria-label="{{ 'wishlist.open' | t: count: 0 }}"
+        data-wishlist-label="{{ 'wishlist.open' | t: count: '__COUNT__' }}"
+        aria-controls="WishlistDrawer"
+        aria-expanded="false"
+        data-wishlist-trigger
+      >
+        {% render 'icon', name: 'heart' %}
+      </button>
       <a class="icon-button" href="{{ routes.search_url }}" aria-label="{{ 'general.search' | t }}">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
       </a>

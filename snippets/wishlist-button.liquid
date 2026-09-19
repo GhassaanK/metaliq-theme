@@ -1,0 +1,43 @@
+{% doc %}
+  Renders a browser-persisted wishlist toggle for a product and selected variant.
+
+  @param {product} product - Product to save
+  @param {variant} [variant] - Variant whose title and price should be shown in the wishlist
+  @param {string} [css_class] - Additional button classes
+  @param {boolean} [show_label] - Whether the visible Add to wishlist label is rendered
+
+  @example
+  {% render 'wishlist-button', product: product, variant: product.selected_or_first_available_variant, show_label: true %}
+{% enddoc %}
+
+{%- liquid
+  assign wishlist_variant = variant | default: product.selected_or_first_available_variant
+  assign wishlist_url = product.url | append: '?variant=' | append: wishlist_variant.id
+  assign wishlist_image_url = blank
+  if product.featured_image
+    assign wishlist_image_url = product.featured_image | image_url: width: 320
+  endif
+-%}
+
+<button
+  class="wishlist-button {{ css_class }}"
+  type="button"
+  aria-pressed="false"
+  aria-label="{{ 'wishlist.add_label' | t: title: product.title | escape }}"
+  title="{{ 'wishlist.add' | t | escape }}"
+  data-wishlist-toggle
+  data-wishlist-product-id="{{ product.id }}"
+  data-wishlist-variant-id="{{ wishlist_variant.id }}"
+  data-wishlist-title="{{ product.title | escape }}"
+  data-wishlist-variant-title="{{ wishlist_variant.title | escape }}"
+  data-wishlist-price="{{ wishlist_variant.price | money | escape }}"
+  data-wishlist-url="{{ wishlist_url }}"
+  data-wishlist-image="{{ wishlist_image_url }}"
+  data-add-label="{{ 'wishlist.add_label' | t: title: product.title | escape }}"
+  data-remove-label="{{ 'wishlist.remove_label' | t: title: product.title | escape }}"
+  data-add-text="{{ 'wishlist.add' | t | escape }}"
+  data-saved-text="{{ 'wishlist.saved' | t | escape }}"
+>
+  {% render 'icon', name: 'heart' %}
+  <span{% unless show_label %} class="visually-hidden"{% endunless %} data-wishlist-label>{{ 'wishlist.add' | t }}</span>
+</button>

@@ -35,6 +35,7 @@
     {% sections 'footer-group' %}
 
     {% section 'cart-drawer' %}
+    {% section 'wishlist-drawer' %}
 
     <script>
       window.MetaliQ = {
@@ -42,10 +43,12 @@
           cart: '{{ routes.cart_url }}',
           cartAdd: '{{ routes.cart_add_url }}',
           cartChange: '{{ routes.cart_change_url }}',
-          cartUpdate: '{{ routes.cart_update_url }}'
+          cartUpdate: '{{ routes.cart_update_url }}',
+          checkout: '{{ routes.root_url }}checkout'
         }
       };
     </script>
+    <script defer src="https://cdn.trustindex.io/loader.js?1c50a1581fcc778b6a661fb2506"></script>
     <script src="{{ 'theme.js' | asset_url }}" defer></script>
   </body>
 </html>
