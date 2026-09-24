@@ -162,22 +162,24 @@
       <p class="eyebrow">{{ 'product.eyebrow' | t }}</p>
       <h1 class="product-title">{{ product.title }}</h1>
 
-      <div
-        class="product-rating{% if rating == blank or rating_count == 0 %} has-no-reviews{% endif %}"
-        role="img"
-        aria-label="{% if rating != blank and rating_count > 0 %}{{ 'product.rating_label' | t: rating: rating_value, maximum: rating_scale_max, count: rating_count }}{% else %}{{ 'product.no_reviews' | t }}{% endif %}"
-      >
-        <span class="product-rating__stars" style="--rating-percent: {% if rating != blank and rating_count > 0 %}{{ rating_percent }}{% else %}0{% endif %}%" aria-hidden="true">
-          <span>&#9733;&#9733;&#9733;&#9733;&#9733;</span>
-          <span class="product-rating__fill">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
-        </span>
-        {%- if rating != blank and rating_count > 0 -%}
+      {%- comment -%}
+        The rating row renders only once real reviews exist. An explicit "no reviews yet" state
+        directly under the title advertises zero social proof at the point of highest attention.
+      {%- endcomment -%}
+      {%- if rating != blank and rating_count > 0 -%}
+        <div
+          class="product-rating"
+          role="img"
+          aria-label="{{ 'product.rating_label' | t: rating: rating_value, maximum: rating_scale_max, count: rating_count }}"
+        >
+          <span class="product-rating__stars" style="--rating-percent: {{ rating_percent }}%" aria-hidden="true">
+            <span>&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+            <span class="product-rating__fill">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+          </span>
           <strong>{{ rating_value }}</strong>
           <span>{{ 'product.review_count' | t: count: rating_count }}</span>
-        {%- else -%}
-          <span>{{ 'product.no_reviews' | t }}</span>
-        {%- endif -%}
-      </div>
+        </div>
+      {%- endif -%}
 
       <div class="product-price price" data-product-price data-base-price="{{ current_variant.price }}" data-base-compare-price="{{ current_variant.compare_at_price | default: 0 }}">
         <s data-compare-price{% unless current_variant.compare_at_price > current_variant.price %} hidden{% endunless %}>{{ current_variant.compare_at_price | money }}</s>
