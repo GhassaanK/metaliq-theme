@@ -95,20 +95,30 @@ Judge.me review widget block is placed on the product section in `templates/prod
 
 ## Slice 1 findings — Product page
 
-### P-01 Judge.me is configured to display sample data
-**File:** `templates/product.json` (block `judge_me_reviews_review_widget_6Gcdkg`,
-`"review_data": "sample_data"`); `sections/product.liquid:165-180`, `:417-423`
-**What is wrong:** The review widget on the product section is set to sample data, so the reviews
-area renders Judge.me demo content rather than this store's reviews. Separately, the star row
-under the H1 reads from `product.metafields.reviews.rating`, and when that is empty it prints
-"No product reviews yet" directly above the price.
-**Why it costs conversions:** Demo reviews presented as real ones are a trust and compliance
-problem, not social proof. And the empty state places an explicit statement of zero reviews at the
-single highest-attention point on the page, immediately under the title.
-**Fix:** Switch the Judge.me block off sample data in the theme editor. Until real reviews exist,
-hide the rating row entirely rather than printing the empty state, and rely on the Trustindex
-proof that is already paid for.
-**Severity:** Critical · **Effort:** S · Established best practice
+### P-01 The product page announced zero reviews above the price — DONE (Batch 2)
+**File:** `sections/product.liquid:165-180`; `templates/product.json` block
+`judge_me_reviews_review_widget_6Gcdkg`
+
+**Correction to the original finding.** This was first written as "Judge.me renders demo reviews as
+if real". That half is **wrong and is withdrawn.** Tested in a browser against the dev server with
+`"review_data": "sample_data"` still in place: the storefront widget rendered zero review cards and
+read "Customer Reviews / Be the first to write a review / Write a review". No sample review text
+reached the storefront at any point. Removing the setting produced byte-identical widget output.
+`review_data` is not emitted to the storefront at all, while the sibling `empty_state` setting is,
+which indicates it is a theme-editor preview control rather than a storefront one. Severity drops
+from Critical accordingly.
+
+**What was actually wrong:** The star row under the H1 read from
+`product.metafields.reviews.rating` and, when empty, printed "No product reviews yet" directly
+above the price. Every product sampled on this store has zero product reviews, so this rendered on
+every product page.
+**Why it costs conversions:** It places an explicit statement of zero social proof at the highest
+attention point on the page, immediately under the title and above the price. An absent rating row
+is neutral; a row that announces the absence is not.
+**Fix applied:** The rating row now renders only when a real rating exists and the review count is
+above zero. The `sample_data` setting was removed from the block as well, for tidiness rather than
+effect.
+**Severity:** Medium (was Critical) · **Effort:** S · Established best practice
 
 ### P-02 Add to cart is an unlabeled icon button while Buy now takes the primary style
 **File:** `sections/product.liquid:254-299`, styles at `:840-884`
@@ -118,8 +128,17 @@ icon. Its text sits in a `.visually-hidden` span. The full-width copper primary 
 the drawer where the discount field, trust row and any future cross-sell live. Rendering it as an
 unlabeled icon suppresses it and forces undecided buyers to choose between an immediate checkout
 redirect and nothing. Icon-only commerce controls are routinely misread.
-**Fix:** Make Add to cart the full-width primary button with visible text. Demote Buy now to a
-full-width secondary button beneath it. Keep wishlist as the only icon button.
+**Counter-argument, and why this waits.** Checkout here is short, roughly two taps from the product
+page on mobile. On a short path, Buy now as the primary button may well be the deliberate and
+correct choice, capturing decided buyers without a cart detour. The case against it above rests on
+undecided buyers needing the drawer, which is an assumption, not a measured fact about this store.
+
+So this is a hypothesis to test, not a defect to fix. **Batch 1 runs last**, and only after a
+baseline Add to cart rate has been recorded from Events Manager. If Add to cart is already healthy
+against View content, leave the button hierarchy alone. The unlabeled icon is still worth fixing on
+its own terms; the demotion of Buy now is the part that needs evidence.
+**Fix:** Give Add to cart a visible text label. Test promoting it to primary against the current
+arrangement rather than assuming the change is an improvement.
 **Severity:** Critical · **Effort:** S · Hypothesis to test
 
 ### P-03 A WhatsApp CTA outweighs Add to cart, and the page carries up to four WhatsApp exits
@@ -297,6 +316,25 @@ will resurface if either string is reintroduced.
 **Fix:** Delete both keys, or rewrite without the em dash if they are to be used.
 **Severity:** Low · **Effort:** S · Established best practice
 
+### P-18 Every product with no compare-at price shows a "0% off" badge
+**File:** `assets/critical.css:472` (`.tag { display: inline-block }`);
+`sections/product.liquid:185`; `assets/theme.js:1143-1146`
+**What is wrong:** The sale badge next to the price carries the `hidden` attribute correctly, both
+from Liquid and from the JS that runs on every variant change. But `.tag` sets `display:
+inline-block`, and a class selector outranks the browser's built-in `[hidden] { display: none }`.
+`critical.css` defines no global `[hidden]` rule to restore it, so `hidden` is inert on every
+`.tag` element. Confirmed in a browser on a product whose variants all have an empty
+`compare_at_price`: the badge reports `hidden` true, computed display `block`, and is visible on
+screen reading "0% off".
+**Why it costs conversions:** Every product that is not discounted advertises a zero discount
+beside its price. It reads as a broken page, and it undercuts the real sale badge on the products
+that are genuinely reduced.
+**Fix:** Add `[hidden] { display: none !important; }` to the base rules in `critical.css`. That
+one line fixes this badge and every other element in the theme that relies on `hidden` while also
+carrying a class with an explicit `display`.
+**Severity:** High · **Effort:** S · Established best practice
+**Found:** 2026-09-19, while verifying Batch 2. Not fixed, outside the approved scope.
+
 ---
 
 ## Slice 1 findings — Cart
@@ -430,18 +468,25 @@ self-inflicted.
 discount, or say nothing until it is confirmed.
 **Severity:** Medium · **Effort:** M · Established best practice
 
-### C-13 There is no client-side commerce tracking anywhere in the theme
+### C-13 The theme carries no tracking code of its own — NO ACTION NEEDED
 **File:** whole theme; verified by grep across every liquid, js and json file
-**What is wrong:** No dataLayer, no GA4, no Meta pixel, no `analytics.subscribe`, and `theme.js`
-dispatches no custom DOM events, so nothing can even hook the AJAX add-to-cart. The only third
-party is Trustindex.
-**Why it costs conversions:** Every fix in this audit changes behaviour between product view and
-checkout start, and none of that interval is currently measurable. This finding gates the rest of
-the plan.
-**Fix:** Add a Shopify Custom Pixel in Admin subscribing to `product_viewed`,
-`product_added_to_cart`, `cart_viewed` and `checkout_started`. Separately, dispatch a document
-`CustomEvent` from `theme.js` after a successful `/cart/add.js` so any client-side tool has a hook.
-**Severity:** High · **Effort:** M · Established best practice
+**What is the situation:** The theme contains no dataLayer, no GA4 snippet, no Meta pixel code, no
+`analytics.subscribe`, and `theme.js` dispatches no custom DOM events. The only third-party script
+in the theme is Trustindex.
+
+That is by design and is not a gap. Meta pixel and the Conversions API run through Shopify's
+Facebook and Instagram channel, confirmed in Events Manager: the pixel is active on metaliq.art
+and PageView, View content, Add to cart, Initiate checkout, Add payment info and Purchase are all
+firing. Shopify's channel captures these server-side and through its own Web Pixel sandbox, which
+is why nothing appears in theme code.
+
+**Implication for this audit:** The funnel between product view and checkout start is already
+measurable, so every other batch can be evaluated against Events Manager without any theme change.
+Add to cart and Initiate checkout are the two events to read when judging cart and product page
+work.
+**Fix:** None. Keeping tracking out of the theme and in the channel is the correct arrangement.
+Revisit only if a tool is added that genuinely needs a client-side hook the channel cannot provide.
+**Severity:** Low · **Effort:** none · Established best practice
 
 ### C-14 The empty cart sends customers to the full catalogue
 **File:** `sections/cart.liquid:25`; `sections/cart-drawer.liquid:28`
@@ -483,41 +528,39 @@ remove the footer height cap so the item list takes the remaining space.
 
 ## Action plan
 
-Ordered by impact divided by effort. Nothing here is implemented. Each batch is small enough to
-ship and measure on its own.
+Ordered by impact divided by effort. Each batch is small enough to ship and measure on its own.
 
-Every batch shares one dependency: **Batch 2 must ship first or in parallel**, because without
-event tracking none of the other batches can be evaluated.
+Measurement is already in place. Meta pixel and the Conversions API run through Shopify's Facebook
+and Instagram channel, so Add to cart and Initiate checkout can be read from Events Manager for any
+batch without a theme change. See C-13.
 
 ### P0
 
-**Batch 1 — Make the purchase action unmistakable** (C-05 already shipped in Batch 3)
+**Batch 1 — Make the purchase action unmistakable** — **RUN LAST**, see the note below
+(C-05 already shipped in Batch 3)
 Findings: P-02, P-03
 - Promote Add to cart to the full-width primary button with visible text; demote Buy now to a
   full-width secondary beneath it; wishlist stays the only icon button.
 - Reduce the product page to one WhatsApp entry point, styled as a text link beside the size
   picker; remove the duplicate.
-- Move Secure checkout directly under the subtotal in the cart summary; policy links move below.
-- **Files:** `sections/product.liquid`, `sections/cart.liquid`, `locales/en.default.json`
+- **Files:** `sections/product.liquid`, `locales/en.default.json`
 - **Acceptance:** Add to cart renders as the primary button with a visible label at every
-  breakpoint. Exactly one WhatsApp link exists inside the product purchase column. On a 390px
-  viewport with one cart item, Secure checkout is above the fold.
-- **Dependencies:** none
-- **Measure:** add-to-cart rate per product view; checkout-start rate per cart view; outbound
-  WhatsApp clicks from the product page.
+  breakpoint. Exactly one WhatsApp link exists inside the product purchase column.
+- **Dependencies:** a recorded baseline Add to cart rate from Events Manager, captured before any
+  change lands. Both findings are hypotheses, so without a baseline there is nothing to judge them
+  against.
+- **Measure:** Add to cart rate against View content, and Initiate checkout, both in Events
+  Manager; outbound WhatsApp clicks from the product page.
 
-**Batch 2 — Truthful proof and working measurement**
-Findings: P-01, C-13
+**Batch 2 — Truthful proof** — **DONE 2026-09-19, branch `cro-batch-2`**
+Findings: P-01
 - Turn off Judge.me sample data. Hide the star row when there are no reviews rather than printing
   the empty state.
-- Add a Shopify Custom Pixel for `product_viewed`, `product_added_to_cart`, `cart_viewed`,
-  `checkout_started`. Dispatch a `CustomEvent` from `theme.js` after a successful add.
-- **Files:** `templates/product.json`, `sections/product.liquid`, `assets/theme.js`, plus one
-  Custom Pixel in Shopify Admin
+- **Files:** `templates/product.json`, `sections/product.liquid`
 - **Acceptance:** No sample review text renders on any product page. A product with zero reviews
-  shows no rating row at all. All four pixel events fire with correct product, variant and value.
-- **Dependencies:** needs your confirmation on Judge.me's live state, and an analytics destination.
-- **Measure:** this batch establishes the baseline for everything else.
+  shows no rating row at all.
+- **Dependencies:** needs your confirmation on Judge.me's live state.
+- **Measure:** View content to Add to cart rate in Events Manager.
 
 **Batch 3 — Fix the cart's blocking defects** — **DONE 2026-09-19, branch `cro-batch-3`**
 Findings: C-01, C-02, C-15, plus C-05 pulled forward from Batch 1
@@ -626,20 +669,82 @@ Findings: C-07, C-09, C-11, C-12, P-06, P-09, P-15, P-16, P-17, C-14
    Admin, the render-time scrubbing can be deleted.
 6. **Mounting detail.** Hardware, weight and fixing type per piece or per size band, so the
    Installation tab and the FAQ answer the real question instead of deferring to WhatsApp.
-7. **Analytics destination.** GA4, Meta, or both, plus the IDs. Needed before Batch 2 can ship.
-8. **Rapid Gateway.** Is it live? If so, `online_payments_active` should be enabled, and
+7. **Rapid Gateway.** Is it live? If so, `online_payments_active` should be enabled, and
    `payment_provider_name` set.
-9. **Approval to reduce WhatsApp CTAs** on the product page from four entry points to one.
-10. **Gallery order.** Confirm every product's first image is the artwork itself and that at least
-    one in-room shot showing scale exists, and decide the standard position for it.
-11. **Trustindex.** Which pages is the widget meant to render on? It currently loads everywhere.
+8. **Approval to reduce WhatsApp CTAs** on the product page from four entry points to one.
+9. **Gallery order.** Confirm every product's first image is the artwork itself and that at least
+   one in-room shot showing scale exists, and decide the standard position for it.
+10. **Trustindex.** Which pages is the widget meant to render on? It currently loads everywhere.
+11. **Baseline Add to cart rate** from Events Manager, recorded before Batch 1 lands, so the
+    button hierarchy change in P-02 can be judged rather than assumed.
 
 ---
 
 ## Completed batches
 
+### Batch 2 — 2026-09-19 — branch `cro-batch-2` (branched from `cro-batch-3`)
+Covers P-01. Not committed; left in the working tree for review.
+
+**Changed files**
+- `sections/product.liquid` — the rating row is now wrapped in a condition and renders only when a
+  real rating exists and the review count is above zero. The "No product reviews yet" branch, its
+  zeroed star fill and the `has-no-reviews` class are gone.
+- `templates/product.json` — the `"review_data": "sample_data"` setting was removed from the
+  Judge.me block.
+
+**Acceptance criteria**
+
+| Criterion | Result |
+| --- | --- |
+| A product with zero reviews shows no rating row, at 1366x600 | **Met**, verified in browser |
+| A product with zero reviews shows no rating row, at 390x844 | **Met**, verified in browser |
+| No sample review text renders on any product page | **Met**, and it never did, see below |
+| A product *with* reviews still shows the rating row | **Not verified**, see below |
+
+- *No rating row on a zero-review product.* Verified in a browser at both required viewports on
+  `/products/vinyl-soundwave-wall-art`. `document.querySelector('.product-rating')` returns null,
+  and the phrase "No product reviews yet" is absent from the page text. Server-side HTML for
+  twelve products was also scanned: zero occurrences of `class="product-rating"` across all of
+  them. Screenshots captured at both sizes.
+- *No sample review text.* Met, but the finding was wrong to begin with. Measured with
+  `sample_data` still set, the widget rendered zero review cards and the text "Customer Reviews /
+  Be the first to write a review / Write a review". Output after removing the setting was
+  identical. See the correction in P-01.
+- *A product with reviews still renders the rating row.* **Not verified.** All twelve products
+  sampled report `data-number-of-reviews='0'`, so there is no product on this store that exercises
+  the other branch. The condition is a straight `rating != blank and rating_count > 0` around
+  markup that is otherwise unchanged, but that is reasoning, not a test. Re-check once a real
+  review lands.
+
+**Open question for you, stated honestly**
+Removing `review_data` from `templates/product.json` changes the theme data in this repo. Whether
+that is enough depends on facts I cannot read from these files:
+- I could not determine which theme ID this repo deploys to, or whether it is the live theme.
+  There is no `.shopify/` directory and no theme config file in the repo, only `.theme-check.yml`.
+- JSON templates are merchant-editable. If the Judge.me block was ever configured through the
+  theme editor on the live theme, the live copy of `templates/product.json` holds its own value,
+  and a local edit does not reach it until this theme is pushed and published.
+- I could not read Judge.me's block schema. It lives in the app extension, not in this repo, so I
+  cannot confirm the valid values for `review_data` or what its default is. I removed the key
+  rather than invent a replacement value.
+
+What I can state from testing: the setting has no observable effect on the storefront, so this is
+tidiness, not a live fix. If you want certainty, open the Judge.me block in the theme editor on
+the live theme and read the control directly.
+
 ### Batch 3 — 2026-09-19 — branch `cro-batch-3`
-Covers C-01, C-02, C-15 and C-05. Not committed; left in the working tree for review.
+Covers C-01, C-02, C-15 and C-05.
+
+**Commit status, corrected.** This work is already committed and merged, but not the way it was
+planned. It was committed outside this session as `0891075 "CRO"` on `cro-batch-3`, then merged
+into `main` as `297499d`, which matches `origin/main`. That single commit bundles Batch 3 together
+with ten unrelated files that were already modified before the batch began: `assets/critical.css`,
+`layout/theme.liquid`, `sections/header.liquid`, `sections/product.liquid`,
+`sections/wishlist-drawer.liquid`, `snippets/wishlist-button.liquid`,
+`snippets/limited-sale-card.liquid`, `snippets/limited-time-sale.liquid`,
+`snippets/product-card.liquid` and `snippets/icon.liquid`. Batch 3 cannot now be reverted on its
+own without also reverting that unrelated work. No history was rewritten, since the commit is
+already on the shared remote.
 
 **Changed files**
 - `sections/cart.liquid` — option and property rows added to each cart line, product description
