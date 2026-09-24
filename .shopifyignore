@@ -9,6 +9,7 @@ CONTRIBUTING.md
 README.md
 LICENSE.md
 docs/*
+source-media/*
 
 # Superseded source exports; optimized storefront assets use WebP/downsized PNG.
 assets/fraunces-latin.woff2

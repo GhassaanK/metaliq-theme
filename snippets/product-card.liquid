@@ -15,7 +15,6 @@
   assign card_loading = loading | default: 'lazy'
   assign card_heading_level = heading_level | default: 3
   assign card_heading_tag = 'h' | append: card_heading_level
-  assign card_kicker = product.type | default: product.vendor
   assign secondary_image = product.images[1]
   assign card_variant = blank
   for variant in product.variants
@@ -69,47 +68,49 @@
       <span class="media-fallback">{% render 'engraving', seed: product.id %}</span>
     {%- endif -%}
 
-    {%- if on_sale -%}
+    {%- if card_variant.available == false -%}
+      <span class="product-card__status tag">{{ 'product.sold_out' | t }}</span>
+    {%- elsif on_sale -%}
       <span class="product-card__badge tag">{{ 'home.limited_sale_percentage' | t: percent: sale_percentage }}</span>
     {%- endif -%}
   </a>
 
   <div class="product-card__body">
-    {%- if card_kicker != blank -%}
-      <p class="product-card__kicker">{{ card_kicker }}</p>
-    {%- endif -%}
-    <{{ card_heading_tag }} class="product-card__title"><a href="{{ card_url }}">{{ product.title }}</a></{{ card_heading_tag }}>
-    <p class="product-card__variant">{{ card_variant.title | escape }}</p>
-
-    <div class="product-card__price price {% if on_sale %}price--sale{% endif %}">
-      {%- if on_sale -%}<s>{{ card_variant.compare_at_price | money }}</s>{%- endif -%}
-      <strong>{{ card_variant.price | money }}</strong>
-    </div>
-
     <form class="product-card__form" method="post" action="{{ routes.cart_add_url }}" data-card-add-form>
       <input type="hidden" name="id" value="{{ card_variant.id }}">
       <input type="hidden" name="quantity" value="1">
-      <div class="product-card__actions">
-        <div class="product-card__utility-actions">
-          <button
-            class="product-card__add"
-            type="submit"
-            data-card-add-button
-            data-adding="{{ 'product.adding' | t }}"
-            aria-label="{{ 'product.card_add_label' | t: title: product.title }}"
-            title="{{ 'product.add_to_cart' | t }}"
-            {% unless card_variant.available %}disabled{% endunless %}
-          >
-            {% render 'icon', name: 'bag' %}
-            <span class="visually-hidden" data-card-add-label>
-              {%- if card_variant.available -%}
-                {{ 'product.card_add_medium' | t }}
-              {%- else -%}
-                {{ 'product.card_medium_sold_out' | t }}
-              {%- endif -%}
-            </span>
-          </button>
-          {% render 'wishlist-button', product: product, variant: card_variant, css_class: 'product-card__wishlist', show_label: false %}
+      <div class="product-card__topline">
+        <button
+          class="product-card__add"
+          type="submit"
+          data-card-add-button
+          data-adding="{{ 'product.adding' | t }}"
+          aria-label="{{ 'product.card_add_label' | t: title: product.title }}"
+          title="{{ 'product.add_to_cart' | t }}"
+          {% unless card_variant.available %}disabled{% endunless %}
+        >
+          {% render 'icon', name: 'bag' %}
+          <span class="visually-hidden" data-card-add-label>
+            {%- if card_variant.available -%}
+              {{ 'product.card_add_medium' | t }}
+            {%- else -%}
+              {{ 'product.card_medium_sold_out' | t }}
+            {%- endif -%}
+          </span>
+        </button>
+      </div>
+
+      <{{ card_heading_tag }} class="product-card__title">
+        <a href="{{ card_url }}" title="{{ product.title | escape }}">{{ product.title }}</a>
+      </{{ card_heading_tag }}>
+
+      <div class="product-card__purchase-row">
+        <div class="product-card__price price {% if on_sale %}price--sale{% endif %}">
+          <span class="product-card__price-label">
+            {%- if on_sale -%}{{ 'home.limited_sale_offer_price' | t }}{%- else -%}{{ 'product.price_label' | t }}{%- endif -%}
+          </span>
+          {%- if on_sale -%}<s>{{ card_variant.compare_at_price | money_without_trailing_zeros }}</s>{%- endif -%}
+          <strong>{{ card_variant.price | money_without_trailing_zeros }}</strong>
         </div>
         <button
           class="product-card__buy"

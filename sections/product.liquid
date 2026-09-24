@@ -278,7 +278,6 @@
                 {%- endif -%}
               </span>
             </button>
-            {% render 'wishlist-button', product: product, variant: current_variant, css_class: 'purchase-row__icon-button product-wishlist', show_label: false %}
           </div>
 
           <button
@@ -858,7 +857,7 @@
   .purchase-row__secondary {
     display: grid;
     grid-column: 2;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--sp-2);
   }
   .purchase-row__icon-button {

@@ -12,52 +12,44 @@
     "main": {
       "type": "main-home",
       "blocks": {
-        "calligraphy": {
+        "living_spaces": {
           "type": "category",
           "settings": {
-            "collection": "",
-            "fallback_title": "Calligraphy"
+            "collection": "home-decor",
+            "fallback_title": "Living spaces"
           }
         },
-        "islamic": {
+        "office_study": {
           "type": "category",
           "settings": {
-            "collection": "",
-            "fallback_title": "Islamic"
+            "collection": "office-decor",
+            "fallback_title": "Office & study"
           }
         },
-        "clocks": {
+        "automotive": {
           "type": "category",
           "settings": {
-            "collection": "",
-            "fallback_title": "Clocks"
+            "collection": "automotive",
+            "fallback_title": "Automotive"
           }
         },
         "anime": {
           "type": "category",
           "settings": {
-            "collection": "",
-            "fallback_title": "Anime & Comics"
-          }
-        },
-        "floral": {
-          "type": "category",
-          "settings": {
-            "collection": "",
-            "fallback_title": "Floral"
+            "collection": "anime",
+            "fallback_title": "Anime & pop culture"
           }
         }
       },
       "block_order": [
-        "calligraphy",
-        "islamic",
-        "clocks",
-        "anime",
-        "floral"
+        "living_spaces",
+        "office_study",
+        "automotive",
+        "anime"
       ],
       "settings": {
-        "heading": "Art, Cut In Metal.",
-        "body": "Architectural wall pieces, precision-cut in steel and made to fit your space.",
+        "heading": "Art, made for your space",
+        "body": "Precision-cut mild steel, matte-black powder coating, made to order in Pakistan.",
         "button_label": "Shop wall art",
         "button_link": "",
         "button2_label": "Create something custom",
@@ -65,20 +57,17 @@
         "limited_sale_eyebrow": "",
         "limited_sale_heading": "",
         "limited_sale_intro": "",
+        "discovery_heading": "Find the right piece for your space.",
+        "discovery_intro": "Start with the room you are styling or the subject that feels most like you.",
         "testimonial_heading": "From Our Community.",
         "testimonial_intro": "Here's what our buyers had to say about MetaliQ Art.",
         "featured_collection": "",
-        "featured_heading": "Best sellers",
-        "why_heading": "Why choose MetaliQ",
-        "why_intro": "Considered design, precise fabrication, and practical details that make every piece easier to choose, install, and live with.",
-        "why_icon_1": "precision",
-        "why_icon_2": "shield",
-        "why_icon_3": "layers",
-        "why_icon_4": "cut",
-        "why_icon_5": "package",
+        "featured_heading": "Most chosen pieces",
         "custom_heading": "Your idea. Made in metal.",
         "custom_body": "Bring us a name, reference, sketch, or empty wall. We will shape it into a considered metal artwork made for your dimensions.",
         "custom_button": "Start a custom design",
+        "process_heading": "From an idea to a finished piece.",
+        "process_intro": "Every order moves through a deliberate process before it reaches your wall.",
         "recent_collection": "",
         "recent_heading": "Recently added",
         "closing": "Made to order. Sized for your space."

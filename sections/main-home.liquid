@@ -37,14 +37,6 @@
   if featured == blank
     assign featured = collections.all
   endif
-  assign why_heading = section.settings.why_heading
-  if why_heading == blank
-    assign why_heading = 'home.why_heading' | t
-  endif
-  assign why_intro = section.settings.why_intro
-  if why_intro == blank
-    assign why_intro = 'home.why_intro' | t
-  endif
   assign custom_heading = section.settings.custom_heading
   if custom_heading == blank
     assign custom_heading = 'home.custom_heading' | t
@@ -56,10 +48,6 @@
   assign custom_button = section.settings.custom_button
   if custom_button == blank
     assign custom_button = 'home.custom_cta' | t
-  endif
-  assign custom_image_alt = section.settings.custom_image.alt
-  if custom_image_alt == blank
-    assign custom_image_alt = 'home.custom_image_alt' | t
   endif
   assign custom_link = custom_whatsapp_url
   assign recent_collection = section.settings.recent_collection
@@ -155,6 +143,59 @@
 </section>
 
 {% render 'limited-time-sale', section: section %}
+
+<section class="home-discovery section" aria-labelledby="HomeDiscoveryHeading-{{ section.id }}">
+  <div class="container">
+    <header class="home-discovery__head reveal">
+      <div>
+        <p class="eyebrow">{{ 'home.discovery_eyebrow' | t }}</p>
+        <h2 id="HomeDiscoveryHeading-{{ section.id }}">{{ section.settings.discovery_heading }}</h2>
+      </div>
+      <p>{{ section.settings.discovery_intro }}</p>
+    </header>
+
+    <div class="home-discovery__grid">
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'category' -%}
+          {%- liquid
+            assign category_collection = block.settings.collection
+            assign category_title = block.settings.fallback_title
+            assign category_url = routes.collections_url
+            assign category_image = block.settings.image
+            if category_collection != blank
+              assign category_title = category_collection.title
+              assign category_url = category_collection.url
+              if category_image == blank
+                assign category_image = category_collection.image | default: category_collection.products.first.featured_image
+              endif
+            endif
+          -%}
+          <a class="home-discovery__item reveal" href="{{ category_url }}" {{ block.shopify_attributes }}>
+            <span class="home-discovery__media">
+              {%- if category_image != blank -%}
+                {{
+                  category_image
+                  | image_url: width: 1000
+                  | image_tag:
+                    loading: 'lazy',
+                    widths: '320, 480, 640, 800, 1000',
+                    sizes: '(min-width: 980px) 25vw, 50vw',
+                    alt: category_image.alt | default: category_title
+                }}
+              {%- else -%}
+                <span class="media-fallback">{% render 'engraving', seed: forloop.index %}</span>
+              {%- endif -%}
+            </span>
+            <span class="home-discovery__label">
+              <strong>{{ category_title }}</strong>
+              <span>{{ 'home.discovery_link' | t }} <span aria-hidden="true">&rarr;</span></span>
+            </span>
+          </a>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
 
 {%- assign testimonial_count = 0 -%}
 {%- for block in section.blocks -%}
@@ -274,43 +315,14 @@
   </section>
 {%- endif -%}
 
-<section class="home-why section">
-  <div class="container home-why__layout">
-    <div class="home-why__intro reveal">
-      <p class="eyebrow">{{ 'home.why_index' | t }}</p>
-      <h2>{{ why_heading }}</h2>
-      <p>{{ why_intro }}</p>
-      <a class="link-rule" href="{{ routes.all_products_collection_url }}">
-        {{ 'home.why_cta' | t }}
-        <span aria-hidden="true">&rarr;</span>
-      </a>
-    </div>
-
-    <ol class="home-why__benefits">
-      {%- for i in (1..5) -%}
-        {%- liquid
-          assign icon_key = 'why_icon_' | append: i
-          assign title_key = 'home.why_' | append: i | append: '_title'
-          assign body_key = 'home.why_' | append: i | append: '_body'
-        -%}
-        <li class="home-why__benefit reveal">
-          <span class="home-why__icon" aria-hidden="true">{% render 'icon', name: section.settings[icon_key] %}</span>
-          <div>
-            <h3>{{ title_key | t }}</h3>
-            <p>{{ body_key | t }}</p>
-          </div>
-        </li>
-      {%- endfor -%}
-    </ol>
-  </div>
-</section>
-
-<section class="home-custom section">
+<section class="home-custom section" id="custom-design">
   <div class="container home-custom__layout">
     <div class="home-custom__copy reveal">
-      <p class="eyebrow">{{ 'home.custom_index' | t }}</p>
-      <h2>{{ custom_heading }}</h2>
-      <p class="home-custom__body">{{ custom_body }}</p>
+      <div class="home-custom__intro">
+        <p class="eyebrow">{{ 'home.custom_index' | t }}</p>
+        <h2>{{ custom_heading }}</h2>
+        <p class="home-custom__body">{{ custom_body }}</p>
+      </div>
 
       <ol class="home-custom__steps" aria-label="{{ 'home.custom_steps_label' | t }}">
         {%- for i in (1..3) -%}
@@ -329,19 +341,45 @@
     </div>
 
     <div class="home-custom__visual reveal">
-      {%- if section.settings.custom_image != blank -%}
-        {{
-          section.settings.custom_image
-          | image_url: width: 1400
-          | image_tag:
-            loading: 'lazy',
-            widths: '500, 800, 1100, 1400',
-            sizes: '(min-width: 980px) 48vw, 100vw',
-            alt: custom_image_alt
-        }}
-      {%- else -%}
-        <img src="{{ 'metaliq-architectural-hero.webp' | asset_url }}" width="1672" height="941" alt="{{ 'home.custom_image_alt' | t }}" loading="lazy">
-      {%- endif -%}
+      <video
+        class="home-custom__video"
+        muted
+        loop
+        playsinline
+        preload="metadata"
+        poster="{{ 'custom-artwork-poster.jpg' | asset_url }}"
+        data-home-custom-video
+        aria-label="{{ 'home.custom_video_label' | t }}"
+      >
+        <source src="{{ 'custom-artwork-showcase.mp4' | asset_url }}" type="video/mp4">
+      </video>
+      <div class="home-custom__video-controls">
+        <button
+          class="home-custom__video-toggle"
+          type="button"
+          data-home-custom-video-toggle
+          data-play-label="{{ 'home.custom_video_play' | t }}"
+          data-pause-label="{{ 'home.custom_video_pause' | t }}"
+          aria-label="{{ 'home.custom_video_play' | t }}"
+          title="{{ 'home.custom_video_play' | t }}"
+        >
+          <span class="home-custom__play-icon" aria-hidden="true">{% render 'icon', name: 'play' %}</span>
+          <span class="home-custom__pause-icon" aria-hidden="true"><i></i><i></i></span>
+        </button>
+        <button
+          class="home-custom__video-toggle"
+          type="button"
+          data-home-custom-sound-toggle
+          data-mute-label="{{ 'home.custom_video_mute' | t }}"
+          data-unmute-label="{{ 'home.custom_video_unmute' | t }}"
+          aria-label="{{ 'home.custom_video_unmute' | t }}"
+          aria-pressed="false"
+          title="{{ 'home.custom_video_unmute' | t }}"
+        >
+          <span class="home-custom__sound-on-icon" aria-hidden="true">{% render 'icon', name: 'volume-2' %}</span>
+          <span class="home-custom__sound-off-icon" aria-hidden="true">{% render 'icon', name: 'volume-x' %}</span>
+        </button>
+      </div>
       <span class="home-custom__visual-label">
         <span>{{ 'home.custom_visual_label' | t }}</span>
         <strong>{{ 'home.custom_visual_value' | t }}</strong>
@@ -349,6 +387,40 @@
     </div>
   </div>
 </section>
+
+{%- if section.settings.process_video != blank -%}
+  <section class="home-process section" aria-labelledby="HomeProcessHeading-{{ section.id }}">
+    <div class="container home-process__layout">
+      <div class="home-process__media reveal" aria-label="{{ 'home.process_video_label' | t }}">
+        {{
+          section.settings.process_video
+          | video_tag:
+            autoplay: true,
+            loop: true,
+            muted: true,
+            controls: true,
+            playsinline: true,
+            preload: 'metadata',
+            image_size: '1600x'
+        }}
+      </div>
+      <div class="home-process__copy reveal">
+        <p class="eyebrow">{{ 'home.process_eyebrow' | t }}</p>
+        <h2 id="HomeProcessHeading-{{ section.id }}">{{ section.settings.process_heading }}</h2>
+        <p class="home-process__intro">{{ section.settings.process_intro }}</p>
+        <ol class="home-process__steps">
+          {%- for i in (1..4) -%}
+            {%- assign process_step_key = 'home.process_step_' | append: i -%}
+            <li>
+              <span aria-hidden="true">0{{ i }}</span>
+              <strong>{{ process_step_key | t }}</strong>
+            </li>
+          {%- endfor -%}
+        </ol>
+      </div>
+    </div>
+  </section>
+{%- endif -%}
 
 {%- if recent_collection.products_count > 0 -%}
   <section class="home-recent section" data-product-carousel>
@@ -375,7 +447,6 @@
       <div class="home-recent__track reveal" data-carousel-track tabindex="0" aria-label="{{ 'home.recent_products' | t }}">
         {%- for product in recent_collection.products limit: 12 -%}
           <div class="home-recent__item">
-            <span class="home-recent__date-mark">{{ 'home.recent_badge' | t }}</span>
             {% render 'product-card', product: product, sizes: '(min-width: 1100px) 18vw, (min-width: 700px) 31vw, 74vw' %}
           </div>
         {%- endfor -%}
@@ -397,7 +468,8 @@
     </header>
 
     <div class="home-faq__list" data-faq-accordion>
-      {%- for i in (1..10) -%}
+      {%- assign faq_indices = '1,2,4,6,10' | split: ',' -%}
+      {%- for i in faq_indices -%}
         {%- liquid
           assign question_key = 'home.faq_' | append: i | append: '_question'
           assign answer_key = 'home.faq_' | append: i | append: '_answer'
@@ -419,10 +491,13 @@
 <section class="home-closing">
   <div class="container">
     <p>{{ section.settings.closing | default: 'Made to order. Sized for your space.' }}</p>
-    <a class="link-rule" href="{{ routes.all_products_collection_url }}">
-      {{ 'home.closing_cta' | t }}
-      <span aria-hidden="true">&rarr;</span>
-    </a>
+    <div class="home-closing__actions">
+      <a class="button" href="{{ routes.all_products_collection_url }}">{{ 'home.closing_cta' | t }}</a>
+      <a class="link-rule" href="{{ custom_link }}" data-whatsapp-cta target="_blank" rel="noopener">
+        {{ 'home.closing_custom_cta' | t }}
+        <span aria-hidden="true">&rarr;</span>
+      </a>
+    </div>
   </div>
 </section>
 
@@ -1007,6 +1082,86 @@
     font-size: 1.35rem;
   }
 
+  /* ---- Shop by space or style ---- */
+  .home-discovery {
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .home-discovery__head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 0.62fr);
+    align-items: end;
+    gap: 40px;
+    margin-bottom: 36px;
+  }
+  .home-discovery__head h2 {
+    max-width: 15ch;
+    margin-top: 12px;
+    font-size: var(--fs-h2);
+    line-height: 1.02;
+  }
+  .home-discovery__head > p {
+    max-width: 46ch;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+  .home-discovery__grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .home-discovery__item {
+    position: relative;
+    display: block;
+    aspect-ratio: 4 / 5;
+    min-width: 0;
+    overflow: hidden;
+    border-radius: 6px;
+    background: var(--surface-2);
+    color: var(--on-nav);
+  }
+  .home-discovery__media,
+  .home-discovery__media img,
+  .home-discovery__media .media-fallback {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .home-discovery__media img {
+    object-fit: cover;
+    transition: transform 0.55s var(--ease);
+  }
+  .home-discovery__item::after {
+    position: absolute;
+    inset: 32% 0 0;
+    background: linear-gradient(180deg, transparent, rgb(0 0 0 / 0.86));
+    content: '';
+    pointer-events: none;
+  }
+  .home-discovery__label {
+    position: absolute;
+    z-index: 1;
+    right: 18px;
+    bottom: 18px;
+    left: 18px;
+    display: grid;
+    gap: 8px;
+  }
+  .home-discovery__label strong {
+    font-family: var(--serif);
+    font-size: 1.35rem;
+    line-height: 1.12;
+  }
+  .home-discovery__label > span {
+    color: color-mix(in srgb, var(--on-nav) 78%, transparent);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .home-discovery__item:hover .home-discovery__media img {
+    transform: scale(1.035);
+  }
+
   /* ---- Featured ---- */
   .home-featured {
     border-block: 1px solid var(--line);
@@ -1033,7 +1188,7 @@
     color: var(--on-nav);
   }
   .home-featured .product-card__kicker {
-    color: var(--on-nav-muted);
+    color: var(--copper-light);
   }
   .home-featured .price {
     color: var(--copper-light);
@@ -1109,138 +1264,60 @@
     box-shadow: 0 22px 46px rgb(0 0 0 / 0.34);
   }
   .home-bestsellers__item .product-card__media {
-    aspect-ratio: 5 / 6;
+    aspect-ratio: 1;
     background: var(--surface);
   }
   .home-bestsellers__item .product-card__body {
-    padding: 20px;
+    padding: 14px 4px 4px;
   }
   .home-bestsellers__item .product-card__title {
-    margin-bottom: 14px;
-    font-size: clamp(1.2rem, 1.05rem + 0.45vw, 1.55rem);
-    line-height: 1.2;
+    margin-bottom: 10px;
+    font-size: 1rem;
+    line-height: 1.3;
   }
-  /* ---- Why MetaliQ ---- */
-  .home-why {
-    position: relative;
-    overflow: hidden;
-    border-bottom: 1px solid var(--line);
-    background: var(--surface);
-  }
-  .home-why::after {
-    position: absolute;
-    top: -180px;
-    left: -140px;
-    width: 460px;
-    height: 460px;
-    border: 1px solid color-mix(in srgb, var(--copper) 12%, transparent);
-    border-radius: 50%;
-    box-shadow: 0 0 0 70px color-mix(in srgb, var(--copper) 2.5%, transparent), 0 0 0 140px color-mix(in srgb, var(--on-nav) 1.8%, transparent);
-    content: '';
-    pointer-events: none;
-  }
-  .home-why__layout {
-    position: relative;
-    z-index: 1;
-    display: grid;
-    grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
-    gap: clamp(56px, 9vw, 140px);
-  }
-  .home-why__intro {
-    align-self: start;
-    position: sticky;
-    top: calc(var(--header-height) + 28px);
-  }
-  .home-why__intro h2 {
-    max-width: 9ch;
-    margin: 14px 0 22px;
-    font-size: clamp(2.5rem, 2rem + 2.5vw, 4.7rem);
-    line-height: 0.98;
-  }
-  .home-why__intro > p:not(.eyebrow) {
-    max-width: 43ch;
-    color: var(--muted);
-    font-size: clamp(1rem, 0.96rem + 0.2vw, 1.12rem);
-    line-height: 1.7;
-  }
-  .home-why__intro .link-rule {
-    margin-top: 34px;
-  }
-  .home-why__benefits {
-    border-top: 1px solid var(--line);
-  }
-  .home-why__benefit {
-    display: grid;
-    grid-template-columns: 52px minmax(0, 1fr);
-    align-items: start;
-    gap: 18px;
-    padding: 26px 0;
-    border-bottom: 1px solid var(--line);
-  }
-  .home-why__icon {
-    display: grid;
-    place-items: center;
-    width: 42px;
-    height: 42px;
-    border: 1px solid color-mix(in srgb, var(--copper) 35%, transparent);
-    border-radius: 50%;
-    color: var(--copper);
-  }
-  .home-why__icon .icon {
-    width: 20px;
-    height: 20px;
-  }
-  .home-why__benefit h3 {
-    margin-bottom: 7px;
-    font-family: var(--serif);
-    font-size: 1.18rem;
-    font-weight: 600;
-    line-height: 1.25;
-  }
-  .home-why__benefit p {
-    max-width: 52ch;
-    color: var(--muted);
-    font-size: var(--fs-sm);
-    line-height: 1.6;
-  }
-
   /* ---- Custom design ---- */
   .home-custom {
+    padding-block: clamp(28px, 4vh, 44px);
     border-bottom: 1px solid var(--line);
     background: var(--background);
     color: var(--on-nav);
   }
   .home-custom__layout {
     display: grid;
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    grid-template-columns: 300px minmax(0, 1fr);
     align-items: center;
-    gap: clamp(44px, 7vw, 104px);
+    justify-content: space-between;
+    gap: clamp(36px, 5vw, 72px);
+    max-width: 1280px;
+  }
+  .home-custom__copy {
+    grid-column: 2;
+    grid-row: 1;
   }
   .home-custom__copy .eyebrow {
     color: var(--copper);
   }
   .home-custom__copy h2 {
-    max-width: 10ch;
-    margin: 14px 0 22px;
-    font-size: clamp(2.7rem, 2rem + 3vw, 5.4rem);
-    line-height: 0.96;
+    max-width: 14ch;
+    margin: 8px 0 14px;
+    font-size: 3.5rem;
+    line-height: 1;
   }
   .home-custom__body {
-    max-width: 48ch;
+    max-width: 54ch;
     color: var(--on-nav-muted);
-    font-size: clamp(1rem, 0.95rem + 0.22vw, 1.14rem);
-    line-height: 1.7;
+    font-size: 1rem;
+    line-height: 1.55;
   }
   .home-custom__steps {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    margin: 34px 0;
+    margin: 22px 0;
     border-block: 1px solid color-mix(in srgb, var(--on-nav) 14%, transparent);
   }
   .home-custom__steps li {
     display: grid;
-    gap: 7px;
-    padding: 18px 12px 18px 0;
+    padding: 13px 12px 13px 0;
   }
   .home-custom__steps li + li {
     padding-left: 16px;
@@ -1254,7 +1331,7 @@
   .home-custom__button {
     display: inline-flex;
     align-items: center;
-    gap: 30px;
+    gap: 22px;
     background: var(--copper);
     color: var(--on-accent);
   }
@@ -1265,13 +1342,17 @@
     margin-top: var(--sp-4);
   }
   .home-custom__note {
-    margin-top: 14px;
+    margin-top: 10px;
     color: var(--on-nav-muted);
     font-size: 0.72rem;
   }
   .home-custom__visual {
     position: relative;
-    min-height: 560px;
+    width: min(100%, 300px);
+    aspect-ratio: 9 / 16;
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
     overflow: hidden;
     border: 1px solid color-mix(in srgb, var(--on-nav) 14%, transparent);
     border-radius: 8px;
@@ -1284,15 +1365,77 @@
     content: '';
     pointer-events: none;
   }
-  .home-custom__visual img {
+  .home-custom__visual img,
+  .home-custom__video {
+    display: block;
     width: 100%;
     height: 100%;
-    min-height: 560px;
     object-fit: cover;
     transition: transform 0.7s var(--ease);
   }
-  .home-custom__visual:hover img {
+  .home-custom__visual:hover img,
+  .home-custom__visual:hover .home-custom__video {
     transform: scale(1.025);
+  }
+  .home-custom__video-controls {
+    position: absolute;
+    z-index: 2;
+    top: 16px;
+    right: 16px;
+    display: flex;
+    gap: 8px;
+  }
+  .home-custom__video-toggle {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--on-nav) 35%, transparent);
+    border-radius: 50%;
+    background: rgb(15 15 14 / 0.78);
+    color: var(--on-nav);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.3);
+    backdrop-filter: blur(6px);
+    transition: border-color 0.2s var(--ease), background 0.2s var(--ease), transform 0.2s var(--ease);
+  }
+  .home-custom__video-toggle:hover,
+  .home-custom__video-toggle:focus-visible {
+    border-color: var(--copper);
+    background: var(--copper);
+    color: var(--on-accent);
+    transform: translateY(-2px);
+  }
+  .home-custom__video-toggle .icon {
+    width: 18px;
+    height: 18px;
+  }
+  .home-custom__pause-icon {
+    display: none;
+    grid-template-columns: repeat(2, 4px);
+    gap: 4px;
+  }
+  .home-custom__pause-icon i {
+    display: block;
+    width: 4px;
+    height: 15px;
+    border-radius: 1px;
+    background: currentColor;
+  }
+  .home-custom__visual.is-playing .home-custom__play-icon {
+    display: none;
+  }
+  .home-custom__visual.is-playing .home-custom__pause-icon {
+    display: grid;
+  }
+  .home-custom__sound-on-icon {
+    display: none;
+  }
+  .home-custom__visual:not(.is-muted) .home-custom__sound-on-icon {
+    display: inline-flex;
+  }
+  .home-custom__visual:not(.is-muted) .home-custom__sound-off-icon {
+    display: none;
   }
   .home-custom__visual-label {
     position: absolute;
@@ -1317,6 +1460,63 @@
     font-weight: var(--heading-weight);
     line-height: 1.05;
     text-align: right;
+  }
+
+  /* ---- Production process ---- */
+  .home-process {
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .home-process__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.18fr) minmax(340px, 0.82fr);
+    align-items: center;
+    gap: clamp(44px, 7vw, 96px);
+  }
+  .home-process__media {
+    overflow: hidden;
+    aspect-ratio: 16 / 10;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--background);
+  }
+  .home-process__media video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .home-process__copy h2 {
+    max-width: 11ch;
+    margin: 12px 0 20px;
+    font-size: var(--fs-h2);
+    line-height: 1.02;
+  }
+  .home-process__intro {
+    max-width: 45ch;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+  .home-process__steps {
+    margin-top: 30px;
+    border-top: 1px solid var(--line);
+  }
+  .home-process__steps li {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    align-items: center;
+    gap: 14px;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .home-process__steps span {
+    color: var(--copper);
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+  .home-process__steps strong {
+    font-size: 0.88rem;
+    line-height: 1.4;
   }
 
   /* ---- Recently added ---- */
@@ -1387,21 +1587,6 @@
     height: 100%;
     border-radius: 8px;
   }
-  .home-recent__date-mark {
-    position: absolute;
-    z-index: 2;
-    top: 14px;
-    right: 14px;
-    padding: 7px 9px;
-    border: 1px solid color-mix(in srgb, var(--copper) 52%, transparent);
-    border-radius: 4px;
-    background: color-mix(in srgb, var(--background) 84%, transparent);
-    color: var(--copper);
-    font-size: 0.62rem;
-    font-weight: 700;
-    line-height: 1;
-    backdrop-filter: blur(8px);
-  }
 
   /* ---- Closing ---- */
   .home-closing {
@@ -1422,8 +1607,30 @@
     font-size: clamp(1.8rem, 1rem + 3vw, 3.6rem);
     line-height: 1.05;
   }
+  .home-closing__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 18px;
+  }
+  .home-closing__actions .button {
+    border-color: var(--background);
+    background: var(--background);
+    color: var(--on-nav);
+  }
+  .home-closing__actions .link-rule {
+    color: var(--on-accent);
+  }
 
   @media (max-width: 980px) {
+    .home-discovery__head {
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+    .home-discovery__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
     .home-faq__layout {
       grid-template-columns: 1fr;
       gap: 44px;
@@ -1455,29 +1662,100 @@
       grid-auto-columns: calc((100% - 32px) / 3);
       gap: 16px;
     }
-    .home-why__layout {
-      grid-template-columns: 1fr;
-      gap: 46px;
-    }
-    .home-why__intro {
-      position: static;
-    }
-    .home-why__intro h2 {
-      max-width: 12ch;
-    }
     .home-custom__layout {
-      grid-template-columns: 1fr;
+      grid-template-columns: 240px minmax(0, 1fr);
+      gap: 32px;
     }
     .home-custom__copy h2 {
-      max-width: 12ch;
+      max-width: 14ch;
+      font-size: 2.75rem;
     }
-    .home-custom__visual,
-    .home-custom__visual img {
-      min-height: 460px;
+    .home-custom__visual {
+      width: 240px;
+      justify-self: start;
+    }
+    .home-process__layout {
+      grid-template-columns: 1fr;
     }
     .home-recent__track {
       grid-auto-columns: calc((100% - 32px) / 3);
       gap: 16px;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .home-custom {
+      padding-block: 24px;
+    }
+    .home-custom__layout {
+      grid-template-columns: clamp(130px, 34vw, 180px) minmax(0, 1fr);
+      align-items: start;
+      gap: 14px 16px;
+    }
+    .home-custom__copy {
+      display: contents;
+    }
+    html.reveal-on .home-custom__copy.reveal {
+      opacity: 1;
+      transform: none;
+    }
+    .home-custom__intro {
+      grid-column: 2;
+      grid-row: 1;
+      align-self: center;
+    }
+    .home-custom__copy .eyebrow {
+      margin-bottom: 8px;
+      font-size: 0.65rem;
+    }
+    .home-custom__copy h2 {
+      max-width: 10ch;
+      margin: 0 0 10px;
+      font-size: 2.1rem;
+      line-height: 1.02;
+    }
+    .home-custom__body {
+      font-size: 0.85rem;
+      line-height: 1.45;
+    }
+    .home-custom__visual {
+      grid-column: 1;
+      grid-row: 1;
+      width: 100%;
+    }
+    .home-custom__steps {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      margin: 0;
+    }
+    .home-custom__steps li {
+      padding-block: 10px;
+    }
+    .home-custom__steps strong {
+      font-size: 0.68rem;
+    }
+    .home-custom__button {
+      grid-column: 1 / -1;
+      grid-row: 3;
+      width: 100%;
+      min-height: 46px;
+      justify-content: center;
+    }
+    .home-custom__note {
+      grid-column: 1 / -1;
+      grid-row: 4;
+      margin-top: -4px;
+      font-size: 0.68rem;
+      line-height: 1.4;
+      text-align: center;
+    }
+    .home-custom__visual-label {
+      display: none;
+    }
+    .home-custom__video-controls {
+      top: 10px;
+      right: 10px;
+      gap: 6px;
     }
   }
 
@@ -1524,13 +1802,25 @@
       justify-content: space-between;
     }
     .home-bestsellers__track {
-      grid-auto-columns: 74%;
+      grid-auto-columns: min(68vw, 250px);
       gap: 14px;
     }
-    .home-why__benefit {
-      grid-template-columns: 42px minmax(0, 1fr);
-      gap: 14px;
-      padding: 22px 0;
+    .home-discovery__head {
+      margin-bottom: 24px;
+    }
+    .home-discovery__grid {
+      gap: 10px;
+    }
+    .home-discovery__label {
+      right: 12px;
+      bottom: 12px;
+      left: 12px;
+    }
+    .home-discovery__label strong {
+      font-size: 1rem;
+    }
+    .home-discovery__label > span {
+      font-size: 0.6rem;
     }
     .home-faq__item summary {
       grid-template-columns: minmax(0, 1fr) 28px;
@@ -1540,26 +1830,22 @@
     .home-faq__answer {
       padding: 0 42px 22px 0;
     }
-    .home-custom__steps {
-      grid-template-columns: 1fr;
+    .home-process__media {
+      aspect-ratio: 4 / 3;
     }
-    .home-custom__steps li,
-    .home-custom__steps li + li {
-      gap: 10px;
-      padding: 14px 0;
-      border-left: 0;
+    .home-closing .container,
+    .home-closing__actions {
+      align-items: stretch;
     }
-    .home-custom__steps li + li {
-      border-top: 1px solid color-mix(in srgb, var(--on-nav) 14%, transparent);
+    .home-closing__actions {
+      width: 100%;
+      flex-direction: column;
     }
-    .home-custom__visual,
-    .home-custom__visual img {
-      min-height: 380px;
-    }
-    .home-custom__visual-label {
-      right: 16px;
-      bottom: 16px;
-      left: 16px;
+    .home-closing__actions .button,
+    .home-closing__actions .link-rule {
+      width: 100%;
+      justify-content: center;
+      text-align: center;
     }
     .home-recent__head {
       align-items: start;
@@ -1569,11 +1855,89 @@
       justify-content: space-between;
     }
     .home-recent__track {
-      grid-auto-columns: 74%;
+      grid-auto-columns: min(68vw, 250px);
       gap: 14px;
     }
   }
 {% endstylesheet %}
+
+{% javascript %}
+  (() => {
+    const initializeCustomVideo = (root = document) => {
+      root.querySelectorAll('[data-home-custom-video]').forEach((video) => {
+        if (video.dataset.initialized === 'true') return;
+        video.dataset.initialized = 'true';
+
+        const visual = video.closest('.home-custom__visual');
+        const toggle = visual?.querySelector('[data-home-custom-video-toggle]');
+        const soundToggle = visual?.querySelector('[data-home-custom-sound-toggle]');
+        if (!visual || !toggle || !soundToggle) return;
+
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        let inView = false;
+        let userPaused = false;
+
+        const updateState = () => {
+          const isPlaying = !video.paused && !video.ended;
+          visual.classList.toggle('is-playing', isPlaying);
+          visual.classList.toggle('is-muted', video.muted);
+          const playbackLabel = isPlaying ? toggle.dataset.pauseLabel : toggle.dataset.playLabel;
+          const soundLabel = video.muted ? soundToggle.dataset.unmuteLabel : soundToggle.dataset.muteLabel;
+          toggle.setAttribute('aria-label', playbackLabel);
+          toggle.title = playbackLabel;
+          soundToggle.setAttribute('aria-label', soundLabel);
+          soundToggle.setAttribute('aria-pressed', String(!video.muted));
+          soundToggle.title = soundLabel;
+        };
+
+        const playVideo = () => {
+          const playPromise = video.play();
+          if (playPromise) playPromise.then(updateState).catch(updateState);
+        };
+
+        const pauseVideo = () => {
+          video.pause();
+          updateState();
+        };
+
+        toggle.addEventListener('click', () => {
+          if (video.paused) {
+            userPaused = false;
+            playVideo();
+          } else {
+            userPaused = true;
+            pauseVideo();
+          }
+        });
+        soundToggle.addEventListener('click', () => {
+          video.muted = !video.muted;
+          if (!video.muted) video.volume = 1;
+          updateState();
+          if (inView && !video.muted) playVideo();
+        });
+        video.addEventListener('play', updateState);
+        video.addEventListener('pause', updateState);
+        video.addEventListener('volumechange', updateState);
+        updateState();
+
+        const observer = new IntersectionObserver((entries) => {
+          inView = entries[0]?.isIntersecting === true;
+          if (inView && !reduceMotion && !userPaused && !document.hidden) playVideo();
+          else pauseVideo();
+        }, { threshold: 0.35 });
+        observer.observe(video);
+
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) pauseVideo();
+          else if (inView && !reduceMotion && !userPaused) playVideo();
+        });
+      });
+    };
+
+    initializeCustomVideo();
+    document.addEventListener('shopify:section:load', (event) => initializeCustomVideo(event.target));
+  })();
+{% endjavascript %}
 
 {% schema %}
 {
@@ -1581,12 +1945,12 @@
   "settings": [
     { "type": "header", "content": "t:sections.home.hero" },
     { "type": "image_picker", "id": "image", "label": "t:labels.hero_image" },
-    { "type": "text", "id": "heading", "label": "t:labels.heading", "default": "Art, Cut In Metal." },
+    { "type": "text", "id": "heading", "label": "t:labels.heading", "default": "Art, made for your space" },
     {
       "type": "textarea",
       "id": "body",
       "label": "t:labels.text",
-      "default": "Architectural wall pieces, precision-cut in steel and made to fit your space."
+      "default": "Precision-cut mild steel, matte-black powder coating, made to order in Pakistan."
     },
     { "type": "text", "id": "button_label", "label": "t:labels.button_label", "default": "Shop wall art" },
     { "type": "url", "id": "button_link", "label": "t:labels.button_link" },
@@ -1601,6 +1965,15 @@
       "type": "image_picker",
       "id": "limited_sale_image",
       "label": "t:labels.campaign_fallback_image"
+    },
+
+    { "type": "header", "content": "Shop by space or style" },
+    { "type": "text", "id": "discovery_heading", "label": "Heading", "default": "Find the right piece for your space." },
+    {
+      "type": "textarea",
+      "id": "discovery_intro",
+      "label": "Introduction",
+      "default": "Start with the room you are styling or the subject that feels most like you."
     },
 
     { "type": "header", "content": "Testimonials" },
@@ -1629,27 +2002,7 @@
       "default": "Best sellers"
     },
 
-    { "type": "header", "content": "Why MetaliQ" },
-    {
-      "type": "text",
-      "id": "why_heading",
-      "label": "Heading",
-      "default": "Why choose MetaliQ"
-    },
-    {
-      "type": "textarea",
-      "id": "why_intro",
-      "label": "Introduction",
-      "default": "Considered design, precise fabrication, and practical details that make every piece easier to choose, install, and live with."
-    },
-    { "type": "select", "id": "why_icon_1", "label": "Precision icon", "options": [{ "value": "precision", "label": "Precision" }, { "value": "cut", "label": "Cut" }], "default": "precision" },
-    { "type": "select", "id": "why_icon_2", "label": "Durability icon", "options": [{ "value": "shield", "label": "Shield" }, { "value": "layers", "label": "Layers" }], "default": "shield" },
-    { "type": "select", "id": "why_icon_3", "label": "Sizing icon", "options": [{ "value": "layers", "label": "Layers" }, { "value": "precision", "label": "Precision" }], "default": "layers" },
-    { "type": "select", "id": "why_icon_4", "label": "Installation icon", "options": [{ "value": "cut", "label": "Cut" }, { "value": "package", "label": "Package" }], "default": "cut" },
-    { "type": "select", "id": "why_icon_5", "label": "Delivery icon", "options": [{ "value": "package", "label": "Package" }, { "value": "truck", "label": "Truck" }], "default": "package" },
-
     { "type": "header", "content": "Custom design CTA" },
-    { "type": "image_picker", "id": "custom_image", "label": "Artwork image" },
     { "type": "text", "id": "custom_heading", "label": "Heading", "default": "Your idea. Made in metal." },
     {
       "type": "textarea",
@@ -1658,6 +2011,16 @@
       "default": "Bring us a name, reference, sketch, or empty wall. We will shape it into a considered metal artwork made for your dimensions."
     },
     { "type": "text", "id": "custom_button", "label": "Button label", "default": "Start a custom design" },
+
+    { "type": "header", "content": "How it is made" },
+    { "type": "video", "id": "process_video", "label": "Production video" },
+    { "type": "text", "id": "process_heading", "label": "Heading", "default": "From an idea to a finished piece." },
+    {
+      "type": "textarea",
+      "id": "process_intro",
+      "label": "Introduction",
+      "default": "Every order moves through a deliberate process before it reaches your wall."
+    },
 
     { "type": "header", "content": "Recently added" },
     { "type": "collection", "id": "recent_collection", "label": "Collection" },
@@ -1678,6 +2041,7 @@
       "limit": 12,
       "settings": [
         { "type": "collection", "id": "collection", "label": "t:labels.collection" },
+        { "type": "image_picker", "id": "image", "label": "Custom image" },
         { "type": "text", "id": "fallback_title", "label": "t:labels.fallback_title", "default": "Collection" },
         { "type": "paragraph", "content": "Hero products are selected automatically from Best Sellers and Recently Added." }
       ]

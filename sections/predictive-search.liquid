@@ -1,0 +1,97 @@
+{%- if predictive_search.performed -%}
+  {%- liquid
+    assign product_results = predictive_search.resources.products
+    assign collection_results = predictive_search.resources.collections
+    assign has_results = false
+    if product_results.size > 0 or collection_results.size > 0
+      assign has_results = true
+    endif
+  -%}
+
+  <div class="predictive-search" data-predictive-content>
+    {%- if has_results -%}
+      {%- if product_results.size > 0 -%}
+        <section class="predictive-search__group" aria-labelledby="PredictiveProductsTitle">
+          <div class="predictive-search__heading">
+            <h3 id="PredictiveProductsTitle">{{ 'search.products_heading' | t }}</h3>
+            <span>{{ product_results.size }}</span>
+          </div>
+          <ul class="predictive-search__product-list" role="listbox" aria-labelledby="PredictiveProductsTitle">
+            {%- for product in product_results -%}
+              {%- liquid
+                assign result_variant = blank
+                for variant in product.variants
+                  assign result_variant_title = variant.title | downcase
+                  if result_variant_title contains 'medium'
+                    assign result_variant = variant
+                    break
+                  endif
+                endfor
+                assign result_variant = result_variant | default: product.selected_or_first_available_variant
+                assign result_url = product.url | append: '?variant=' | append: result_variant.id
+                assign result_type = product.type
+                if result_type == blank
+                  assign result_type = 'product.default_type' | t
+                endif
+              -%}
+              <li role="option">
+                <a class="predictive-search__product" href="{{ result_url }}">
+                  <span class="predictive-search__media">
+                    {%- if product.featured_image -%}
+                      {{
+                        product.featured_image
+                        | image_url: width: 240
+                        | image_tag:
+                          loading: 'lazy',
+                          widths: '96, 144, 192, 240',
+                          sizes: '88px',
+                          alt: product.featured_image.alt | default: product.title
+                      }}
+                    {%- else -%}
+                      <span class="media-fallback">{% render 'engraving', seed: product.id %}</span>
+                    {%- endif -%}
+                  </span>
+                  <span class="predictive-search__product-copy">
+                    <small>{{ result_type }}</small>
+                    <strong>{{ product.title }}</strong>
+                    {%- unless product.has_only_default_variant -%}<span>{{ result_variant.title }}</span>{%- endunless -%}
+                    <b>{{ result_variant.price | money_without_trailing_zeros }}</b>
+                  </span>
+                </a>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </section>
+      {%- endif -%}
+
+      {%- if collection_results.size > 0 -%}
+        <section class="predictive-search__group" aria-labelledby="PredictiveCollectionsTitle">
+          <div class="predictive-search__heading">
+            <h3 id="PredictiveCollectionsTitle">{{ 'search.collections_heading' | t }}</h3>
+          </div>
+          <ul class="predictive-search__collection-list" role="listbox" aria-labelledby="PredictiveCollectionsTitle">
+            {%- for collection in collection_results -%}
+              <li role="option">
+                <a href="{{ collection.url }}"><span>{{ collection.title }}</span><span aria-hidden="true">&rarr;</span></a>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </section>
+      {%- endif -%}
+    {%- else -%}
+      <p class="predictive-search__empty">{{ 'search.no_suggestions' | t: terms: predictive_search.terms }}</p>
+    {%- endif -%}
+
+    <a class="predictive-search__view-all" href="{{ routes.search_url }}?q={{ predictive_search.terms | url_encode }}&options%5Bprefix%5D=last">
+      <span>{{ 'search.view_all' | t: terms: predictive_search.terms }}</span>
+      <span aria-hidden="true">&rarr;</span>
+    </a>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Predictive search",
+  "settings": []
+}
+{% endschema %}

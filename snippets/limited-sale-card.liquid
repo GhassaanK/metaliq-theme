@@ -21,7 +21,6 @@
   assign sale_image = product.featured_image | default: fallback_image
   assign sale_url = product.url | append: '?variant=' | append: sale_variant.id
   assign sale_saving = sale_variant.compare_at_price | minus: sale_variant.price
-  assign sale_saving_money = sale_saving | money
   assign sale_percentage = sale_saving | times: 100.0 | divided_by: sale_variant.compare_at_price | round
 -%}
 
@@ -41,44 +40,37 @@
     </a>
 
     <div class="limited-bundle-card__body">
-      <p class="limited-bundle-card__label">{{ 'home.limited_sale_product_label' | t }}</p>
       <h3><a href="{{ sale_url }}">{{ product.title | escape }}</a></h3>
-      {%- unless product.has_only_default_variant -%}
-        <p class="limited-bundle-card__variant">{{ sale_variant.title | escape }}</p>
-      {%- endunless -%}
-      <div class="limited-bundle-card__pricing">
-        <span><small>{{ 'home.limited_sale_regular' | t }}</small><s>{{ sale_variant.compare_at_price | money }}</s></span>
-        <span><small>{{ 'home.limited_sale_offer_price' | t }}</small><strong>{{ sale_variant.price | money }}</strong></span>
-      </div>
-      <p class="limited-bundle-card__saving">{{ 'home.limited_sale_save' | t: amount: sale_saving_money }}</p>
 
-      <form method="post" action="{{ routes.cart_add_url }}" data-card-add-form>
+      <form class="limited-bundle-card__form" method="post" action="{{ routes.cart_add_url }}" data-card-add-form>
         <input type="hidden" name="id" value="{{ sale_variant.id }}">
         <input type="hidden" name="quantity" value="1">
-        <div class="limited-bundle-card__actions">
-          <div class="limited-bundle-card__utility-actions">
-            <button
-              class="limited-bundle-card__add"
-              type="submit"
-              data-card-add-button
-              data-adding="{{ 'product.adding' | t }}"
-              aria-label="{{ 'product.card_add_label' | t: title: product.title }}"
-              title="{{ 'product.add_to_cart' | t }}"
-              {% unless sale_variant.available %}disabled{% endunless %}
-            >
-              {% render 'icon', name: 'bag' %}
-              <span class="visually-hidden" data-card-add-label>
-                {%- if sale_variant.available -%}
-                  {{ 'product.add_to_cart' | t }}
-                {%- else -%}
-                  {{ 'product.sold_out' | t }}
-                {%- endif -%}
-              </span>
-            </button>
-            {% render 'wishlist-button', product: product, variant: sale_variant, css_class: 'limited-bundle-card__wishlist', show_label: false %}
+        <button
+          class="limited-bundle-card__add"
+          type="submit"
+          data-card-add-button
+          data-adding="{{ 'product.adding' | t }}"
+          aria-label="{{ 'product.card_add_label' | t: title: product.title }}"
+          title="{{ 'product.add_to_cart' | t }}"
+          {% unless sale_variant.available %}disabled{% endunless %}
+        >
+          {% render 'icon', name: 'bag' %}
+          <span class="visually-hidden" data-card-add-label>
+            {%- if sale_variant.available -%}
+              {{ 'product.add_to_cart' | t }}
+            {%- else -%}
+              {{ 'product.sold_out' | t }}
+            {%- endif -%}
+          </span>
+        </button>
+
+        <div class="limited-bundle-card__purchase">
+          <div class="limited-bundle-card__pricing">
+            <s>{{ sale_variant.compare_at_price | money_without_trailing_zeros }}</s>
+            <strong>{{ sale_variant.price | money_without_trailing_zeros }}</strong>
           </div>
           <button
-            class="button button--primary button--block"
+            class="button button--primary limited-bundle-card__buy"
             type="submit"
             name="return_to"
             value="{{ routes.root_url }}checkout"

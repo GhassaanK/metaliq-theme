@@ -29,8 +29,8 @@
           assign icon_name = 'sparkle'
           if i == 1
             assign icon_name = 'truck'
-          elsif i == 2
-            assign icon_name = 'package'
+          elsif i == 2 or i == 3
+            assign icon_name = 'sparkle'
           endif
         -%}
         {%- if section.settings[message_key] != blank -%}
@@ -154,18 +154,14 @@
         <a href="{{ tiktok_url }}" target="_blank" rel="noopener" aria-label="TikTok">{% render 'icon', name: 'tiktok' %}</a>
         <a href="{{ youtube_url }}" target="_blank" rel="noopener" aria-label="YouTube">{% render 'icon', name: 'youtube' %}</a>
       </div>
-      <button
-        class="icon-button wishlist-link"
-        type="button"
-        aria-label="{{ 'wishlist.open' | t: count: 0 }}"
-        data-wishlist-label="{{ 'wishlist.open' | t: count: '__COUNT__' }}"
-        aria-controls="WishlistDrawer"
+      <a
+        class="icon-button"
+        href="{{ routes.search_url }}"
+        aria-label="{{ 'general.search' | t }}"
+        aria-controls="SearchOverlay"
         aria-expanded="false"
-        data-wishlist-trigger
+        data-search-open
       >
-        {% render 'icon', name: 'heart' %}
-      </button>
-      <a class="icon-button" href="{{ routes.search_url }}" aria-label="{{ 'general.search' | t }}">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
       </a>
       <a
@@ -184,6 +180,62 @@
   </div>
 </header>
 
+<dialog
+  class="search-overlay"
+  id="SearchOverlay"
+  aria-labelledby="SearchOverlayTitle"
+  data-search-dialog
+  data-predictive-url="{{ routes.predictive_search_url }}"
+>
+  <div class="search-overlay__panel">
+    <div class="container search-overlay__inner">
+      <div class="search-overlay__header">
+        <div>
+          <p class="eyebrow">{{ 'search.eyebrow' | t }}</p>
+          <h2 id="SearchOverlayTitle">{{ 'search.overlay_title' | t }}</h2>
+        </div>
+        <button class="icon-button search-overlay__close" type="button" aria-label="{{ 'general.close' | t }}" data-search-close>
+          {% render 'icon', name: 'close' %}
+        </button>
+      </div>
+
+      <form class="search-overlay__form" action="{{ routes.search_url }}" method="get" role="search" data-search-overlay-form>
+        <label class="visually-hidden" for="SearchOverlayInput">{{ 'search.title' | t }}</label>
+        <div class="search-overlay__field">
+          <span class="search-overlay__field-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+          </span>
+          <input
+            id="SearchOverlayInput"
+            type="search"
+            name="q"
+            placeholder="{{ 'search.placeholder' | t }}"
+            autocomplete="off"
+            role="combobox"
+            aria-expanded="false"
+            aria-controls="SearchPredictiveResults"
+            aria-haspopup="listbox"
+            aria-autocomplete="list"
+            data-search-input
+          >
+          <input name="options[prefix]" type="hidden" value="last">
+          <button class="button button--primary search-overlay__submit" type="submit">{{ 'search.submit' | t }}</button>
+        </div>
+      </form>
+
+      <div
+        class="search-overlay__results"
+        id="SearchPredictiveResults"
+        aria-live="polite"
+        data-search-results
+        data-loading-label="{{ 'search.loading' | t }}"
+      >
+        <p class="search-overlay__hint">{{ 'search.overlay_hint' | t }}</p>
+      </div>
+    </div>
+  </div>
+</dialog>
+
 {% schema %}
 {
   "name": "t:general.header",
@@ -192,11 +244,11 @@
       "type": "text",
       "id": "announcement_1",
       "label": "t:labels.announcement",
-      "default": "Free delivery on orders over PKR 9,999"
+      "default": "Free delivery on orders above PKR 4,999"
     },
-    { "type": "text", "id": "announcement_2", "label": "Promotion 2", "default": "Karachi delivery in 2 to 3 working days" },
-    { "type": "text", "id": "announcement_3", "label": "Promotion 3", "default": "Nationwide delivery in 5 to 7 working days" },
-    { "type": "text", "id": "announcement_4", "label": "Promotion 4", "default": "Custom metal designs, made for your space" },
+    { "type": "text", "id": "announcement_2", "label": "Promotion 2", "default": "Get 10% cashback on video review submissions" },
+    { "type": "text", "id": "announcement_3", "label": "Promotion 3", "default": "Get PKR 200 cashback on every prepaid order" },
+    { "type": "text", "id": "announcement_4", "label": "Promotion 4" },
     { "type": "link_list", "id": "collections_menu", "label": "t:labels.collections_menu" },
     { "type": "paragraph", "content": "MetaliQ brand assets are loaded from the theme." }
   ],
