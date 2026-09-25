@@ -7,72 +7,32 @@
   {% render 'limited-time-sale', section: section %}
 {% enddoc %}
 
+{%- assign campaign_collection = collections['all'] -%}
+{%- paginate campaign_collection.products by 250 -%}
 {%- liquid
-  assign campaign_collection = settings.limited_sale_collection
-  if campaign_collection == blank
-    assign campaign_collection = collections['sale']
-  endif
-  assign use_campaign_collection = false
-  if campaign_collection != blank
-    if campaign_collection.products_count > 0
-      assign use_campaign_collection = true
-    endif
-  endif
-  assign campaign_limit = 50
+  assign campaign_products = campaign_collection.products
   assign campaign_count = 0
 
-  if use_campaign_collection
-    assign campaign_products = campaign_collection.products
-    for campaign_product in campaign_products
-      assign count_variant = blank
-      for product_variant in campaign_product.variants
+  for campaign_product in campaign_products
+    assign count_variant = blank
+    assign first_discounted_variant = blank
+    for product_variant in campaign_product.variants
+      if product_variant.compare_at_price > product_variant.price
+        if first_discounted_variant == blank
+          assign first_discounted_variant = product_variant
+        endif
         assign variant_title_normalized = product_variant.title | downcase
         if variant_title_normalized contains 'medium'
           assign count_variant = product_variant
           break
         endif
-      endfor
-      assign count_variant = count_variant | default: campaign_product.selected_or_first_available_variant
-      if count_variant.compare_at_price > count_variant.price
-        assign campaign_count = campaign_count | plus: 1
-      endif
-      if campaign_count == campaign_limit
-        break
       endif
     endfor
-  else
-    assign counted_product_handles = '|'
-    for source_collection in collections
-      for campaign_product in source_collection.products
-        capture product_handle_token
-          echo '|'
-          echo campaign_product.handle
-          echo '|'
-        endcapture
-        unless counted_product_handles contains product_handle_token
-          assign counted_product_handles = counted_product_handles | append: campaign_product.handle | append: '|'
-          assign count_variant = blank
-          for product_variant in campaign_product.variants
-            assign variant_title_normalized = product_variant.title | downcase
-            if variant_title_normalized contains 'medium'
-              assign count_variant = product_variant
-              break
-            endif
-          endfor
-          assign count_variant = count_variant | default: campaign_product.selected_or_first_available_variant
-          if count_variant.compare_at_price > count_variant.price
-            assign campaign_count = campaign_count | plus: 1
-          endif
-        endunless
-        if campaign_count == campaign_limit
-          break
-        endif
-      endfor
-      if campaign_count == campaign_limit
-        break
-      endif
-    endfor
-  endif
+    assign count_variant = count_variant | default: first_discounted_variant
+    if count_variant != blank
+      assign campaign_count = campaign_count | plus: 1
+    endif
+  endfor
   assign campaign_eyebrow = section.settings.limited_sale_eyebrow
   assign campaign_heading = section.settings.limited_sale_heading
   assign campaign_intro = section.settings.limited_sale_intro
@@ -154,49 +114,14 @@
       </header>
 
       <div class="home-limited-sale__grid{% if campaign_count == 1 %} home-limited-sale__grid--single{% endif %}" data-sale-track tabindex="0" aria-label="{{ 'home.limited_sale_products' | t }}">
-        {%- if use_campaign_collection -%}
-          {%- for campaign_product in campaign_products -%}
-            {%- render 'limited-sale-card', product: campaign_product, fallback_image: campaign_fallback_image -%}
-          {%- endfor -%}
-        {%- else -%}
-          {%- liquid
-            assign rendered_product_handles = '|'
-            assign rendered_campaign_products = 0
-          -%}
-          {%- for source_collection in collections -%}
-            {%- for campaign_product in source_collection.products -%}
-              {%- capture product_handle_token -%}|{{ campaign_product.handle }}|{%- endcapture -%}
-              {%- unless rendered_product_handles contains product_handle_token -%}
-                {%- liquid
-                  assign rendered_product_handles = rendered_product_handles | append: campaign_product.handle | append: '|'
-                  assign campaign_variant = blank
-                  for product_variant in campaign_product.variants
-                    assign variant_title_normalized = product_variant.title | downcase
-                    if variant_title_normalized contains 'medium'
-                      assign campaign_variant = product_variant
-                      break
-                    endif
-                  endfor
-                  assign campaign_variant = campaign_variant | default: campaign_product.selected_or_first_available_variant
-                -%}
-                {%- if campaign_variant.compare_at_price > campaign_variant.price -%}
-                  {%- render 'limited-sale-card', product: campaign_product, fallback_image: campaign_fallback_image -%}
-                  {%- assign rendered_campaign_products = rendered_campaign_products | plus: 1 -%}
-                {%- endif -%}
-              {%- endunless -%}
-              {%- if rendered_campaign_products == campaign_limit -%}
-                {%- break -%}
-              {%- endif -%}
-            {%- endfor -%}
-            {%- if rendered_campaign_products == campaign_limit -%}
-              {%- break -%}
-            {%- endif -%}
-          {%- endfor -%}
-        {%- endif -%}
+        {%- for campaign_product in campaign_products -%}
+          {%- render 'limited-sale-card', product: campaign_product, fallback_image: campaign_fallback_image -%}
+        {%- endfor -%}
       </div>
     </div>
   </section>
 {%- endif -%}
+{%- endpaginate -%}
 
 {% stylesheet %}
   .home-limited-sale {

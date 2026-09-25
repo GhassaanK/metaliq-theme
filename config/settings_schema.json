@@ -193,12 +193,6 @@
         "content": "t:info.campaign_discount_setup"
       },
       {
-        "type": "collection",
-        "id": "limited_sale_collection",
-        "label": "t:labels.campaign_collection",
-        "info": "t:info.campaign_collection"
-      },
-      {
         "type": "text",
         "id": "limited_sale_end",
         "label": "t:labels.campaign_end",

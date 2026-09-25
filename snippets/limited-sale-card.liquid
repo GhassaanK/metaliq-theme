@@ -10,21 +10,29 @@
 
 {%- liquid
   assign sale_variant = blank
+  assign first_discounted_variant = blank
   for product_variant in product.variants
-    assign variant_title_normalized = product_variant.title | downcase
-    if variant_title_normalized contains 'medium'
-      assign sale_variant = product_variant
-      break
+    if product_variant.compare_at_price > product_variant.price
+      if first_discounted_variant == blank
+        assign first_discounted_variant = product_variant
+      endif
+      assign variant_title_normalized = product_variant.title | downcase
+      if variant_title_normalized contains 'medium'
+        assign sale_variant = product_variant
+        break
+      endif
     endif
   endfor
-  assign sale_variant = sale_variant | default: product.selected_or_first_available_variant
+  assign sale_variant = sale_variant | default: first_discounted_variant
   assign sale_image = product.featured_image | default: fallback_image
-  assign sale_url = product.url | append: '?variant=' | append: sale_variant.id
-  assign sale_saving = sale_variant.compare_at_price | minus: sale_variant.price
-  assign sale_percentage = sale_saving | times: 100.0 | divided_by: sale_variant.compare_at_price | round
+  if sale_variant != blank
+    assign sale_url = product.url | append: '?variant=' | append: sale_variant.id
+    assign sale_saving = sale_variant.compare_at_price | minus: sale_variant.price
+    assign sale_percentage = sale_saving | times: 100.0 | divided_by: sale_variant.compare_at_price | round
+  endif
 -%}
 
-{%- if sale_image != blank and sale_variant.compare_at_price > sale_variant.price -%}
+{%- if sale_image != blank and sale_variant != blank -%}
   <article class="limited-bundle-card reveal">
     <a class="limited-bundle-card__media" href="{{ sale_url }}">
       {{

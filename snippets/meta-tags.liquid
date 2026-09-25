@@ -1,24 +1,109 @@
+{% doc %}
+  Renders page titles, descriptions, canonical URLs, social previews,
+  indexation directives, and resource-specific structured data.
+
+  @example
+  {% render 'meta-tags' %}
+{% enddoc %}
+
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
 {%- liquid
-  assign og_title = page_title | default: shop.name
+  assign seo_title = page_title | default: shop.name
+  if request.page_type == 'index'
+    if seo_title == shop.name
+      assign seo_title = 'seo.home_title' | t
+    endif
+  endif
+
+  assign seo_title_downcase = seo_title | downcase
+  assign shop_name_downcase = shop.name | downcase
+  assign short_brand_downcase = shop.name | remove: ' Art' | downcase
+  assign title_has_brand = false
+  if seo_title_downcase contains shop_name_downcase
+    assign title_has_brand = true
+  elsif short_brand_downcase != blank
+    if seo_title_downcase contains short_brand_downcase
+      assign title_has_brand = true
+    endif
+  endif
+
+  assign og_title = seo_title
   assign og_url = canonical_url | default: request.origin
   assign og_type = 'website'
-  assign social_image_url = blank
-  assign og_description = page_description | default: shop.description | default: 'MetaliQ Art - precision-cut metal decor made in Pakistan.'
-
-  if page_image
-    assign social_image_url = page_image | image_url
-    unless social_image_url contains '://'
-      assign social_image_prefix = social_image_url | slice: 0, 2
-      if social_image_prefix == '//'
-        assign social_image_url = social_image_url | prepend: 'https:'
+  assign og_description = page_description
+  if og_description == blank
+    case request.page_type
+      when 'index'
+        assign og_description = 'seo.home_description' | t
+      when 'page'
+        case page.handle
+          when 'about'
+            assign og_description = 'seo.about_description' | t
+          when 'contact'
+            assign og_description = 'seo.contact_description' | t
+          when 'ordering-and-payments'
+            assign og_description = 'seo.ordering_description' | t
+          else
+            assign og_description = 'seo.default_description' | t
+        endcase
+      when 'blog'
+        assign og_description = 'seo.blog_description' | t
       else
-        assign social_image_url = social_image_url | prepend: shop.url
-      endif
-    endunless
+        assign og_description = 'seo.default_description' | t
+    endcase
+  endif
+
+  assign social_image_url = blank
+  assign social_image_width = 1672
+  assign social_image_height = 941
+  assign social_image_alt = og_title
+  if page_image != blank
+    assign social_image_url = page_image | image_url: width: 1600
+    assign social_image_width = page_image.width
+    assign social_image_height = page_image.height
+    assign social_image_alt = page_image.alt | default: og_title
+  else
+    assign social_image_url = 'metaliq-architectural-hero.webp' | asset_url
+  endif
+  unless social_image_url contains '://'
+    assign social_image_prefix = social_image_url | slice: 0, 2
+    if social_image_prefix == '//'
+      assign social_image_url = social_image_url | prepend: 'https:'
+    else
+      assign social_image_url = social_image_url | prepend: shop.url
+    endif
+  endunless
+
+  assign robots_directive = 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1'
+  if request.page_type == 'search'
+    assign robots_directive = 'noindex,follow'
+  elsif request.page_type == 'cart'
+    assign robots_directive = 'noindex,follow'
+  elsif request.page_type == '404'
+    assign robots_directive = 'noindex,follow'
+  elsif request.page_type == 'password'
+    assign robots_directive = 'noindex,nofollow'
+  endif
+  if request.page_type contains 'customers'
+    assign robots_directive = 'noindex,nofollow'
+  endif
+  if request.page_type == 'page'
+    if page.handle == 'custom-design'
+      assign robots_directive = 'noindex,follow'
+    endif
+  endif
+  if request.page_type == 'blog'
+    if blog.articles_count == 0
+      assign robots_directive = 'noindex,follow'
+    endif
+  endif
+  if request.page_type == 'collection'
+    if collection.products_count == 0
+      assign robots_directive = 'noindex,follow'
+    endif
   endif
 
   if request.page_type == 'product'
@@ -39,94 +124,48 @@
   elsif request.page_type == 'password'
     assign og_url = request.origin
   endif
-%}
+-%}
 
-<meta
-  property="og:site_name"
-  content="{{ shop.name | escape }}"
->
-<meta
-  property="og:url"
-  content="{{ og_url | escape }}"
->
-<meta
-  property="og:title"
-  content="{{ og_title | escape }}"
->
-<meta
-  property="og:type"
-  content="{{ og_type }}"
->
-<meta
-  property="og:description"
-  content="{{ og_description | escape }}"
->
-
-{%- if social_image_url != blank -%}
-  <meta
-    property="og:image"
-    content="{{ social_image_url | escape }}"
-  >
-  <meta
-    property="og:image:secure_url"
-    content="{{ social_image_url | escape }}"
-  >
-  <meta
-    property="og:image:width"
-    content="{{ page_image.width }}"
-  >
-  <meta
-    property="og:image:height"
-    content="{{ page_image.height }}"
-  >
-{%- endif -%}
+<meta name="robots" content="{{ robots_directive }}">
+<meta property="og:site_name" content="{{ shop.name | escape }}">
+<meta property="og:locale" content="en_PK">
+<meta property="og:url" content="{{ og_url | escape }}">
+<meta property="og:title" content="{{ og_title | escape }}">
+<meta property="og:type" content="{{ og_type }}">
+<meta property="og:description" content="{{ og_description | strip_html | strip | escape }}">
+<meta property="og:image" content="{{ social_image_url | escape }}">
+<meta property="og:image:secure_url" content="{{ social_image_url | escape }}">
+<meta property="og:image:width" content="{{ social_image_width }}">
+<meta property="og:image:height" content="{{ social_image_height }}">
+<meta property="og:image:alt" content="{{ social_image_alt | escape }}">
 
 {%- if request.page_type == 'product' -%}
   <script type="application/ld+json">
     {{ product | structured_data }}
   </script>
-
-  <meta
-    property="og:price:amount"
-    content="{{ social_product_variant.price | money_without_currency | strip_html }}"
-  >
-  <meta
-    property="og:price:currency"
-    content="{{ cart.currency.iso_code }}"
-  >
+  <meta property="product:price:amount" content="{{ social_product_variant.price | money_without_currency | strip_html }}">
+  <meta property="product:price:currency" content="{{ cart.currency.iso_code }}">
+  <meta property="product:availability" content="{% if social_product_variant.available %}in stock{% else %}out of stock{% endif %}">
+{%- elsif request.page_type == 'article' -%}
+  <script type="application/ld+json">
+    {{ article | structured_data }}
+  </script>
 {%- endif -%}
 
-<meta
-  name="twitter:card"
-  content="summary_large_image"
->
-<meta
-  name="twitter:title"
-  content="{{ og_title | escape }}"
->
-<meta
-  name="twitter:description"
-  content="{{ og_description | escape }}"
->
-{%- if social_image_url != blank -%}
-  <meta name="twitter:image" content="{{ social_image_url | escape }}">
-{%- endif -%}
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ og_title | escape }}">
+<meta name="twitter:description" content="{{ og_description | strip_html | strip | escape }}">
+<meta name="twitter:image" content="{{ social_image_url | escape }}">
+<meta name="twitter:image:alt" content="{{ social_image_alt | escape }}">
 
 <title>
-  {{ page_title | escape }}
+  {{ seo_title | escape }}
   {%- if current_tags %} &ndash; tagged "{{ current_tags | join: ', ' | escape }}"{% endif -%}
   {%- if current_page != 1 %} &ndash; Page {{ current_page }}{% endif -%}
-  {%- unless page_title contains shop.name %} &ndash; {{ shop.name | escape }}{% endunless -%}
+  {%- unless title_has_brand %} &ndash; {{ shop.name | escape }}{% endunless -%}
 </title>
 
-<link
-  rel="canonical"
-  href="{{ canonical_url | escape }}"
->
-
-<meta
-  name="description"
-  content="{{ og_description | escape }}"
->
+<link rel="canonical" href="{{ canonical_url | escape }}">
+<meta name="description" content="{{ og_description | strip_html | strip | escape }}">
 
 {% render 'structured-data' %}

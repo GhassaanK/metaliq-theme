@@ -12,6 +12,7 @@
 {{ 'inter-latin.woff2' | asset_url | preload_tag: as: 'font', type: 'font/woff2', crossorigin: 'anonymous' }}
 {{ settings.heading_font | font_url | preload_tag: as: 'font', type: 'font/woff2', crossorigin: 'anonymous' }}
 
+{%- assign heading_font_weight = settings.heading_font.weight | plus: 0 -%}
 {% style %}
   @font-face {
     font-family: 'Inter';
@@ -24,5 +25,7 @@
   }
 
   {{ settings.heading_font | font_face: font_display: 'swap' }}
-  {{ settings.heading_font | font_modify: 'weight', '700' | font_face: font_display: 'swap' }}
+  {%- unless heading_font_weight == 700 -%}
+    {{ settings.heading_font | font_modify: 'weight', '700' | font_face: font_display: 'swap' }}
+  {%- endunless -%}
 {% endstyle %}

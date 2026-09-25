@@ -1,4 +1,13 @@
 {
+  "seo": {
+    "home_title": "Metal Wall Art in Pakistan | MetaliQ Art",
+    "home_description": "Shop precision-cut metal wall art in Pakistan, made to order in powder-coated mild steel. Explore modern designs, multiple sizes and custom artwork.",
+    "default_description": "Discover precision-cut metal wall art by MetaliQ Art, made to order in powder-coated mild steel with nationwide delivery across Pakistan.",
+    "about_description": "Learn how MetaliQ Art designs and fabricates precision-cut metal wall art in Karachi for homes, offices and custom spaces across Pakistan.",
+    "contact_description": "Contact MetaliQ Art in Karachi about metal wall art orders, custom sizes, delivery, installation guidance or a custom design.",
+    "ordering_description": "Learn how to order MetaliQ metal wall art, available payment methods, production timelines and nationwide delivery across Pakistan.",
+    "blog_description": "Explore metal wall art ideas, room styling guidance, product care and behind-the-scenes stories from MetaliQ Art in Pakistan."
+  },
   "general": {
     "skip_to_content": "Skip to content",
     "menu": "Menu",
@@ -272,7 +281,7 @@
   },
   "home": {
     "hero_heading": "Art, made for your space",
-    "hero_body": "Precision-cut mild steel, matte-black powder coating, made to order in Pakistan.",
+    "hero_body": "Precision-cut metal wall art in mild steel, finished in matte black and made to order in Pakistan.",
     "hero_cta": "Shop wall art",
     "hero_cta2": "Create something custom",
     "hero_alt": "Intricate CNC-cut metal wall art mounted on concrete",
@@ -336,7 +345,7 @@
     "limited_sale_eyebrow": "Limited-time sale",
     "limited_sale_heading": "The clock is running on these pieces.",
     "limited_sale_intro": "Selected MetaliQ designs at reduced prices. When the countdown ends, the sale closes.",
-    "limited_sale_select_collection": "Choose a Sale collection containing products with valid compare-at prices in Theme settings > Limited-time offer.",
+    "limited_sale_select_collection": "No storefront products currently have a Compare-at price higher than their Price.",
     "limited_sale_product_label": "Limited edition offer",
     "limited_sale_set_deadline": "Set the sale end time in Theme settings > Limited-time offer to display the countdown.",
     "limited_sale_controls": "Offer slider controls",
