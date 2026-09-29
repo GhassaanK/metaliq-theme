@@ -11,6 +11,13 @@
   endif
   assign current_variant = current_variant | default: product.selected_or_first_available_variant
   assign current_sale_percentage = 0
+  assign product_has_discount = false
+  for product_variant in product.variants
+    if product_variant.compare_at_price > product_variant.price
+      assign product_has_discount = true
+      break
+    endif
+  endfor
   if current_variant.compare_at_price > current_variant.price
     assign current_saving = current_variant.compare_at_price | minus: current_variant.price
     assign current_sale_percentage = current_saving | times: 100.0 | divided_by: current_variant.compare_at_price | round
@@ -32,6 +39,8 @@
   assign rating_percent = rating_value | times: 100.0 | divided_by: rating_scale_max
 
   assign factual_description = product.description
+  assign factual_description = factual_description | replace: 'laser-cut', 'CNC-cut' | replace: 'Laser-cut', 'CNC-cut'
+  assign factual_description = factual_description | replace: 'laser cut', 'CNC cut' | replace: 'Laser cut', 'CNC cut'
   assign description_needs_review = false
   if product.description contains 'without fading or chipping'
     assign description_needs_review = true
@@ -182,11 +191,21 @@
       {%- endif -%}
 
       <div class="product-price price" data-product-price data-base-price="{{ current_variant.price }}" data-base-compare-price="{{ current_variant.compare_at_price | default: 0 }}">
-        <s data-compare-price{% unless current_variant.compare_at_price > current_variant.price %} hidden{% endunless %}>{{ current_variant.compare_at_price | money }}</s>
+        {%- if product_has_discount -%}
+          <s data-compare-price{% unless current_variant.compare_at_price > current_variant.price %} hidden{% endunless %}>{{ current_variant.compare_at_price | money }}</s>
+        {%- endif -%}
         <span data-current-price>{{ current_variant.price | money }}</span>
-        <span class="product-price__badge tag" data-sale-percentage{% unless current_variant.compare_at_price > current_variant.price %} hidden{% endunless %}>{{ 'home.limited_sale_percentage' | t: percent: current_sale_percentage }}</span>
+        {%- if product_has_discount -%}
+          <span class="product-price__badge tag" data-sale-percentage{% unless current_variant.compare_at_price > current_variant.price %} hidden{% endunless %}>{{ 'home.limited_sale_percentage' | t: percent: current_sale_percentage }}</span>
+        {%- endif -%}
       </div>
-      <p class="product-price-context">{{ 'product.price_context' | t }}</p>
+      <p class="product-price-context">
+        {%- if product.has_only_default_variant -%}
+          {{ 'product.price_context_single' | t }}
+        {%- else -%}
+          {{ 'product.price_context' | t }}
+        {%- endif -%}
+      </p>
 
       <p class="product-value-proposition">{{ value_proposition }}</p>
 
@@ -195,10 +214,12 @@
           <span>{{ 'product.material_label' | t }}</span>
           <strong>{{ 'product.material_value' | t }}</strong>
         </li>
-        <li>
-          <span>{{ 'product.size_label' | t }}</span>
-          <strong data-selected-size>{{ current_variant.title }}</strong>
-        </li>
+        {%- unless product.has_only_default_variant -%}
+          <li>
+            <span>{{ 'product.size_label' | t }}</span>
+            <strong data-selected-size>{{ current_variant.title }}</strong>
+          </li>
+        {%- endunless -%}
         <li>
           <span>{{ 'product.install_label' | t }}</span>
           <strong>{{ 'product.install_value' | t }}</strong>
@@ -347,7 +368,9 @@
 
       <div class="product-sticky-atc" data-product-sticky-atc aria-hidden="true" inert>
         <div>
-          <small data-sticky-size>{{ current_variant.title }}</small>
+          {%- unless product.has_only_default_variant -%}
+            <small data-sticky-size>{{ current_variant.title }}</small>
+          {%- endunless -%}
           <strong data-sticky-price>{{ current_variant.price | money }}</strong>
         </div>
         <button class="button button--primary" type="button" data-sticky-buy-now>
@@ -394,6 +417,7 @@
       <div class="product-tabs__panel rte" id="ProductTabShipping-{{ section.id }}" role="tabpanel" aria-labelledby="ProductTabButtonShipping-{{ section.id }}" data-product-panel="shipping" hidden>
         {{ section.settings.shipping_text }}
         <p>{{ 'product.delivery_body' | t }}</p>
+        <p>{{ 'product.returns_summary' | t }}</p>
         <p><a href="/policies/shipping-policy">{{ 'product.read_shipping_policy' | t }}</a></p>
       </div>
     </div>

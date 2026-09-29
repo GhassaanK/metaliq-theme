@@ -55,6 +55,10 @@
         assign og_description = 'seo.default_description' | t
     endcase
   endif
+  assign og_description = og_description | replace: 'laser-cut', 'CNC-cut' | replace: 'Laser-cut', 'CNC-cut'
+  assign og_description = og_description | replace: 'laser cut', 'CNC cut' | replace: 'Laser cut', 'CNC cut'
+  assign og_description = og_description | replace: 'available in black, gold, or silver finishes', 'finished in matte black powder coating'
+  assign og_description = og_description | replace: 'finished in black, gold, or silver', 'finished in matte black powder coating'
 
   assign social_image_url = blank
   assign social_image_width = 1672

@@ -73,6 +73,24 @@
       <div><strong>{{ 'journey.pakistan_title' | t }}</strong><span>{{ 'journey.pakistan_body' | t }}</span></div>
       <p>{{ 'journey.delivery_note' | t }}</p>
     </section>
+
+    <section class="journey-page__returns" aria-labelledby="ReturnsJourney">
+      <header>
+        <p class="eyebrow">{{ 'journey.returns_eyebrow' | t }}</p>
+        <h2 id="ReturnsJourney">{{ 'journey.returns_title' | t }}</h2>
+      </header>
+      <div class="journey-page__return-rules">
+        {%- for i in (1..4) -%}
+          {%- assign title_key = 'journey.return_' | append: i | append: '_title' -%}
+          {%- assign body_key = 'journey.return_' | append: i | append: '_body' -%}
+          <article>
+            <h3>{{ title_key | t }}</h3>
+            <p>{{ body_key | t }}</p>
+          </article>
+        {%- endfor -%}
+      </div>
+      <a class="link" href="/policies/refund-policy">{{ 'general.refund_policy' | t }}</a>
+    </section>
   </div>
 </section>
 
@@ -119,6 +137,14 @@
   .journey-page__delivery > div:not(:first-child) { display: grid; align-content: start; gap: 10px; padding-top: 30px; border-top: 2px solid var(--copper); }
   .journey-page__delivery span, .journey-page__delivery > p { color: var(--muted); line-height: 1.65; }
   .journey-page__delivery > p { grid-column: 2 / -1; }
+  .journey-page__returns { padding-block: clamp(70px, 9vw, 120px); border-top: 1px solid var(--line); }
+  .journey-page__returns > header { display: grid; grid-template-columns: 0.7fr 1.3fr; gap: 40px; margin-bottom: 42px; }
+  .journey-page__returns h2 { max-width: 14ch; font-size: clamp(2.2rem, 1.7rem + 1.8vw, 4rem); line-height: 1; }
+  .journey-page__return-rules { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+  .journey-page__return-rules article { min-height: 190px; padding: 24px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .journey-page__return-rules h3 { font-family: var(--font-body); font-size: 1rem; }
+  .journey-page__return-rules p { margin-top: 12px; color: var(--muted); line-height: 1.65; }
+  .journey-page__returns > .link { display: inline-block; margin-top: 24px; }
   @media (max-width: 900px) {
     .journey-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .journey-page__delivery { grid-template-columns: 1fr 1fr; }
@@ -126,8 +152,8 @@
     .journey-page__delivery > p { grid-column: 1 / -1; }
   }
   @media (max-width: 680px) {
-    .journey-page__hero, .journey-page__section > header, .journey-page__section--split { grid-template-columns: 1fr; }
-    .journey-steps, .journey-page__delivery { grid-template-columns: 1fr; }
+    .journey-page__hero, .journey-page__section > header, .journey-page__section--split, .journey-page__returns > header { grid-template-columns: 1fr; }
+    .journey-steps, .journey-page__delivery, .journey-page__return-rules { grid-template-columns: 1fr; }
     .journey-page__delivery > div:first-child, .journey-page__delivery > p { grid-column: 1; }
     .journey-steps li { min-height: 170px; }
   }
