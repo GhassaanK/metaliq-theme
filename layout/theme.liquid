@@ -10,6 +10,7 @@
 <!doctype html>
 <html lang="{{ request.locale.iso_code }}" dir="{{ request.locale.direction | default: 'ltr' }}">
   <head>
+    <meta name="p:domain_verify" content="0808ba76b351b03a9c5f3d3e59d3df6a">
     {%- if request.page_type == 'page' -%}
       {%- if page.handle == 'custom-design' -%}
         <meta http-equiv="refresh" content="0;url={{ custom_design_redirect }}">
